@@ -1,0 +1,70 @@
+<div class="page-layout simple fullwidth  mat-white-50-bg" fusePerfectScrollbar>
+
+    <!-- HEADER -->
+    <div class="header mat-accent-bg p-24" fxLayout="row" fxLayoutAlign="center center">
+        <h2>Order Confirmation</h2>
+    </div>
+    <!-- / HEADER -->
+
+    <!-- CONTENT -->
+    <div class="content p-24">
+
+            <form fxLayout="column" fxLayoutAlign="start"
+                  fxFlex="1 0 auto" name="formConfirm" [formGroup]="formConfirm">
+
+                  <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+                        <div fxFlex="50">
+                            <label>CLLI Code</label>
+                        </div>
+                        <div fxFlex="50">
+                            <label class="font-weight-900">: {{this.order.CLLICODE }}</label>
+                        </div>
+                    </div>
+                    <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+                        <div fxFlex="50">
+                            <label>Order Number</label>
+                        </div>
+                        <div fxFlex="50">
+                            <label class="font-weight-900">: {{this.order.ORDERNO}}</label>
+                        </div>
+                     </div>
+                    <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+                        <div fxFlex="50">
+                            <label>Quantity</label>
+                        </div>
+                        <div fxFlex="50">
+                            <label class="font-weight-900">: {{this.order.QTY}}</label>
+                        </div>
+                     </div>
+                    <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+                        <div fxFlex="50">
+                            <label>Delivery Start Date</label>
+                        </div>
+                        <div fxFlex="50">
+                            <label class="font-weight-900">: {{this.order.DELIVERYSTARTDATE}}</label>
+                        </div>
+                     </div>
+                    <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+                        <div fxFlex="50">
+                            <label>Delivery End Date</label>
+                        </div>
+                        <div fxFlex="50">
+                            <label class="font-weight-900">: {{this.order.DELIVERYENDDATE}}</label>
+                        </div>
+                     </div>
+
+            <div fxLayout="row" fxLayoutAlign="end center" fxFlex="1 0 auto" class="button-row">
+                <a mat-raised-button color="primary" class="mx-8" (click)="goBack();"  >Return to Form</a>
+                <a mat-raised-button color="accent" class="mx-8" (click)="goSubmit();"  >Continue to Order</a>
+            </div>
+            
+            <blockquote>
+                <p>
+                    “Thank you for using the PS Energy automated ordering system. Once you submit an order you should receive an automatic email response within 15 minutes. If you do not receive this response please contact our customer service department. Lack of email response could be an indication of a failure."
+                </p>
+            </blockquote>
+            </form>
+    </div>
+    <!-- / CONTENT -->
+
+</div>

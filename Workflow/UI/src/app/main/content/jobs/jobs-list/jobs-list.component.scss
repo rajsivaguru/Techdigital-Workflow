@@ -1,0 +1,59 @@
+@import "src/app/core/scss/fuse";
+
+
+
+    .products-table {
+        flex: 1 1 auto;
+        border-bottom: 1px solid rgba(0, 0, 0, .12);
+
+       .mat-header-row {
+            
+        }
+
+        .mat-header-cell
+        {
+            font-weight: bold !important;
+            font-size : 15px !important;
+        }
+
+        .product {
+            position: relative;
+            cursor: pointer;
+            height: 84px;
+        }
+
+        .mat-cell {
+        }
+
+       .mat-column-jl_referenceid {
+            flex: 0 1 84px;
+        }
+
+        .mat-column-jl_title {
+            flex: 0 1 300px;
+        }
+        .mat-column-jl_location {
+            flex: 0 1 150px;
+        }
+        
+        .mat-column-jl_publisheddate {
+            flex: 0 1 200px;
+        }
+        
+        .mat-column-jl_priorityid {
+            flex: 0 1 100px;
+        }
+        .mat-column-jl_userlist {
+            flex: 0 1 100px;
+        }
+        .mat-column-jl_selectedUser {
+            flex: 0 1 260px;
+        }
+        
+        .mat-column-jl_buttons {
+            flex: 0 1 40px;
+        }
+
+
+       
+    }

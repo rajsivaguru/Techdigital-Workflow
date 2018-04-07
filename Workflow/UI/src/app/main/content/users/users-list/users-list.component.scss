@@ -1,0 +1,49 @@
+@import "src/app/core/scss/fuse";
+
+
+
+    .products-table {
+        flex: 1 1 auto;
+        border-bottom: 1px solid rgba(0, 0, 0, .12);
+
+        .mat-header-row {
+            
+        }
+
+        .mat-header-cell
+        {
+            font-weight: bold !important;
+            font-size : 15px !important;
+        }
+
+        .product {
+            position: relative;
+            cursor: pointer;
+            height: 84px;
+        }
+
+        .mat-cell {
+        }
+
+        .mat-column-referenceid {
+            flex: 0 1 84px;
+        }
+        
+
+
+        .mat-column-imgurl {
+            flex: 0 1 84px;
+
+            .product-image {
+                width: 52px;
+                height: 52px;
+                border: 1px solid rgba(0, 0, 0, .12);
+            }
+        }
+
+        .mat-column-status, .mat-column-location {
+            flex: 0 1 80px;
+        }
+
+       
+    }

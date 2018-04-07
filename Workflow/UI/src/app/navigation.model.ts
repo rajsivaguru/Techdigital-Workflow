@@ -1,0 +1,92 @@
+export class NavigationModel
+{
+    public model: any[];
+
+    constructor()
+    {
+        this.model = [
+            // {
+            //             'id'    : 'dashboards',
+            //             'title' : 'Dashboard',
+            //             'type'  : 'item',
+            //             'icon'  : 'dashboard',
+            //             'url'   : '/dashboards'
+
+            // },
+             {
+                        'id'   : 'newjobs',
+                        'title': 'Jobs',
+                        'type' : 'item',
+                        'icon' : 'open_in_new',
+                        'url'  : '/jobsload'
+            },
+            {
+                        'id'   : 'jobs',
+                        'title': 'Jobs Assigned',
+                        'type' : 'item',
+                        'icon' : 'work',
+                        'url'  : '/jobs'
+            },
+            {
+                        'id'   : 'users',
+                        'title': 'Users',
+                        'type' : 'item',
+                        'icon' : 'people',
+                        'url'  : '/users'
+            },
+            {
+                        'id'   : 'assignusers',
+                        'title': 'Assign User',
+                        'type' : 'item',
+                        'icon' : 'person',
+                        'url'  : '/usersform'
+            },
+            {
+                        'id'   : 'recruiters',
+                        'title': 'My Jobs',
+                        'type' : 'item',
+                        'icon' : 'airline_seat_recline_normal',
+                        'url'  : '/myjobs'
+            },
+            //  {
+            //             'id'   : 'notification',
+            //             'title': 'Notification',
+            //             'type' : 'item',
+            //             'icon' : 'notifications_active',
+            //             'url'  : '/notification',
+            //             'badge': {
+            //                 'title': 25,
+            //                 'bg'   : '#F44336',
+            //                 'fg'   : '#FFFFFF'
+            //             }
+            // },
+            {
+                        'id'      : 'reports',
+                        'title'   : 'Reports',
+                        'type'    : 'collapse',
+                        'icon'    : 'receipt',
+                        'children': [
+                            {
+                                'id'   : 'project',
+                                'title': 'Report 1',
+                                'type' : 'item',
+                                'url'  : '/report1'
+                            },
+                            {
+                                'id'   : 'project',
+                                'title': 'Report 2',
+                                'type' : 'item',
+                                'url'  : '/report2'
+                            },
+                            {
+                                'id'   : 'project',
+                                'title': 'Report 3',
+                                'type' : 'item',
+                                'url'  : '/report3'
+                            }
+                        ]
+            }
+            
+        ];
+    }
+}

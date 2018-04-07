@@ -1,0 +1,124 @@
+<div class="page-layout simple fullwidth  mat-white-50-bg" fusePerfectScrollbar>
+
+    <!-- HEADER -->
+    <div class="header mat-accent-bg p-24" fxLayout="row" fxLayoutAlign="start center">
+
+         <button class="mr-16" mat-icon-button [routerLink]="'/users'">
+                    <mat-icon>arrow_back</mat-icon>
+         </button>
+
+        <h2>New User</h2>
+    </div>
+    <!-- / HEADER -->
+
+    <!-- CONTENT -->
+    <div class="content p-24">
+
+            <form fxLayout="column" fxLayoutAlign="start"
+                  fxFlex="1 0 auto" name="contactForm" [formGroup]="contactForm">
+
+                
+                  <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+
+                    <mat-form-field fxFlex="50">
+                        <input matInput placeholder="First Name" formControlName="fname" required>
+                        <mat-error *ngIf="formErrors.fname.required">
+                            
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field fxFlex="50">
+                        <input matInput placeholder="Last Name" formControlName="lname" required>
+                        <mat-error *ngIf="formErrors.lname.required">
+                            
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+
+                    <mat-form-field fxFlex="50">
+                        <input matInput placeholder="Middle Initial" formControlName="minitial">
+                        
+                    </mat-form-field>
+                     <div fxFlex="50">
+                            <mat-radio-group formControlName="status">
+                                <mat-radio-button class="h5" value=1 checked="true">Active</mat-radio-button>
+                                <mat-radio-button class="h5" value=0 >In Active</mat-radio-button>
+                            </mat-radio-group>
+                        </div>
+                  
+                </div>
+
+                <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+
+                    <mat-form-field fxFlex="50">
+                        <input matInput placeholder="Email Address" formControlName="email" #email required>
+                         <mat-error *ngIf="formErrors.email.pattern">
+                            Please enter the valid email address
+                        </mat-error>
+                        <mat-error *ngIf="formErrors.email.required">
+                            
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field fxFlex="50">
+                                        <mat-select formControlName="roleid"
+                                                    placeholder="Select Role" required>
+                                            <mat-option *ngFor="let role of roles"
+                                                        [value]="role.RoleId">
+                                                {{role.Name}}
+                                            </mat-option>
+                                        </mat-select>
+                    </mat-form-field>                    
+                </div>
+
+                <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+
+                     <mat-form-field fxFlex="50">
+                        <input matInput [textMask]="{ mask : maskPhone }" placeholder="Work Phone" formControlName="workphone" #workphone required pattern="\(\d{3}\) \d{3}-\d{4}">
+                        <mat-error *ngIf="contactForm.controls['workphone'].hasError('required')">
+                            
+                        </mat-error>
+                        <!--<mat-error *ngIf="formErrors.workphone.pattern">
+                            Please enter the Valid Phone Number
+                        </mat-error>-->
+                    </mat-form-field>
+
+                   <mat-form-field fxFlex="50">
+                        <input matInput [textMask]="{ mask : maskPhone }" placeholder="Mobile" formControlName="mobile" #mobile required pattern="\(\d{3}\) \d{3}-\d{4}">
+                        <!--<mat-error *ngIf="contactForm.controls['mobile'].hasError('required')">
+                        </mat-error>-->
+                        <!--<mat-error *ngIf="formErrors.mobile.pattern">
+                            Please enter the Valid Mobile Number
+                        </mat-error>-->
+                    </mat-form-field>
+                </div>
+
+                <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+
+                     <mat-form-field fxFlex="50">
+                        <input matInput [textMask]="{ mask : maskPhone }" placeholder="Home Phone" formControlName="homephone" #homephone required pattern="\(\d{3}\) \d{3}-\d{4}">
+                        <!--<mat-error *ngIf="contactForm.controls['homephone'].hasError('required')">
+                        </mat-error>-->
+                        <!--<mat-error *ngIf="formErrors.homephone.pattern">
+                            Please enter the Valid Phone Number
+                        </mat-error>-->
+                    </mat-form-field>
+                    <mat-form-field fxFlex="50">
+                        <input matInput placeholder="Location" formControlName="location">
+                        <mat-error *ngIf="formErrors.location.required">
+                            
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+              
+
+            <div fxLayout="row" fxLayoutAlign="end center" fxFlex="1 0 auto" class="button-row">
+                <a mat-raised-button color="primary" class="mx-8" (click)="clearForm();">Clear</a>
+                <a mat-raised-button color="accent" class="mx-8" [disabled]="!contactForm.valid" (click)="saveUser();">Submit</a>
+            </div>
+        </form>
+    </div>
+    <!-- / CONTENT -->
+
+</div>

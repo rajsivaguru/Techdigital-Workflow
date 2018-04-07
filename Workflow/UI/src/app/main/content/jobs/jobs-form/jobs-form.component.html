@@ -1,0 +1,175 @@
+<div class="page-layout simple fullwidth  mat-white-50-bg" fusePerfectScrollbar>
+
+    <!-- HEADER -->
+    <div class="header mat-accent-bg p-24" fxLayout="row" fxLayoutAlign="start center">
+
+         <button class="mr-16" mat-icon-button [routerLink]="'/jobs'">
+                    <mat-icon>arrow_back</mat-icon>
+         </button>
+
+        <h2>Assign Jobs</h2>
+    </div>
+    <!-- / HEADER -->
+
+    <!-- CONTENT -->
+    <div class="content p-24">
+
+            <form fxLayout="column" fxLayoutAlign="start"
+                  fxFlex="1 0 auto" name="jobAssignForm" [formGroup]="jobAssignForm">
+
+                <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+                    <mat-form-field fxFlex="75">
+                        <input matInput 
+                                ngui-auto-complete 
+                                formControlName="title" 
+                                [source]="searchJob.bind(this)" 
+                                autocomplete="off"
+                                [list-formatter]="autocompleListFormatterJob" 
+                                [value-formatter]="autocompleListSelectedJob"
+                                value-property-name="title"
+                                display-property-name="title"
+                                placeholder="Job" 
+                                #title
+                                required>
+                        <mat-error *ngIf="formErrors.title.required">
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+                    <mat-form-field fxFlex="75">
+                        <input matInput 
+                                ngui-auto-complete 
+                                formControlName="name" 
+                                [source]="searchUser.bind(this)" 
+                                autocomplete="off"
+                                [list-formatter]="autocompleListFormatterUser" 
+                                [value-formatter]="autocompleListSelectedUser"
+                                value-property-name="name"
+                                display-property-name="name"
+                                placeholder="User" 
+                                #userid
+                                required>
+                        <mat-error *ngIf="formErrors.name.required">
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+                    <mat-form-field fxFlex="75">
+                        <mat-select placeholder="Priority Level" formControlName="priorityid" #priorityid required>
+                                            <mat-option *ngFor="let pritority of Priorities"
+                                                        [value]="pritority.priorityid">
+                                                {{pritority.Name}}
+                                            </mat-option>
+                                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <div class="mt-8" fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+                    <mat-form-field fxFlex="75">
+                        <textarea matInput maxlength="50" placeholder="Description" formControlName="description" #description></textarea>
+                        <mat-hint align="end">{{description.value.length || 0}}/50</mat-hint>
+                    </mat-form-field>
+                </div>
+
+                <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+                    <mat-form-field fxFlex="75">
+                        <input matInput [matDatepicker]="expirydate" formControlName="expirydate" placeholder="Expiry Date" required readonly>
+                        <mat-datepicker-toggle matSuffix [for]="expirydate"></mat-datepicker-toggle>
+                        <mat-datepicker touchUi="true" [startAt] ="startAt" #expirydate disabled="false"></mat-datepicker>
+                         
+                        <mat-error *ngIf="jobAssignForm.controls['expirydate'].hasError('required')">
+                            
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+                    <!--<div fxFlex="75">
+                        
+                            <mat-radio-group formControlName="isactive">
+                                <mat-radio-button class="h5" value="Active" checked="true">Active</mat-radio-button>
+                                <mat-radio-button class="h5" value="In Active" >In Active</mat-radio-button>
+                            </mat-radio-group>
+                            
+                    </div>-->
+                    
+                                <mat-form-field fxFlex="75">
+                                <mat-select placeholder="Status" formControlName="isactive" #isactive required>
+                                            <mat-option value="Active">Active</mat-option>
+                                            <mat-option value="In Active">In Active</mat-option>
+                                        </mat-select>
+                                        </mat-form-field>
+                </div>
+            <div fxLayout="row" fxLayoutAlign="end center" fxFlex="1 0 auto" class="button-row">
+                <a mat-raised-button color="primary" class="mx-8" (click)="clearForm();">Clear</a>
+                <a mat-raised-button color="accent" class="mx-8" [disabled]="!jobAssignForm.valid" (click)="saveJob();">Submit</a>
+            </div>
+            
+            <div class="section pb-48" *ngIf="action=='edit'">
+                <div class="pb-16" fxLayout="row" fxLayoutAlign="start center">
+                                    <mat-icon class="m-0 mr-16">access_time</mat-icon>
+                                    <div class="h2 secondary-text">Job Status</div>
+                                </div>
+
+                                <table class="simple">
+                                    <thead>
+                                        <tr>
+                                            <th>Status</th>
+                                            <th>Comment</th>
+                                            <th>Updated By</th>
+                                            <th>Updated On</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let history of jobStatusHistory">
+                                            <td>
+                                                <span class="status h6 p-4">
+                                                    {{history.name}}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="status h6 p-4">
+                                                    {{history.comment}}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="status h6 p-4">
+                                                    {{history.createdby}}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span>
+                                                    {{history.createdon | date}}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <div class="update-status p-24"
+                                      fxLayout="row" fxLayoutAlign="start center">
+
+                                    <mat-form-field fxFlex="25">
+                                        <mat-select formControlName="newJobStatus"  #newJobStatus
+                                                    placeholder="Select Status">
+                                            <mat-option *ngFor="let jbStatz of jobStatus"
+                                                        [value]="jbStatz.statusid">
+                                                {{jbStatz.name}}
+                                            </mat-option>
+                                        </mat-select>
+                                        
+                                    </mat-form-field>
+                                    <mat-form-field fxFlex="50">
+                                        <input matInput maxlength="25" placeholder="Comment" formControlName="comment" #comment>
+                                    </mat-form-field>
+                                    <a mat-raised-button class="mat-accent" (click)="updateStatus();">
+                                        Update Status
+                                    </a>
+                                </div>
+            </div>
+                                
+           
+            </form>
+    </div>
+    <!-- / CONTENT -->
+
+</div>
