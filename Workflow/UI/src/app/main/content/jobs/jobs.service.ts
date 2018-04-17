@@ -8,7 +8,7 @@ import { Jobs,JobStatus, JobStatusHistory, JobsList } from './jobs.model';
 import { FuseUtils } from '../../../core/fuseUtils';
 import { Subject } from 'rxjs/Subject';
 import { FuseConfigService } from '../../../core/services/config.service';
-import { Login2Service } from '../login/login-2.service';
+import { LoginService } from '../login/login.service';
 
 @Injectable()
 export class JobsService implements Resolve<any>
@@ -47,7 +47,7 @@ export class JobsService implements Resolve<any>
     serviceURL : String;
 
 
-    constructor(private http: HttpClient, private configSer : FuseConfigService, public loginService : Login2Service)
+    constructor(private http: HttpClient, private configSer : FuseConfigService, public loginService : LoginService)
     {
         this.serviceURL = configSer.ServiceURL;
 
@@ -133,7 +133,7 @@ getNewJobs(): Promise<any>
                     userid = this.loginService.loggedUser.userid;
 
         return new Promise((resolve, reject) => {
-               this.http.get(this.serviceURL+'GetJobList?loginid='+userid)
+               this.http.get(this.serviceURL+'TDW/GetJobList?loginid='+userid)
                     .subscribe((response: any) => {
 
                         if ( response != null && response != undefined)
@@ -196,7 +196,7 @@ getNewJobs(): Promise<any>
                     userid = this.loginService.loggedUser.userid;
 
         return new Promise((resolve, reject) => {
-               this.http.get(this.serviceURL+'BindJobs?loginid='+userid)
+               this.http.get(this.serviceURL+'TDW/BindJobs?loginid='+userid)
                     .subscribe((response: any) => {
                         if ( response != null && response != undefined)
                         {
@@ -251,7 +251,7 @@ getNewJobs(): Promise<any>
     getPriority(): Promise<any>
     {
         return new Promise((resolve, reject) => {
-                this.http.get(this.serviceURL+'BindPriority')
+                this.http.get(this.serviceURL+'TDW/BindPriority')
                     .subscribe((response: any) => {
                         response = JSON.parse(response);
                         resolve(response);
@@ -287,7 +287,7 @@ getNewJobs(): Promise<any>
     searchUser (keyword) : any
     {
         //console.log('call service'+keyword+this.serviceURL+'SearchUser?keyword=' + keyword);
-            this.http.get(this.serviceURL+'SearchUser?keyword=' + keyword)
+            this.http.get(this.serviceURL+'TDW/SearchUser?keyword=' + keyword)
                 .subscribe((response : any ) => {
                     //response = JSON.parse(response);
                     //console.log('service');
@@ -438,7 +438,7 @@ toggleSelectedNewJob(id)
             userid = this.loginService.loggedUser.userid;
 
         return new Promise((resolve, reject) => {
-            this.http.get(this.serviceURL+'SaveJob?sJobModel=' + JSON.stringify(job)+'&loginid='+ userid)
+            this.http.get(this.serviceURL+'TDW/SaveJob?sJobModel=' + JSON.stringify(job)+'&loginid='+ userid)
                 .subscribe( (response : any )=> {
                     response = JSON.parse(response);
                     this.getJobs();
@@ -454,7 +454,7 @@ toggleSelectedNewJob(id)
             userid = this.loginService.loggedUser.userid;
 
         return new Promise((resolve, reject) => {
-            this.http.get(this.serviceURL+'SynchJobs')
+            this.http.get(this.serviceURL+'TDW/SynchJobs')
                 .subscribe( (response : any )=> {
                     response = JSON.parse(response);
                     //this.getJobs();
@@ -470,7 +470,7 @@ toggleSelectedNewJob(id)
             userid = this.loginService.loggedUser.userid;
 
         return new Promise((resolve, reject) => {
-            this.http.get(this.serviceURL+'SaveJobUser?userid=' + users +'&jobid='+ jobid +'&priorityid='+ priorityid  + '&loginid='+ userid)
+            this.http.get(this.serviceURL+'TDW/SaveJobUser?userid=' + users +'&jobid='+ jobid +'&priorityid='+ priorityid  + '&loginid='+ userid)
                 .subscribe( (response : any )=> {
                     response = JSON.parse(response);
                     this.getNewJobs();
@@ -482,7 +482,7 @@ toggleSelectedNewJob(id)
     getJobStatus(jobassignmentid): Promise<any>
     {
         return new Promise((resolve, reject) => {
-                this.http.get(this.serviceURL+'BindJobStatus?jobassignmentid=' +jobassignmentid)
+                this.http.get(this.serviceURL+'TDW/BindJobStatus?jobassignmentid=' +jobassignmentid)
                     .subscribe((response: any) => {
                         response = JSON.parse(response);
                        // console.log(response);
@@ -496,7 +496,7 @@ toggleSelectedNewJob(id)
     getJobStatusHistory(jobassignmentid): Promise<any>
     {
         return new Promise((resolve, reject) => {
-                this.http.get(this.serviceURL+'BindJobStatusHistory?jobassignmentid=' +jobassignmentid)
+                this.http.get(this.serviceURL+'TDW/BindJobStatusHistory?jobassignmentid=' +jobassignmentid)
                     .subscribe((response: any) => {
                         response = JSON.parse(response);
                         this.jobHistory = response;
@@ -513,7 +513,7 @@ toggleSelectedNewJob(id)
             userid = this.loginService.loggedUser.userid;
 
         return new Promise((resolve, reject) => {
-            this.http.get(this.serviceURL+'UpdateJobStatus?jobassignmentid=' + jaid +'&statusid='+ statusid + '&comment='+ comment+ '&userid='+ userid)
+            this.http.get(this.serviceURL+'TDW/UpdateJobStatus?jobassignmentid=' + jaid +'&statusid='+ statusid + '&comment='+ comment+ '&userid='+ userid)
                 .subscribe( (response : any )=> {
                     response = JSON.parse(response);
                     //this.getJobs();

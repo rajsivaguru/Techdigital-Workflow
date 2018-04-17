@@ -6,7 +6,7 @@ import { UsersFormComponent } from './users-form/users-form.component';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material';
 
 import { Router } from "@angular/router";
-import { Login2Service } from '../login/login-2.service';
+import { LoginService } from '../login/login.service';
 
 @Component({
     selector     : 'fuse-contacts',
@@ -25,7 +25,7 @@ export class UsersComponent implements OnInit
         private contactsService: UsersService,
         public dialog: MatDialog,
         private router : Router,
-        private loginService : Login2Service
+        private loginService : LoginService
     )
     {
 
@@ -52,9 +52,12 @@ export class UsersComponent implements OnInit
             .debounceTime(300)
             //.distinctUntilChanged()
             .subscribe(searchText => {
+                
                 this.contactsService.onSearchTextChanged.next(searchText);
             });
         
+
+       
     }
 
     newContact()

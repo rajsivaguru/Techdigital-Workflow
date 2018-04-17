@@ -14,37 +14,38 @@ import { FuseSplashScreenService } from './core/services/splash-screen.service';
 import { FuseConfigService } from './core/services/config.service';
 import { FuseNavigationService } from './core/components/navigation/navigation.service';
 
-import { ProjectModule } from './main/content/dashboards/project/project.module';
-import { Login2Module } from './main/content/login/login-2.module';
+import { LoginModule } from './main/content/login/login.module';
 import { UsersModule } from './main/content/users/users.module';
 import { JobsModule } from './main/content/jobs/jobs.module';
+
 
 import { RecruitersModule } from './main/content/recruiters/recruiters.module';
 
 
 
-import { NotificationModule } from './main/content/notification/notification.module';
 
 import { ReportsModule } from './main/content/reports/reports.module';
-import { FuseLogin2Component } from './main/content/login/login-2.component';
+import { LoginComponent } from './main/content/login/login.component';
 
-import { Login2Service,AuthGuard } from './main/content/login/login-2.service';
+import { LoginService,AuthGuard } from './main/content/login/login.service';
 
 import { TranslateModule } from '@ngx-translate/core';
+
+import { LocalStorageModule } from 'angular-2-local-storage'
 
 const appRoutes: Routes = [
     {
         path      : '**',
-        component: FuseLogin2Component
+        component: LoginComponent
     },
     { 
         path: '', 
-        component: FuseLogin2Component,
+        component: LoginComponent,
         pathMatch: 'full'
     },
     {
         path      : '**',
-        component: FuseLogin2Component
+        component: LoginComponent
     }
 ];
 
@@ -60,23 +61,29 @@ const appRoutes: Routes = [
         BrowserAnimationsModule,
         RouterModule.forRoot(appRoutes, { useHash: true }),
         TranslateModule.forRoot(),
+
+        LocalStorageModule.withConfig({
+            prefix : 'tdw_',
+            storageType : 'localStorage'
+
+
+        }),
+
         SharedModule,
         MaterialModule,
         FuseMainModule,
-        ProjectModule,
-        Login2Module,
+        LoginModule,
         UsersModule,
         JobsModule,
         RecruitersModule,
-        NotificationModule,
         ReportsModule
         
         
     ],
     providers   : [
+        FuseNavigationService,
         FuseSplashScreenService,
         FuseConfigService,
-        FuseNavigationService,
         AuthGuard
     ],
      exports     : [

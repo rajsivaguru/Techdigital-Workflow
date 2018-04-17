@@ -57,9 +57,12 @@
         </mat-cell>
     </ng-container>
     <ng-container cdkColumnDef="jl_userlist" >
-                    <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>No.of Users</mat-header-cell>
+                    <mat-header-cell class="mat-sort-header-container_center" *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>#</mat-header-cell>
                     <mat-cell *cdkCellDef="let jobs" fxHide fxShow.gt-md>
-                        <p class="text-center">
+                        <p class="text-center text-boxed text-boxed-red" *ngIf = "jobs.userlist <= 0">
+                            {{jobs.userlist}}
+                        </p>
+                        <p class="text-center text-boxed text-boxed-green" *ngIf = "jobs.userlist > 0">
                             {{jobs.userlist}}
                         </p>
                     </mat-cell>
@@ -181,10 +184,13 @@
              [@animate]="{value:'*',params:{y:'100%'}}">
     </mat-row>
 </mat-table>
+<ng-container *ngIf ="dataSource.filteredData.length==0">
+                <p style="color:red;" class="font-weight-900 text-center">No records found</p>
+            </ng-container>
 <mat-paginator #paginator
     [length]="dataSource.filteredData.length"
     [pageIndex]="0"
-    [pageSize]="10"
+    [pageSize]="25"
     [pageSizeOptions]="[10, 25, 50, 100]">
 </mat-paginator>
 

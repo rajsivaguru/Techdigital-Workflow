@@ -1,16 +1,22 @@
-<div id="products" class="page-layout carded fullwidth" fusePerfectScrollbar>
+<div id="products" class="page-layout carded fullwidth">
 
     <!-- HEADER -->
     <div class="header mat-accent-bg p-16 p-sm-24" fxLayout="column" fxLayoutAlign="start start"
          fxLayout.gt-xs="row" fxLayoutAlign.gt-xs="space-between center">
 
         <!-- APP TITLE -->
-        <div fxLayout="row" fxLayoutAlign="start center">
+        <div fxLayout="column" fxLayoutAlign="center start">
             <div class="logo" fxLayout="row" fxLayoutAlign="start center">
                 <mat-icon class="logo-icon mr-16" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'50ms',scale:'0.2'}}">people</mat-icon>
                 <span class="logo-text h1" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'100ms',x:'-25px'}}">Users</span>
             </div>
-
+            <div class="h2 mt-4">
+                
+                 <button mat-mini-fab class="mat-red-100-bg" id="add-user-button" (click)="newContact()" aria-label="add contact"
+                            *fuseIfOnDom [@animate]="{value:'*', params:{delay:'300ms',scale:'.2'}}">
+                        <mat-icon class="mat-20">person_add</mat-icon>
+                    </button>
+            </div>
         </div>
         <!-- / APP TITLE -->
 
@@ -42,7 +48,7 @@
 
 
         <!-- CENTER -->
-        <div class="center p-0 pb-56 pr-sm-0" fusePerfectScrollbar>
+        <div class="center p-0 pb-56 pr-sm-0">
 
             <!-- CONTENT -->
             <div class="content mat-white-bg mat-elevation-z4">

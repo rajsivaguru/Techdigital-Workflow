@@ -17,10 +17,11 @@ export class FuseNavigationComponent implements OnDestroy
 
     constructor(private fuseNavigationService: FuseNavigationService)
     {
-        //console.log('nav...')
+        
         this.navigationModelChangeSubscription =
             this.fuseNavigationService.onNavigationModelChange
                 .subscribe((navigationModel) => {
+                    //console.log('nav...')
                     this.navigationModel = navigationModel;
                 });
     }

@@ -3,12 +3,12 @@ import { SharedModule } from '../../../core/modules/shared.module';
 import { RouterModule, Routes } from '@angular/router';
 import { UsersComponent } from './users.component';
 import { UsersService } from './users.service';
-import { FuseContactsContactListComponent } from './users-list/users-list.component';
-import { FuseContactsSelectedBarComponent } from './selected-bar/selected-bar.component';
+import { UserListComponent } from './users-list/users-list.component';
+
 import { UsersFormComponent } from './users-form/users-form.component';
 import { TextMaskModule } from 'angular2-text-mask';
 import { DialogComponent } from '../dialog/dialog.component'
-import { Login2Service,AuthGuard } from '../login/login-2.service';
+import { LoginService,AuthGuard } from '../login/login.service';
 const routes: Routes = [
     {
         path     : 'users',
@@ -36,8 +36,8 @@ const routes: Routes = [
     ],
     declarations   : [
         UsersComponent,
-        FuseContactsContactListComponent,
-        FuseContactsSelectedBarComponent,
+        UserListComponent,
+        
         UsersFormComponent,
         DialogComponent
 

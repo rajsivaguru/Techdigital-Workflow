@@ -2,10 +2,11 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { JobsService } from './jobs.service';
 import { fuseAnimations } from '../../../core/animations';
 import { FormControl, FormGroup } from '@angular/forms';
-import { JobsFormComponent } from './jobs-form/jobs-form.component';
+
 import { MatDialog } from '@angular/material';
 import { Router } from '@angular/router';
-import { Login2Service } from '../login/login-2.service';
+import { LoginService } from '../login/login.service';
+
 
 @Component({
     selector     : 'fuse-contacts',
@@ -23,8 +24,9 @@ export class JobsComponent implements OnInit
     constructor(
         private jobsService: JobsService,
         public dialog: MatDialog,
+      
         public router : Router,
-        private loginService : Login2Service
+        private loginService : LoginService
     )
     {
 
@@ -66,6 +68,8 @@ export class JobsComponent implements OnInit
         //     return;
         // }
 
+     
+
         this.jobsService.onSelectedContactsChanged
             .subscribe(selectedContacts => {
                 this.hasSelectedContacts = selectedContacts.length > 0;
@@ -77,6 +81,9 @@ export class JobsComponent implements OnInit
             .subscribe(searchText => {
                 this.jobsService.onSearchTextChanged.next(searchText);
             });
+
+        
+        
     }
 
 }

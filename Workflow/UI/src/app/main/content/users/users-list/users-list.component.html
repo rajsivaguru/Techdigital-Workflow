@@ -53,7 +53,7 @@
 
     <!-- Phone Column -->
     <ng-container cdkColumnDef="workphone">
-        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Work Phone</mat-header-cell>
+        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Work Phone</mat-header-cell>
         <mat-cell *cdkCellDef="let contact" fxHide fxShow.gt-md>
             <p class="phone text-truncate">
                 {{contact.workphone}}
@@ -62,7 +62,7 @@
     </ng-container>
 
     <ng-container cdkColumnDef="mobile">
-        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Mobile</mat-header-cell>
+        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Mobile</mat-header-cell>
         <mat-cell *cdkCellDef="let contact" fxHide fxShow.gt-md>
             <p class="phone text-truncate">
                 {{contact.mobile}}
@@ -71,7 +71,7 @@
     </ng-container>
 
     <ng-container cdkColumnDef="homephone">
-        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Home Phone</mat-header-cell>
+        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Home Phone</mat-header-cell>
         <mat-cell *cdkCellDef="let contact" fxHide fxShow.gt-md>
             <p class="phone text-truncate">
                 {{contact.homephone}}
@@ -81,7 +81,7 @@
 
     <!-- Job Title Column -->
     <ng-container cdkColumnDef="location">
-        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Location</mat-header-cell>
+        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Location</mat-header-cell>
         <mat-cell *cdkCellDef="let contact" fxHide fxShow.gt-md>
             <p class="job-title text-truncate">
                 {{contact.location}}
@@ -89,12 +89,13 @@
         </mat-cell>
     </ng-container>
     <ng-container cdkColumnDef="status">
-        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Status</mat-header-cell>
+        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Status</mat-header-cell>
          <mat-cell *cdkCellDef="let contact" fxHide fxShow.gt-md>
-            <p class="">
+            <!--<p class="">
                 {{contact.status}}
-            </p>
-
+            </p>-->
+            <mat-icon *ngIf="contact.status=='1'" class="active-icon mat-green-600-bg s-16">check</mat-icon>
+            <mat-icon *ngIf="contact.status=='0'" class="active-icon mat-red-500-bg s-16">close</mat-icon>
         </mat-cell>
     </ng-container>
     
@@ -157,13 +158,17 @@
     <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
     <mat-row *cdkRowDef="let contact; columns: displayedColumns;"
              class="contact"
+             (click)="editContact(contact)"
              [@animate]="{value:'*',params:{y:'100%'}}">
     </mat-row>
 </mat-table>
+<ng-container *ngIf ="dataSource.filteredData.length==0">
+                <p style="color:red;" class="font-weight-900 text-center">No records found</p>
+            </ng-container>
 <mat-paginator #paginator
     [length]="dataSource.filteredData.length"
     [pageIndex]="0"
-    [pageSize]="10"
+    [pageSize]="25"
     [pageSizeOptions]="[10, 25, 50, 100]">
 </mat-paginator>
 

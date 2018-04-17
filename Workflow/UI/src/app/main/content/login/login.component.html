@@ -1,0 +1,101 @@
+<div id="login" fxLayout="row" fxLayoutAlign="start" style="background: url('assets/images/backgrounds/login-background.jpg') no-repeat;">
+
+    <div id="login-intro" fxFlex fxHide fxShow.gt-xs>
+
+        <div class="" *fuseIfOnDom [@animate]="{value:'*',params:{scale:'0.2'}}">
+            <img src="assets/images/logos/logo-mini.jpg">
+        </div>
+
+        <div class="title" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'50ms',y:'25px'}}">
+            Welcome to the TechDigital
+        </div>
+
+        <div class="description" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'100ms',y:'25px'}}">
+            <!--Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ullamcorper nisl erat,
+            vel convallis elit fermentum pellentesque. Sed mollis velit facilisis facilisis viverra.-->
+        </div>
+
+    </div>
+
+    <div id="login-form-wrapper" fusePerfectScrollbar *fuseIfOnDom [@animate]="{value:'*',params:{delay:'300ms',x:'100%'}}">
+
+        <div id="login-form">
+
+            <div class="" fxHide.gt-xs>
+                <img src="assets/images/logos/logo-mini.jpg">
+            </div>
+
+            <div style="display:none;" class="title">Login with your Credentials</div>
+            <!--<div class="description">Sed mollis velit facilisis facilisis viverra</div>-->
+
+            <form style="display:none;" name="loginForm" [formGroup]="loginForm">
+
+                <mat-form-field>
+                    <input matInput placeholder="Email" formControlName="email">
+                    <mat-error *ngIf="loginFormErrors.email.required">
+                        Email is required
+                    </mat-error>
+                    <mat-error *ngIf="!loginFormErrors.email.required && loginFormErrors.email.email">
+                        Please enter a valid email address
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                    <input matInput placeholder="Password" formControlName="password">
+                    <mat-error *ngIf="loginFormErrors.password.required">
+                        Password is required
+                    </mat-error>
+                </mat-form-field>
+
+                <div class="remember-forgot-password" fxLayout="row" fxLayout.xs="column"
+                     fxLayoutAlign="space-between center">
+                    <!--<mat-checkbox class="remember-me" aria-label="Remember Me">
+                        Remember Me
+                    </mat-checkbox>-->
+
+                    <!--<a class="forgot-password" [routerLink]="'/pages/auth/forgot-password-2'">
+                        Forgot Password?
+                    </a>-->
+                </div>
+
+                <button mat-raised-button color="accent" class="submit-button" aria-label="LOGIN"
+                      [disabled]="!loginForm.valid"  (click)="submitLogin();">
+                    Log In
+                </button>
+            </form>
+
+            <div style="display:none;" class="separator">
+                <span class="text">OR</span>
+            </div>
+            <div class="title">Login by Google Credentials</div>
+
+            <div fxLayout="column" fxLayoutAlign="start center">
+                <!--<button mat-raised-button class="google" data-onsuccess="onSignIn">
+                    Log in with Google
+                    
+                    live = 86746030753-22n6td4v43tdu9ps466t93klsegmrng8
+                    local = 401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et
+
+                </button>-->
+               <div class="separator" fxFlex fxHide fxShow.gt-xs></div>
+                <!--<google-signin class="pt-50" 
+                    clientId="86746030753-22n6td4v43tdu9ps466t93klsegmrng8"  (click)="submitLogin();"
+                    [width]="myWidth"
+                    [theme]="myTheme"
+                    [scope]="myScope"
+                    [longTitle]="myLongTitle"
+                    (googleSignInSuccess)="onGoogleSignInSuccess($event)">
+                </google-signin>-->
+                <button id="googleBtn" mat-raised-button color="accent" (click)="submitLogin();">Sign-In</button>
+                <!--<button mat-raised-button class="facebook">
+                    Log in with Facebook
+                </button>-->
+            </div>
+           
+            <!--<div class="register" fxLayout="column" fxLayoutAlign="center center">
+                <span class="text">Don't have an account?</span>
+                <a class="link" [routerLink]="'/pages/auth/register-2'">Create an account</a>
+            </div>-->
+        </div>
+    </div>
+</div>

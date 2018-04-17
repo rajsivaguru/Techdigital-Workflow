@@ -5,14 +5,6 @@ export class NavigationModel
     constructor()
     {
         this.model = [
-            // {
-            //             'id'    : 'dashboards',
-            //             'title' : 'Dashboard',
-            //             'type'  : 'item',
-            //             'icon'  : 'dashboard',
-            //             'url'   : '/dashboards'
-
-            // },
              {
                         'id'   : 'newjobs',
                         'title': 'Jobs',
@@ -20,13 +12,13 @@ export class NavigationModel
                         'icon' : 'open_in_new',
                         'url'  : '/jobsload'
             },
-            {
-                        'id'   : 'jobs',
-                        'title': 'Jobs Assigned',
-                        'type' : 'item',
-                        'icon' : 'work',
-                        'url'  : '/jobs'
-            },
+            // {
+            //             'id'   : 'jobs',
+            //             'title': 'Jobs Assigned',
+            //             'type' : 'item',
+            //             'icon' : 'work',
+            //             'url'  : '/jobs'
+            // },
             {
                         'id'   : 'users',
                         'title': 'Users',
@@ -34,13 +26,13 @@ export class NavigationModel
                         'icon' : 'people',
                         'url'  : '/users'
             },
-            {
-                        'id'   : 'assignusers',
-                        'title': 'Assign User',
-                        'type' : 'item',
-                        'icon' : 'person',
-                        'url'  : '/usersform'
-            },
+            // {
+            //             'id'   : 'assignusers',
+            //             'title': 'Assign User',
+            //             'type' : 'item',
+            //             'icon' : 'person',
+            //             'url'  : '/usersform'
+            // },
             {
                         'id'   : 'recruiters',
                         'title': 'My Jobs',
@@ -48,18 +40,6 @@ export class NavigationModel
                         'icon' : 'airline_seat_recline_normal',
                         'url'  : '/myjobs'
             },
-            //  {
-            //             'id'   : 'notification',
-            //             'title': 'Notification',
-            //             'type' : 'item',
-            //             'icon' : 'notifications_active',
-            //             'url'  : '/notification',
-            //             'badge': {
-            //                 'title': 25,
-            //                 'bg'   : '#F44336',
-            //                 'fg'   : '#FFFFFF'
-            //             }
-            // },
             {
                         'id'      : 'reports',
                         'title'   : 'Reports',
@@ -68,21 +48,15 @@ export class NavigationModel
                         'children': [
                             {
                                 'id'   : 'project',
-                                'title': 'Report 1',
+                                'title': 'Jobs',
                                 'type' : 'item',
-                                'url'  : '/report1'
+                                'url'  : '/jobreport'
                             },
                             {
                                 'id'   : 'project',
-                                'title': 'Report 2',
+                                'title': 'Users',
                                 'type' : 'item',
-                                'url'  : '/report2'
-                            },
-                            {
-                                'id'   : 'project',
-                                'title': 'Report 3',
-                                'type' : 'item',
-                                'url'  : '/report3'
+                                'url'  : '/userreport'
                             }
                         ]
             }

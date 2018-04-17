@@ -7,7 +7,7 @@ import { RecruitersJobs } from './recruiters.model';
 import { FuseUtils } from '../../../core/fuseUtils';
 import { Subject } from 'rxjs/Subject';
 import { FuseConfigService } from '../../../core/services/config.service';
-import { Login2Service } from '../login/login-2.service';
+import { LoginService } from '../login/login.service';
 
 @Injectable()
 export class RecruitersService implements Resolve<any>
@@ -22,7 +22,7 @@ export class RecruitersService implements Resolve<any>
     filterBy: string;
     serviceURL : String;
 
-    constructor(private http: HttpClient, private configSer : FuseConfigService, public loginService : Login2Service)
+    constructor(private http: HttpClient, private configSer : FuseConfigService, public loginService : LoginService)
     {
 
         this.serviceURL = configSer.ServiceURL;
@@ -76,7 +76,7 @@ export class RecruitersService implements Resolve<any>
                 if (this.loginService.loggedUser != undefined)
                     userid = this.loginService.loggedUser.userid;
                     
-               this.http.get(this.serviceURL+'GetRecruiterJobList?loginid='+userid)
+               this.http.get(this.serviceURL+'TDW/GetRecruiterJobList?loginid='+userid)
                     .subscribe((response: any) => {
 
                         if ( response != null && response != undefined)
@@ -102,7 +102,7 @@ export class RecruitersService implements Resolve<any>
                                     minutes: 0,
                                     seconds: 0
                                 }
-                                rectJob.diff = 1000;
+                                rectJob.diff = 1;
                                 return rectJob;
                             });
                         }
@@ -129,11 +129,17 @@ export class RecruitersService implements Resolve<any>
             userid = this.loginService.loggedUser.userid;
 
         return new Promise((resolve, reject) => {
-            this.http.get(this.serviceURL+'StartRecruiterJobStatus?jobassignmentid=' + jobassignmentid + '&userid='+ userid)
+            this.http.get(this.serviceURL+'TDW/StartRecruiterJobStatus?jobassignmentid=' + jobassignmentid + '&userid='+ userid)
                 .subscribe( (response : any )=> {
-                    response = JSON.parse(response);
-                    this.getRecruiterJobs();
-                    resolve(response);
+
+                        if ( response != null && response != undefined && response != "")
+                        {
+                            response = JSON.parse(response);
+                            this.getRecruiterJobs();
+                            resolve(response);
+                        }
+                        else
+                            resolve('');
                 });
         });
     }
@@ -145,11 +151,16 @@ export class RecruitersService implements Resolve<any>
             userid = this.loginService.loggedUser.userid;
 
         return new Promise((resolve, reject) => {
-            this.http.get(this.serviceURL+'StopRecruiterJobStatus?jobassignmentid=' + jaid +'&jobassignmentstatusid='+ jobassignmentstatusid + '&submission='+ submission + '&comment='+ comment+ '&userid='+ userid)
+            this.http.get(this.serviceURL+'TDW/StopRecruiterJobStatus?jobassignmentid=' + jaid +'&jobassignmentstatusid='+ jobassignmentstatusid + '&submission='+ submission + '&comment='+ comment+ '&userid='+ userid)
                 .subscribe( (response : any )=> {
-                    response = JSON.parse(response);
-                    this.getRecruiterJobs();
-                    resolve(response);
+                        if ( response != null && response != undefined && response != "")
+                        {
+                            response = JSON.parse(response);
+                            this.getRecruiterJobs();
+                            resolve(response);
+                        }
+                        else
+                            resolve('');
                 });
         });
     }

@@ -1,11 +1,20 @@
+
+import { DialogComponent } from '../dialog/dialog.component'
+
+import { AuthGuard } from '../login/login.service';
+import {Component} from '@angular/core'
+import {BrowserModule} from '@angular/platform-browser'
+import { FormsModule } from '@angular/forms';
+import { AngularMultiSelectModule } from 'angular2-multiselect-dropdown/angular2-multiselect-dropdown';
+
+
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 import { SharedModule } from '../../../core/modules/shared.module';
 
-import { Report1Component } from './report1/report1.component';
-import { Report2Component } from './report2/report2.component';
-import { Report3Component } from './report3/report3.component';
+import { JobReportComponent } from './jobreport/jobreport.component';
+import { UserReportComponent } from './userreport/userreport.component';
 
 import { TextMaskModule } from 'angular2-text-mask';
 import { NguiAutoCompleteModule } from '@ngui/auto-complete';
@@ -16,37 +25,43 @@ import { ReportsService} from './reports.service';
 
 const routes = [
     {
-        path     : 'report1',
-        component: Report1Component
+        path     : 'jobreport',
+        component: JobReportComponent,
+        canActivate: [AuthGuard],
+        resolve  : {
+            jobs: ReportsService
+        }
     },
+
     {
-        path        : 'report2',
-        component   : Report2Component
-    },
-    {
-        path        : 'report3',
-        component   : Report3Component
+        path        : 'userreport',
+        component   : UserReportComponent,
+        canActivate: [AuthGuard],
+        resolve  : {
+            users: ReportsService
+        }
     }
 ];
  
 @NgModule({
     declarations: [
-        Report1Component,
-        Report2Component,
-        Report3Component
+        JobReportComponent,
+        UserReportComponent
     ],
     imports     : [
         SharedModule,
         TextMaskModule,
         NguiAutoCompleteModule,
         NguiDatetimePickerModule,
+        BrowserModule,
+        FormsModule,
+        AngularMultiSelectModule,
         HttpModule,
         RouterModule.forChild(routes)
     ],
     exports     : [
-        Report1Component,
-        Report2Component,
-        Report3Component
+        JobReportComponent,
+        UserReportComponent
         
     ],
     entryComponents: [],

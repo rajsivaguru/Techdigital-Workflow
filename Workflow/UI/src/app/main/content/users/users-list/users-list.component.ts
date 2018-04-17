@@ -22,7 +22,7 @@ import { Subscription } from 'rxjs/Subscription';
 import { FuseConfigService } from '../../../../core/services/config.service';
 import { FuseUtils } from '../../../../core/fuseUtils';
 
-import { Login2Service } from '../../login/login-2.service';
+import { LoginService } from '../../login/login.service';
 
 
 
@@ -34,7 +34,7 @@ import { Login2Service } from '../../login/login-2.service';
     encapsulation: ViewEncapsulation.None,
     animations   : fuseAnimations
 })
-export class FuseContactsContactListComponent implements OnInit, OnDestroy
+export class UserListComponent implements OnInit, OnDestroy
 {
     @ViewChild('dialogContent') dialogContent: TemplateRef<any>;
 
@@ -62,7 +62,7 @@ export class FuseContactsContactListComponent implements OnInit, OnDestroy
         public dialog: MatDialog,
         private router : Router,
         private configSer : FuseConfigService,
-        private loginService : Login2Service
+        private loginService : LoginService
     )
     {
 
@@ -71,7 +71,9 @@ export class FuseContactsContactListComponent implements OnInit, OnDestroy
         this.onContactsChangedSubscription =
             this.contactsService.onContactsChanged.subscribe(contacts => {
 
-                //console.log('contact changed')
+                if(this.paginator != undefined)
+                    this.paginator.pageIndex = 0;
+                
                 this.contacts = contacts;
 
                 this.checkboxes = {};
@@ -134,87 +136,50 @@ export class FuseContactsContactListComponent implements OnInit, OnDestroy
     {
 
         this.contactsService.action =  'edit';
-        //console.log(contact);
         this.contactsService.editContacts =  contact;
         this.router.navigateByUrl('/usersform');
-
-        // this.dialogRef = this.dialog.open(UsersFormComponent, {
-        //     panelClass: 'contact-form-dialog',
-        //     data      : {
-        //         contact: contact,
-        //         action : 'edit'
-        //     }
-        // });
-
-        // this.dialogRef.afterClosed()
-        //     .subscribe(response => {
-        //         if ( !response )
-        //         {
-        //             return;
-        //         }
-        //         const actionType: string = response[0];
-        //         const formData: FormGroup = response[1];
-        //         switch ( actionType )
-        //         {
-        //             /**
-        //              * Save
-        //              */
-        //             case 'save':
-
-        //                 this.contactsService.updateContact(formData.getRawValue());
-
-        //                 break;
-        //             /**
-        //              * Delete
-        //              */
-        //             case 'delete':
-
-        //                 this.deleteContact(contact);
-
-        //                 break;
-        //         }
-        //     });
+        
     }
 
     /**
      * Delete Contact
      */
-    deleteContact(contact)
-    {
-        this.confirmDialogRef = this.dialog.open(FuseConfirmDialogComponent, {
-            disableClose: false
-        });
+    // deleteContact(contact)
+    // {
+    //     this.confirmDialogRef = this.dialog.open(FuseConfirmDialogComponent, {
+    //         disableClose: false
+    //     });
 
-        this.confirmDialogRef.componentInstance.confirmMessage = 'Are you sure you want to delete?';
+    //     this.confirmDialogRef.componentInstance.confirmMessage = 'Are you sure you want to delete?';
 
-        this.confirmDialogRef.afterClosed().subscribe(result => {
-            if ( result )
-            {
-                this.contactsService.deleteContact(contact);
-            }
-            this.confirmDialogRef = null;
-        });
+    //     this.confirmDialogRef.afterClosed().subscribe(result => {
+    //         if ( result )
+    //         {
+    //             this.contactsService.deleteContact(contact);
+    //         }
+    //         this.confirmDialogRef = null;
+    //     });
 
-    }
+    // }
 
-    onSelectedChange(contactId)
-    {
-        this.contactsService.toggleSelectedContact(contactId);
-    }
+    // onSelectedChange(contactId)
+    // {
+    //     this.contactsService.toggleSelectedContact(contactId);
+    // }
 
-    toggleStar(contactId)
-    {
-        if ( this.user.starred.includes(contactId) )
-        {
-            this.user.starred.splice(this.user.starred.indexOf(contactId), 1);
-        }
-        else
-        {
-            this.user.starred.push(contactId);
-        }
+    // toggleStar(contactId)
+    // {
+    //     if ( this.user.starred.includes(contactId) )
+    //     {
+    //         this.user.starred.splice(this.user.starred.indexOf(contactId), 1);
+    //     }
+    //     else
+    //     {
+    //         this.user.starred.push(contactId);
+    //     }
 
-        this.contactsService.updateUserData(this.user);
-    }
+    //     this.contactsService.updateUserData(this.user);
+    // }
 }
 
 export class FilesDataSource extends DataSource<any>
@@ -287,7 +252,7 @@ export class FilesDataSource extends DataSource<any>
         {
             return data;
         }
-//displayedColumns = ['checkbox', 'name', 'email', 'rolename', 'workphone','mobile','homephone', 'location', 'status','createdby','createdon','modifiedby','modifiedon', 'buttons'];
+//displayedColumns = ['imgurl', 'name', 'email', 'rolename', 'workphone','mobile','homephone', 'location', 'status'];
    
         return data.sort((a, b) => {
             let propertyA: number | string = '';
@@ -303,6 +268,21 @@ export class FilesDataSource extends DataSource<any>
                     break;
                 case 'rolename':
                     [propertyA, propertyB] = [a.rolename, b.rolename];
+                    break;
+                case 'workphone':
+                    [propertyA, propertyB] = [a.workphone, b.workphone];
+                    break;
+                case 'mobile':
+                    [propertyA, propertyB] = [a.mobile, b.mobile];
+                    break;
+                case 'homephone':
+                    [propertyA, propertyB] = [a.homephone, b.homephone];
+                    break;
+                case 'location':
+                    [propertyA, propertyB] = [a.location, b.location];
+                    break;
+                case 'status':
+                    [propertyA, propertyB] = [a.status, b.status];
                     break;
                
             }

@@ -1,5 +1,13 @@
 @import "src/app/core/scss/fuse";
 
+.mat-expansion-panel-header_rpt1
+{
+    padding : 0 24px !important;
+}
+.mat-expansion-panel-body
+{
+    padding : 0 24px;
+}
 .text-boxed-green
 {
     background-color:green !important;
@@ -37,31 +45,37 @@
         .mat-cell {
         }
 
-       .mat-column-jl_referenceid {
-            flex: 0 1 84px;
+       .mat-column-r_ReferenceId {
+            flex: 0 1 10%;
         }
 
-        .mat-column-jl_title {
-            flex: 0 1 300px;
+        .mat-column-r_Title {
+            flex: 0 1 25%;
         }
-        .mat-column-jl_location {
-            flex: 0 1 150px;
-        }
-        
-        .mat-column-jl_publisheddate {
-            flex: 0 1 200px;
+        .mat-column-r_Location {
+            flex: 0 1 15%;
         }
         
-        .mat-column-jl_priorityid {
-            flex: 0 1 100px;
+        .mat-column-r_PublishedDate {
+            flex: 0 1 15%;
         }
-        .mat-column-jl_userlist {
-            flex: 0 1 100px;
+        
+        .mat-column-r_IsActive {
+            flex: 0 1 5%;
+        }
+        .mat-column-r_UserCount {
+            flex: 0 1 10%;
             justify-content : center !important;
             display: flex !important;
         }
-        .mat-column-jl_selectedUser {
-            flex: 0 1 260px;
+        .mat-column-r_Duration, .mat-column-r_Submission
+        {
+            flex: 0 1 10%;
+            justify-content : center !important;
+            display: flex !important;
+        }
+        .mat-column-r_Users {
+            flex: 0 1 15%;
         }
         
         .mat-column-jl_buttons {

@@ -1,8 +1,9 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { FuseConfigService } from '../../core/services/config.service';
-import { Login2Service } from '../content/login/login-2.service';
+import { LoginService } from '../content/login/login.service';
 import { Contact } from '../content/users/users.model';
+import { LocalStorageService } from 'angular-2-local-storage'
 
 @Component({
     selector   : 'fuse-toolbar',
@@ -23,8 +24,9 @@ export class FuseToolbarComponent implements OnInit
     constructor(
         private router: Router,
         private fuseConfig: FuseConfigService,
+        private localStorageService: LocalStorageService,
         private rouer : Router,
-        private loginService : Login2Service
+        private loginService : LoginService
     )
     {
 
@@ -97,6 +99,8 @@ export class FuseToolbarComponent implements OnInit
             this.loginUser = new Contact({});
         else
             this.loginUser = this.loginService.loggedUser;
+
+            //console.log(this.loginService.loggedUser)
     }
 
 
@@ -118,7 +122,11 @@ export class FuseToolbarComponent implements OnInit
     submitLogout()
     {
         //console.log('logout');
-        if(this.loginService.googleUser != null && this.loginService.googleUser.isSignedIn)
+
+        if( this.localStorageService.get("login_id") != null && this.localStorageService.get("login_id") != undefined )
+            this.localStorageService.remove("login_id")
+
+        if(this.loginService.googleUser != null && this.loginService.googleUser.isSignedIn())
             this.loginService.googleUser.disconnect();
             
         this.rouer.navigateByUrl('/login');

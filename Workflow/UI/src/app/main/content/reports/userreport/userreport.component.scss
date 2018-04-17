@@ -1,5 +1,24 @@
 @import "src/app/core/scss/fuse";
 
+
+.c-btn
+{
+
+border-top : none !important;
+border-left : none !important;
+border-right: none !important;
+}
+
+
+
+.mat-expansion-panel-header_rpt1
+{
+    padding : 0 24px !important;
+}
+.mat-expansion-panel-body
+{
+    padding : 0 24px;
+}
 .text-boxed-green
 {
     background-color:green !important;
@@ -37,36 +56,35 @@
         .mat-cell {
         }
 
-       .mat-column-jl_referenceid {
-            flex: 0 1 84px;
+        .mat-column-ur_username {
+            flex: 0 1 10%;
+        }
+       .mat-column-ur_jobcode {
+            flex: 0 1 10%;
         }
 
-        .mat-column-jl_title {
-            flex: 0 1 300px;
+        .mat-column-ur_title {
+            flex: 0 1 25%;
         }
-        .mat-column-jl_location {
-            flex: 0 1 150px;
-        }
-        
-        .mat-column-jl_publisheddate {
-            flex: 0 1 200px;
+        .mat-column-ur_location {
+            flex: 0 1 15%;
         }
         
-        .mat-column-jl_priorityid {
-            flex: 0 1 100px;
+        .mat-column-ur_publisheddate, .mat-column-ur_assigneddate {
+            flex: 0 1 15%;
         }
-        .mat-column-jl_userlist {
-            flex: 0 1 100px;
+        
+        .mat-column-ur_jobstarted {
+            flex: 0 1 5%;
+        }
+       
+        .mat-column-ur_duration, .mat-column-ur_submission
+        {
+            flex: 0 1 10%;
             justify-content : center !important;
             display: flex !important;
         }
-        .mat-column-jl_selectedUser {
-            flex: 0 1 260px;
-        }
-        
-        .mat-column-jl_buttons {
-            flex: 0 1 40px;
-        }
+       
 
 
        

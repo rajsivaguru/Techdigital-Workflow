@@ -2,7 +2,6 @@ import { Component, OnInit,ViewEncapsulation,AfterViewInit, Input, Output, Injec
 import { fuseAnimations } from '../../../core/animations';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material';
-
 import { Router } from "@angular/router";
 
 
@@ -23,3 +22,41 @@ export class DialogComponent {
   }
 
 }
+
+
+@Component({
+    selector   : 'jobs-load-dialog',
+    styleUrls    : ['./dialog.component.scss'],
+    templateUrl: 'dialog-user.component.html'
+})
+export class DialogDataComponent
+{
+    dropdownSettings = {};
+    constructor(
+      public dialogRef: MatDialogRef<DialogDataComponent>,
+      @Inject(MAT_DIALOG_DATA) public data: any
+      )
+    {
+
+      this.dropdownSettings =  { 
+                                  groupBy :"roleName",
+                                  maxHeight : '350px',
+                                  searchAutofocus : true,
+                                  singleSelection: false, 
+                                  text:"",
+                                  selectAllText:'Select All',
+                                  unSelectAllText:'UnSelect All',
+                                  enableSearchFilter: true,
+                                  enableCheckAll : false,
+                                  classes : '',
+                                  badgeShowLimit: 2
+                };
+    }
+
+    onNoClick(): void
+    {
+        this.dialogRef.close();
+    }
+
+}
+

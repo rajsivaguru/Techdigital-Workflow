@@ -1,4 +1,4 @@
-<div id="products" class="page-layout carded fullwidth" fusePerfectScrollbar>
+<div id="products" class="page-layout carded fullwidth">
 
     <!-- HEADER -->
     <div class="header mat-accent-bg p-16 p-sm-24" fxLayout="column" fxLayoutAlign="start start"
@@ -12,7 +12,7 @@
             </div>
             <div class="h2 mt-4">
                 
-                <button title="Refresh" (click) = "synchJobs()" mat-mini-fab>
+                <button mat-mini-fab class="mat-red-100-bg" title="Refresh" (click) = "synchJobs()" >
                     <mat-icon class="mat-20" aria-label="Refresh">cached</mat-icon>
                 </button>
                 <!--<button title="Refresh" (click) = "synchJobs()" style="cursor:pointer;" >
@@ -112,7 +112,7 @@
                 <ng-container cdkColumnDef="jn_publisheddate">
                     <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Published Date</mat-header-cell>
                     <mat-cell *cdkCellDef="let newJobs" fxHide fxShow.gt-md>
-                        <p class="job-title text-truncate">
+                        <p class="job-title text-truncate" >
                             {{newJobs.publisheddate}}
                         </p>
                     </mat-cell>
@@ -140,9 +140,12 @@
                 </ng-container>
 
                 <ng-container cdkColumnDef="jn_userlist">
-                    <mat-header-cell *cdkHeaderCellDef class="text-center" fxHide fxShow.gt-md mat-sort-header>No.of Users</mat-header-cell>
+                    <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>#</mat-header-cell>
                     <mat-cell *cdkCellDef="let newJobs" center fxHide fxShow.gt-md>
-                        <p class="text-center">
+                        <p class="text-center text-boxed text-boxed-red" *ngIf = "newJobs.userlist <= 0">
+                            {{newJobs.userlist}}
+                        </p>
+                        <p class="text-center text-boxed text-boxed-green" *ngIf = "newJobs.userlist > 0">
                             {{newJobs.userlist}}
                         </p>
                     </mat-cell>
@@ -150,13 +153,26 @@
                 <ng-container cdkColumnDef="jn_selectedUser">
                     <mat-header-cell *cdkHeaderCellDef >Assign To</mat-header-cell>
                     <mat-cell *cdkCellDef="let newJobs" >
-                             <angular2-multiselect [data]= "usersList" [(ngModel)]= newJobs.selectedUser 
+
+                        <div fxLayout="row" fxLayoutAlign="start center" class="button-row">
+                        <button title ="Assign Users" style="cursor:pointer;" class="mr-20 mat-elevation-z" (click)="openUserDialog(newJobs, usersList, newJobs.selectedUser )">
+                                <mat-icon class="mat-24" aria-label="Assign USers">playlist_add_check</mat-icon>
+                        </button>
+                        <mat-select name="selectUser" [ngModel] = "newJobs.selectedUser[0]" >
+                                            <mat-option *ngFor="let usrLst of newJobs.selectedUser"
+                                                        [value]="usrLst">
+                                                {{usrLst.itemName}}
+                                            </mat-option>
+                                        </mat-select>
+                        </div>
+
+                             <!--<angular2-multiselect [data]= "usersList" [(ngModel)]= newJobs.selectedUser 
                                 [settings]="dropdownSettings" 
                                 (onSelect)="onItemSelect($event, newJobs)"
                                 (onDeSelect)="OnItemDeSelect($event, newJobs)" 
                                 (onSelectAll)="onSelectAll($event, newJobs)" 
                                 (onDeSelectAll)="onDeSelectAll($event, newJobs)" name="selectUser">
-                            </angular2-multiselect>
+                            </angular2-multiselect>-->
                     </mat-cell>
                 </ng-container>
             
@@ -170,11 +186,11 @@
                                 class="add-product-button mat-blue-bg my-10 px-20  mx-sm-10">
                             <span>Save</span>
                         </button>-->
-                    <button title="Save" class="mat-elevation-z" *ngIf = "newJobs.isSaveEnable" (click) = "saveItemSelect(newJobs)" mat-mini-fab>
+                    <button title="Save" class="mx-20 mat-elevation-z" *ngIf = "newJobs.isSaveEnable || newJobs.isSaveEnableSelectedUser" (click) = "saveItemSelect(newJobs)" mat-mini-fab>
                         <mat-icon class="mat-20" aria-label="Refresh">done</mat-icon>
                     </button>
 
-                    <button title="Save" class="mat-elevation-z" *ngIf = "!newJobs.isSaveEnable" mat-mini-fab disabled>
+                    <button title="Save" class="mat-elevation-z" *ngIf = "!newJobs.isSaveEnable && !newJobs.isSaveEnableSelectedUser" mat-mini-fab disabled>
                         <mat-icon class="mat-20" aria-label="Refresh">done</mat-icon>
                     </button>
 
@@ -187,10 +203,13 @@
                         [@animate]="{value:'*',params:{y:'100%'}}">
                 </mat-row>
             </mat-table>
+            <ng-container *ngIf ="dataSource.filteredData.length==0">
+                <p style="color:red;" class="font-weight-900 text-center">No records found</p>
+            </ng-container>
             <mat-paginator #paginator
                 [length]="dataSource.filteredData.length"
                 [pageIndex]="0"
-                [pageSize]="10"
+                [pageSize]="25"
                 [pageSizeOptions]="[10, 25, 50, 100]">
             </mat-paginator>
             </div>

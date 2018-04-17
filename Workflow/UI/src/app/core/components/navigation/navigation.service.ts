@@ -1,8 +1,6 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import { NavigationModel } from '../../../navigation.model';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { FuseConfigService } from '../../../core/services/config.service';
-import { Login2Service } from '../../../main/content/login/login-2.service';
 
 
 @Injectable()
@@ -14,7 +12,7 @@ export class FuseNavigationService
     navigationModel: NavigationModel;
     flatNavigation: any[] = [];
 
-    constructor(private configSer : FuseConfigService, private loginService : Login2Service)
+    constructor()
     {
             this.navigationModel = new NavigationModel();
             this.onNavigationModelChange.next(this.navigationModel.model);
@@ -181,6 +179,31 @@ export class FuseNavigationService
                 }
             }
         }
+    }
+    findNavigationItemByURL(url, navigation?)
+    {
+        if ( !navigation )
+        {
+            navigation = this.navigationModel.model;
+        }
+
+        // Iterate through the given navigation
+        for ( const navItem of navigation )
+        {
+            // If the nav item id equals the first location...
+            if( navItem.type == "item")
+            {
+                if ( navItem.url === url )
+                {
+                    return navItem;
+                }
+            }
+            else if( navItem.type == "collapse")
+            {
+                return this.findNavigationItemByURL(url, navItem.children);
+            }
+        }
+        return null;
     }
 
     /**

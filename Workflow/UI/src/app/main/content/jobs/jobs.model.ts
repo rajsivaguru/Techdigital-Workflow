@@ -38,9 +38,12 @@ export class JobsList
 
     userlist : number;
     priorityLevel : string;
+    oldPriorityLevel : string;
     selectedUser : any;
+    oldSelectedUser : any;
 
     isSaveEnable : boolean;
+    isSaveEnableSelectedUser : boolean;
 
     createdby : string;
     createdon : string;
@@ -62,13 +65,16 @@ export class JobsList
 
             this.userlist = job.userlist || 0;
             this.priorityLevel = job.priorityLevel || '2';
+            this.oldPriorityLevel = job.priorityLevel || '2';
             //console.log(JSON.parse(job.selectedUser));
             
             this.selectedUser =  JSON.parse(job.selectedUser) || [];
+            this.oldSelectedUser =  JSON.parse(job.selectedUser) || [];
 
             this.isactive = job.isactive || "Active";
 
             this.isSaveEnable = false;
+            this.isSaveEnableSelectedUser = false;
 
             this.createdby = job.createdby || '';
             this.createdon = datePipe.transform(job.createdon, 'MM/dd/yyyy hh:mm aa')  || '';

@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, ElementRef, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { JobsService } from '../jobs.service';
 import { Observable } from 'rxjs/Observable';
-import { JobsFormComponent } from '../jobs-form/jobs-form.component';
+
 import { MatDialog, MatDialogRef, MatPaginator, MatSort } from '@angular/material';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { FuseConfirmDialogComponent } from '../../../../core/components/confirm-dialog/confirm-dialog.component';
@@ -10,7 +10,7 @@ import { DataSource } from '@angular/cdk/collections';
 import { fuseAnimations } from '../../../../core/animations';
 import { Subscription } from 'rxjs/Subscription';
 import { Router }   from '@angular/router';
-import { Login2Service } from '../../login/login-2.service';
+import { LoginService } from '../../login/login.service';
 import { FuseUtils } from '../../../../core/fuseUtils';
 
 @Component({
@@ -47,7 +47,7 @@ export class JobsListComponent implements OnInit, OnDestroy
         private contactsService: JobsService,
         public dialog: MatDialog,
         public router : Router,
-        private loginService : Login2Service
+        private loginService : LoginService
     )
     {
         

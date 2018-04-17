@@ -29,7 +29,10 @@
             flex: 0 1 84px;
         }
         
-
+        .mat-row {
+            position: relative;
+            cursor: pointer;
+        }
 
         .mat-column-imgurl {
             flex: 0 1 84px;
@@ -44,6 +47,8 @@
         .mat-column-status, .mat-column-location {
             flex: 0 1 80px;
         }
-
+        .active-icon {
+            border-radius: 50%;
+        }
        
     }

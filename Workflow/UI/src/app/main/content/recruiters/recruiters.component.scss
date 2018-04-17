@@ -1,7 +1,21 @@
 @import "src/app/core/scss/fuse";
 
 
+.startButton
+{
+    background-color : green !important;
+    color : white !important;
+}
 
+.stoptButton
+{
+    background-color : red !important;
+    
+}
+.whiteButton
+{
+    color : white !important;
+}
     .products-table {
         flex: 1 1 auto;
         border-bottom: 1px solid rgba(0, 0, 0, .12);
@@ -84,15 +98,12 @@
         }
     }
 
-.mat-expansion-panel-body
-{
-    padding : 0px !important;
-}
+
     .mat-column-startbutton
     {
         width: 200px;
     }
-    .mat-expansion-panel-header
+    .mat-expansion-panel-header_Recuriter
     {
         padding : 0px !important;
     }

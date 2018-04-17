@@ -1,5 +1,8 @@
 import { FuseUtils } from '../../../core/fuseUtils';
 import { Observable } from 'rxjs/Observable';
+import { Subscription } from 'rxjs/Subscription';
+import { MatDialogRef} from '@angular/material';
+import { FuseConfirmDialogComponent } from '../../../core/components/confirm-dialog/confirm-dialog.component';
 import { DatePipe } from '@angular/common';
 export class RecruitersJobs
 {
@@ -27,11 +30,19 @@ export class RecruitersJobs
     createdon : string;
    
     expansionPanelId : boolean;
-    countdown : any;
-    diff = 0;
-    countDown = new Observable();
-
     
+    countdown : any;
+    diff : number;
+    dialogDiff : number;
+
+    countDown : any ;
+    dialogCountDown : any ;
+
+    jobTimer : any;
+    dialogTimer : any;
+
+
+    confirmDialogRef: MatDialogRef<FuseConfirmDialogComponent>;
     
 
     constructor(job)
@@ -80,7 +91,7 @@ export class RecruitersJobs
                 //this.comment =  '';
             }
 
-            this.expansionPanelId = true;
+            //this.expansionPanelId = true;
             this.createdby = job.createdby || '';
             this.createdon = job.createdon || '';
 
@@ -95,8 +106,16 @@ export class RecruitersJobs
             }
             
             this.diff = 0;
+            this.dialogDiff = 0;
 
             this.status = '0';
+
+            this.countDown = new Observable();
+            this.dialogCountDown = new Observable();
+
+            this.jobTimer = new Subscription();
+            this.dialogTimer = new Subscription();
+
             
     }
 }

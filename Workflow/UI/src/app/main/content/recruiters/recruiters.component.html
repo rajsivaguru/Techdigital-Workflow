@@ -1,4 +1,4 @@
-<div id="products" class="page-layout carded fullwidth" fusePerfectScrollbar>
+<div id="products" class="page-layout carded fullwidth" >
 
     <!-- HEADER -->
     <div class="header mat-accent-bg p-16 p-sm-24" fxLayout="column" fxLayoutAlign="start start"
@@ -44,7 +44,7 @@
     <!-- / SELECTED BAR -->
 
         <!-- CENTER -->
-        <div class="center p-0 pb-56 pr-sm-0" fusePerfectScrollbar>
+        <div class="center p-0 pb-56 pr-sm-0" >
 
             <!-- CONTENT -->
             <div class="content mat-white-bg mat-elevation-z4">
@@ -139,12 +139,15 @@
                     <mat-header-cell *cdkHeaderCellDef></mat-header-cell>
                     <mat-cell *cdkCellDef="let recuriterJobs">
                     <!--<button mat-raised-button (click)="startJobTimer(recuriterJobs)"  class="add-product-button mat-blue-bg my-10 mx-sm-10"><span>Start</span></button>-->
-                     <button title="Start" mat-mini-fab  class="mat-elevation-z" *ngIf = "recuriterJobs.jobassignmentstatusid == 0 || recuriterJobs.isactive == 0 " (click)="startJobTimer(recuriterJobs)" >
-                        <mat-icon class="mat-20" aria-label="Refresh">play_arrow</mat-icon>
+                     <button title="Start" mat-mini-fab  class="mat-elevation-z startButton" *ngIf = "recuriterJobs.jobassignmentstatusid == 0 || recuriterJobs.isactive == 0 " (click)="startJobTimer(recuriterJobs)" >
+                        <mat-icon class="mat-20 whiteButton" aria-label="Refresh">play_arrow</mat-icon>
                     </button>
-                    <button title="Stop" mat-mini-fab class="mat-elevation-z" *ngIf = "recuriterJobs.jobassignmentstatusid != 0 && recuriterJobs.isactive == 1 " (click)="stopJobTimer(recuriterJobs)">
-                        <mat-icon class="mat-20" aria-label="Refresh">stop</mat-icon>
+                    <button title="Stop" mat-mini-fab class="mat-elevation-z stoptButton" *ngIf = "recuriterJobs.jobassignmentstatusid != 0 && recuriterJobs.isactive == 1 " (click)="stopJobTimer(recuriterJobs)">
+                        <mat-icon class="mat-20 whiteButton" aria-label="Refresh">stop</mat-icon>
                     </button>
+                    <!--<mat-progress-spinner class="example-margin" color="accent" mode="indeterminate" diameter="20" strokeWidth="10" value=50>
+                    </mat-progress-spinner>-->
+
                     </mat-cell>
                 </ng-container>
                  <!--<ng-container cdkColumnDef="duration">
@@ -162,10 +165,10 @@
                  <ng-container cdkColumnDef="r_stopbutton">
                     <mat-header-cell *cdkHeaderCellDef></mat-header-cell>
                     <mat-cell *cdkCellDef="let recuriterJobs">
-                        <mat-expansion-panel class="" >
+                        <mat-expansion-panel [expanded]="recuriterJobs.expansionPanelId" >
                            
                        
-                         <mat-expansion-panel-header>
+                         <mat-expansion-panel-header class="mat-expansion-panel-header_Recuriter">
                                 <mat-panel-title>
                                      
                                 </mat-panel-title>
@@ -220,10 +223,13 @@
                         [@animate]="{value:'*',params:{y:'100%'}}">
                 </mat-row>
             </mat-table>
+            <ng-container *ngIf ="dataSource.filteredData.length==0">
+                <p style="color:red;" class="font-weight-900 text-center">No records found</p>
+            </ng-container>
             <mat-paginator #paginator
                 [length]="dataSource.filteredData.length"
                 [pageIndex]="0"
-                [pageSize]="10"
+                [pageSize]="25"
                 [pageSizeOptions]="[10, 25, 50, 100]">
             </mat-paginator>
             </div>
@@ -231,6 +237,8 @@
 
         </div>
         <!-- / CENTER -->
+        
+
 
 </div>
  

@@ -14,6 +14,8 @@ export class FuseConfigService
 
     public ServiceURL = "";
     public GoogleClientID = ""; 
+    public JobTimerDuration : number
+    public AlertTimerDuration : number
     
     /**
      * @param router
@@ -28,12 +30,16 @@ export class FuseConfigService
         
         if(location.port == "")
         {
-            //this.ServiceURL = location.origin + '/StaffingService/api/TDW/'  // live
-            this.ServiceURL = location.origin + '/WorkflowApi/api/TDW/'  // live
+            this.ServiceURL = location.origin + '/StaffingService/api/'  // live
+            //this.ServiceURL = location.origin + '/WorkflowApi/api/'  // live
         }
         else
-            this.ServiceURL = location.origin + '0/api/TDW/'  // demo
+        {
+            //this.ServiceURL = "https://www.apps.techdigitalcorp.com/WorkflowApi/api/"
+            this.ServiceURL = location.origin + '0/api/'  // demo
+        }
 
+        //this.ServiceURL = 'http://demo.csfinance.in/StaffingService/api/';
 
         //console.log(this.ServiceURL)
 

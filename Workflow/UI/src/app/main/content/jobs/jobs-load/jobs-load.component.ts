@@ -1,9 +1,9 @@
-import { Component, OnDestroy, OnInit, ElementRef,TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component,Inject,  OnDestroy, OnInit, ElementRef,TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { JobsService } from '../jobs.service';
 import { UsersService } from '../../users/users.service';
 import { Observable } from 'rxjs/Observable';
 import { FormControl, FormGroup } from '@angular/forms';
-import { JobsFormComponent } from '../jobs-form/jobs-form.component';
+
 import { MatDialog, MAT_DIALOG_DATA, MatDialogRef, MatPaginator, MatSort, MatSnackBar } from '@angular/material';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { FuseConfirmDialogComponent } from '../../../../core/components/confirm-dialog/confirm-dialog.component';
@@ -11,11 +11,11 @@ import { DataSource } from '@angular/cdk/collections';
 import { fuseAnimations } from '../../../../core/animations';
 import { Subscription } from 'rxjs/Subscription';
 import { Router }   from '@angular/router';
-import { Login2Service } from '../../login/login-2.service';
+import { LoginService } from '../../login/login.service';
 import { JobStatusHistory, JobStatus, JobsList } from '../jobs.model';
-import { DialogComponent } from '../../dialog/dialog.component'
+import { DialogComponent, DialogDataComponent } from '../../dialog/dialog.component'
 import { FuseUtils } from '../../../../core/fuseUtils';
-
+import { FusePerfectScrollbarDirective } from '../../../../core/directives/fuse-perfect-scrollbar/fuse-perfect-scrollbar.directive';
 @Component({
     selector     : 'jobs-load',
     templateUrl  : './jobs-load.component.html',
@@ -57,8 +57,9 @@ export class JobsLoadComponent implements OnInit, OnDestroy
         private jobsService: JobsService,
         public dialog: MatDialog,
         public snackBar: MatSnackBar,
+      
         public router : Router,
-        private loginService : Login2Service,
+        private loginService : LoginService,
         private userService : UsersService
     )
     {
@@ -99,7 +100,7 @@ export class JobsLoadComponent implements OnInit, OnDestroy
         //     return;
         // }
 
-        console.log('job load initialse')
+        //console.log('job load initialse')
         
         this.dataSource = new FilesDataSource(this.jobsService, this.paginator, this.sort);
 
@@ -114,16 +115,17 @@ export class JobsLoadComponent implements OnInit, OnDestroy
             .debounceTime(300)
             //.distinctUntilChanged()
             .subscribe(searchText => {
+                this.paginator.pageIndex = 0;
                 this.jobsService.onSearchNewJobsTextChanged.next(searchText);
             });
 
 
-        this.userService.getContacts(1).then(response => {
+        this.userService.getAssignedUser(1).then(response => {
 
                 if (response)
                 {
                     response.map(user => {
-                            this.usersList.push( {"id":user["userid"], "itemName" : user["name"]})
+                            this.usersList.push( { "roleName":user["rolename"], "id":user["userid"], "itemName" : user["name"]})
                         });
 
                     //console.log(this.usersList);
@@ -146,7 +148,7 @@ export class JobsLoadComponent implements OnInit, OnDestroy
 
 
         this.dropdownSettings =  { 
-                                  ingleSelection: false, 
+                                  singleSelection: false, 
                                   text:"Recruiters",
                                   selectAllText:'Select All',
                                   unSelectAllText:'UnSelect All',
@@ -155,14 +157,21 @@ export class JobsLoadComponent implements OnInit, OnDestroy
                 };
 
        
+       
 
     }
 
     changePriorityLevel(event, editJobs : JobsList)
     {
-    //    console.log(event)
+      
         editJobs.priorityLevel = event.value;
-        editJobs.isSaveEnable = true;
+
+        //console.log(editJobs.priorityLevel)
+        //console.log(editJobs.oldPriorityLevel)
+        if (editJobs.priorityLevel == editJobs.oldPriorityLevel)
+            editJobs.isSaveEnable = false;
+        else
+            editJobs.isSaveEnable = true;
     }
 
     saveItemSelect(editJobs : JobsList){
@@ -180,6 +189,7 @@ export class JobsLoadComponent implements OnInit, OnDestroy
          this.jobsService.saveJobUser(userid.join(','),editJobs.jobid, editJobs.priorityLevel)
             .then(response => {
                 editJobs.isSaveEnable = false;
+                editJobs.isSaveEnableSelectedUser = false;
                 //console.log(response)
                 if (response)
                 {
@@ -198,19 +208,6 @@ export class JobsLoadComponent implements OnInit, OnDestroy
         
     }
 
-    onItemSelect(item:any, editJobs : JobsList){
-        //console.log(item);
-        editJobs.isSaveEnable = true;
-    }
-    OnItemDeSelect(item:any, editJobs : JobsList){
-        editJobs.isSaveEnable = true;
-    }
-    onSelectAll(items: any, editJobs : JobsList){
-        editJobs.isSaveEnable = true;
-    }
-    onDeSelectAll(items: any, editJobs : JobsList){
-        editJobs.isSaveEnable = true;
-    }
 
     ngOnDestroy()
     {
@@ -331,6 +328,50 @@ export class JobsLoadComponent implements OnInit, OnDestroy
         this.jobsService.updateUserData(this.user);
     }
 
+    mapOrder (array, order, key) {
+  
+        array.sort( function (A, B) {
+
+            let resultArray = order.filter(
+                row => row.id === A[key]);
+            
+            if (resultArray.length > 0)
+                return -1;
+            else
+                return 1;
+            
+        });
+        
+        return array;
+    };
+
+
+    openUserDialog(editJobs : JobsList, userlist, selectedusers)
+    {
+        userlist = this.mapOrder(userlist, selectedusers, "id" )
+        
+        let dialogUserList = this.dialog.open(DialogDataComponent, {
+            height : "550px",
+            width : "400px",
+            data: {
+                userList: userlist,
+                selectedUsers : selectedusers
+            }
+        });
+
+        
+
+        dialogUserList.afterClosed().subscribe(result => {
+            //console.log(editJobs.oldSelectedUser);
+            //console.log(editJobs.selectedUser);
+
+            
+            if(JSON.stringify(editJobs.selectedUser) === JSON.stringify(editJobs.oldSelectedUser) ) 
+                editJobs.isSaveEnableSelectedUser = false;
+            else
+                editJobs.isSaveEnableSelectedUser = true;
+        });
+    }
     openDialog(message) : void
     {
         // this.dialog.open(DialogComponent, {
@@ -352,6 +393,8 @@ export class JobsLoadComponent implements OnInit, OnDestroy
 
 export class FilesDataSource extends DataSource<any>
 {
+
+    @ViewChild(FusePerfectScrollbarDirective) directiveScroll: FusePerfectScrollbarDirective;
     _filterChange = new BehaviorSubject('');
     _filteredDataChange = new BehaviorSubject('');
 
@@ -399,6 +442,13 @@ export class FilesDataSource extends DataSource<any>
             this.filteredData = [...data];
 
             data = this.sortData(data);
+
+             if ( this.directiveScroll )
+            {
+                this.directiveScroll.scrollToTop(0, 500);
+                this.directiveScroll.update();
+                
+            }
 
             // Grab the page's slice of data.
             const startIndex = this._paginator.pageIndex * this._paginator.pageSize;

@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit, ViewEncapsulation } from '@angular/core';
-import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MatDialog, MAT_DIALOG_DATA, MatDialogRef, MatSnackBar } from '@angular/material';
 import { CalendarEvent } from 'angular-calendar';
 import { AbstractControl, FormControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import { Contact, Role } from '../users.model';
@@ -21,7 +21,7 @@ import { DialogComponent } from '../../dialog/dialog.component'
 
 import { FuseConfigService } from '../../../../core/services/config.service';
 
-import { Login2Service } from '../../login/login-2.service';
+import { LoginService } from '../../login/login.service';
 
 @Component({
     selector     : 'users-form',
@@ -41,7 +41,7 @@ export class UsersFormComponent implements OnInit
     contact: Contact;
     roles : Role[];
 
-
+    isUpdateEnable : boolean;
 
     maskPhone : any[];
 
@@ -52,8 +52,8 @@ export class UsersFormComponent implements OnInit
         private formBuilder: FormBuilder,
         private configSer : FuseConfigService,
         private router : Router,
-        private dialog : MatDialog,
-        private loginService : Login2Service
+        public snackBar: MatSnackBar,
+        private loginService : LoginService
     )
     {
 
@@ -70,19 +70,26 @@ export class UsersFormComponent implements OnInit
 
         };
 
+        this.contactService.getRoleData().then( response => {
+            this.roles = response;
+        });
+
         this.action = this.contactService.action;
-        this.roles = this.contactService.roles;
+        //this.roles = this.contactService.roles;
 
         if ( this.action === 'edit' )
         {
-            //this.dialogTitle = 'Edit Contact';
+            
+            this.isUpdateEnable = false;
+            this.dialogTitle = 'Update User';
             this.contact = this.contactService.editContacts;
             
 
         }
         else
         {
-            this.dialogTitle = 'New Contact';
+            this.isUpdateEnable = true;
+            this.dialogTitle = 'Assign User';
             this.contact = new Contact({});
         }
 
@@ -103,6 +110,9 @@ export class UsersFormComponent implements OnInit
         //     this.router.navigateByUrl('/login');
         //     return;
         // }
+
+         if ( this.action === 'edit' )
+            this.contactForm.get('email').disable();
 
     }
 
@@ -176,15 +186,37 @@ export class UsersFormComponent implements OnInit
        
     }
 
+    changeRole(event)
+    {
+        this.contact.roleid = event.value;
+        if( this.contact.oldRoleId != this.contact.roleid  || this.contact.oldStatus != this.contact.status )
+            this.isUpdateEnable = true;
+        else
+            this.isUpdateEnable = false;
+    }
+
+    changeStatus(event)
+    {
+        this.contact.status = event.value;
+        if( this.contact.oldStatus != this.contact.status || this.contact.oldRoleId != this.contact.roleid  )
+            this.isUpdateEnable = true;
+        else
+            this.isUpdateEnable = false;
+    }
     saveUser()
     {
 
         if(!this.contactForm.valid)
             return;
 
-        this.contact.email = this.contactForm.getRawValue()["email"];
-        this.contact.roleid = this.contactForm.getRawValue()["roleid"];
-        this.contact.status = this.contactForm.getRawValue()["status"];
+        this.contact = this.contactForm.getRawValue();
+        //this.contact.email = this.contactForm.getRawValue()["email"];
+        //this.contact.roleid = this.contactForm.getRawValue()["roleid"];
+
+        // if(this.contact["status"] == "Active" || this.action == "new")
+        //     this.contact.status = "1"
+        // else
+        //     this.contact.status = "0"
         //console.log(this.contactForm.getRawValue())
         this.contactService.updateContact(this.contact)
         .then(response => {
@@ -194,8 +226,11 @@ export class UsersFormComponent implements OnInit
             {
                 if(response["Result"]=="1")
                 {
-                    this.router.navigateByUrl('/users');
+                    if (this.action == 'edit')
+                        this.router.navigateByUrl('/users');
+
                     this.openDialog(response["Message"]);
+                    this.clearForm();
                 }
                 else
                 {
@@ -209,10 +244,13 @@ export class UsersFormComponent implements OnInit
 
     openDialog(message) : void
     {
-        this.dialog.open(DialogComponent, {
-            width: '450px',
-            data: { message : message }
-            });
+        this.snackBar.open(message, '', {
+            duration: 2000,
+            verticalPosition : 'top',
+            extraClasses: ['mat-light-blue-100-bg']
+
+
+        });
 
     }
 }

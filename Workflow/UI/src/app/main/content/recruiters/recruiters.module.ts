@@ -5,7 +5,7 @@ import { RecruitersComponent } from './recruiters.component';
 import { RecruitersService } from './recruiters.service';
 import { TextMaskModule } from 'angular2-text-mask';
 import { DialogComponent } from '../dialog/dialog.component'
-import { Login2Service,AuthGuard } from '../login/login-2.service';
+import { LoginService,AuthGuard } from '../login/login.service';
 const routes: Routes = [
     {
         path     : 'myjobs',

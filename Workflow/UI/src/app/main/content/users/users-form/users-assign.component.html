@@ -4,9 +4,21 @@
     <div class="header mat-accent-bg p-24" fxLayout="row" fxLayoutAlign="start center">
 
          <div fxLayout="row" fxLayoutAlign="start center">
-            <div class="logo" fxLayout="row" fxLayoutAlign="start center">
+            <!--<div *ngIf="action != 'edit'" class="logo" fxLayout="row" fxLayoutAlign="start center">
                 <mat-icon class="logo-icon mr-16" >person</mat-icon>
                 <span class="logo-text h1" >Assign User</span>
+            </div>
+            <div *ngIf="action == 'edit'" class="logo" fxLayout="row" fxLayoutAlign="start center">
+                 <button class="mr-16" mat-icon-button [routerLink]="'/users'">
+                    <mat-icon>arrow_back</mat-icon>
+                 </button>
+                  <span class="logo-text h1" >Update User</span>
+            </div>-->
+            <div class="logo" fxLayout="row" fxLayoutAlign="start center">
+                <button class="mr-16" mat-icon-button [routerLink]="'/users'">
+                    <mat-icon>arrow_back</mat-icon>
+                 </button>
+                <span class="logo-text h1" >{{dialogTitle}}</span>
             </div>
 
         </div>
@@ -23,7 +35,7 @@
                 <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
 
                     <mat-form-field fxFlex="100">
-                        <input matInput placeholder="Email Address" formControlName="email" #email required>
+                        <input matInput placeholder="Email Address" formControlName="email" #email required >
                          <mat-error *ngIf="formErrors.email.pattern">
                             Please enter the valid email address
                         </mat-error>
@@ -35,7 +47,7 @@
                 </div>
                 <div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
                 <mat-form-field fxFlex="100">
-                                        <mat-select formControlName="roleid"
+                                        <mat-select formControlName="roleid" (change)="changeRole($event)"
                                                     placeholder="Select Role" required>
                                             <mat-option *ngFor="let role of roles"
                                                         [value]="role.RoleId">
@@ -44,21 +56,21 @@
                                         </mat-select>
                     </mat-form-field>    
                 </div>
-                <!--<div fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
+                <div *ngIf="action == 'edit'" fxLayout="row" fxLayoutAlign="start center" fxFlex="1 0 auto">
                 <div fxFlex="100">
                             <label>Status</label>
-                            <mat-radio-group formControlName="status">
-                                <mat-radio-button class="h5" value=1 checked="true">Active</mat-radio-button>
-                                <mat-radio-button class="h5" value=0 >In Active</mat-radio-button>
+                            <mat-radio-group formControlName="status" (change)="changeStatus($event)">
+                                <mat-radio-button class="h5" [value]=1 checked >Active</mat-radio-button>
+                                <mat-radio-button class="h5" [value]=0 >In Active</mat-radio-button>
                             </mat-radio-group>
                         </div>
-                </div>-->
+                </div>
                 
               
 
             <div fxLayout="row"  fxLayoutAlign="end center" fxFlex="1 0 auto" class="button-row">
-                <a mat-raised-button color="primary" class="mx-8" (click)="clearForm();">Clear</a>
-                <a mat-raised-button color="accent" class="mx-8" [disabled]="!contactForm.valid" (click)="saveUser();">Submit</a>
+                <a mat-raised-button color="primary" class="mx-8" *ngIf="action == 'new'"  (click)="clearForm();">Clear</a>
+                <a mat-raised-button color="accent" class="mx-8" [disabled]="!contactForm.valid || !isUpdateEnable" (click)="saveUser();">Save</a>
             </div>
         </form>
     </div>

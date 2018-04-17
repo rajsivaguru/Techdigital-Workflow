@@ -1,12 +1,13 @@
 import { Component, OnDestroy, Input, OnInit, ElementRef,TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { RecruitersService } from './recruiters.service';
+import { FuseConfigService } from '../../../core/services/config.service';
 import { fuseAnimations } from '../../../core/animations';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog, MAT_DIALOG_DATA, MatDialogRef, MatPaginator, MatSort, MatSnackBar} from '@angular/material';
 import { RecruitersJobs } from './recruiters.model';
 import { JobStatus } from '../jobs/jobs.model';
 import { Router } from "@angular/router";
-import { Login2Service } from '../login/login-2.service';
+import { LoginService } from '../login/login.service';
 import { JobsService } from '../jobs/jobs.service';
 import { Observable } from 'rxjs/Observable';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
@@ -36,11 +37,12 @@ export class RecruitersComponent implements OnInit
     @ViewChild(MatSort) sort: MatSort;
 
     @Input('eventDate') eventDate;
-    countdown: any;
-    diff = 0;//currDate.diff(currDate, 'seconds');
-    countDown = new Observable();
 
     jobStatus : JobStatus[];
+
+    jobDuration : number;
+    alertDuration : number;
+
 
     newJobs: any;
     user: any;
@@ -55,76 +57,63 @@ export class RecruitersComponent implements OnInit
 
     dialogRef: any;
 
-    confirmDialogRef: MatDialogRef<FuseConfirmDialogComponent>;
+    //confirmDialogRef: MatDialogRef<FuseConfirmDialogComponent>;
 
 
     constructor(
         private recruiterService: RecruitersService,
         private jobsService: JobsService,
         public dialog: MatDialog,
+        private fuseConfig: FuseConfigService,
         public snackBar: MatSnackBar,
         private router : Router,
-        private loginService : Login2Service
+        private loginService : LoginService
     )
     {
 
         this.searchInput = new FormControl('');
 
-        this.countdown = {
-            days   : '',
-            hours  : '',
-            minutes: '',
-            seconds: ''
-        };
+        this.jobDuration =  this.fuseConfig.JobTimerDuration
+        this.alertDuration =  this.fuseConfig.AlertTimerDuration
+        
+        
     }
 
     ngOnInit()
     {
+        
+        
+        {
         this.dataSource = new FilesDataSource(this.recruiterService, this.paginator, this.sort);
-
         this.searchInput.valueChanges
             .debounceTime(300)
             //.distinctUntilChanged()
             .subscribe(searchText => {
+                this.paginator.pageIndex = 0;
                 this.recruiterService.onSearchTextChanged.next(searchText);
             });
+        }
 
+
+        if(this.jobDuration == undefined)
+            this.jobDuration = 3600;
     
-        // for count down
-        // const currDate = moment();
-        // const eventDate = moment(this.eventDate);
-
-
-        // this.eventDate = currDate.date()+1;
-
-        // //console.log(currDate)
-        // //console.log(eventDate)
-
-        // this.countDown =
-        //           Observable
-        //               .interval(1000)
-        //               .map(value => {
-        //                   return this.diff = this.diff + 1;
-        //               })
-        //               .map(value => {
-        //                   const timeLeft = moment.duration(value, 'seconds');
-
-        //                   return {
-        //                       days   : timeLeft.asDays().toFixed(0),
-        //                       hours  : timeLeft.hours(),
-        //                       minutes: timeLeft.minutes(),
-        //                       seconds: timeLeft.seconds()
-        //                   };
-        //               });
-
-        
+        if(this.alertDuration  == undefined)
+            this.alertDuration = 30;
+    
        
         
     }
 
+    validateSubmission(event)
+    {
+        //console.log(event.value)
+        return false;
+    }
+
     startJobTimer(recuriterJobs : RecruitersJobs )
     {
-        console.log(recuriterJobs)
+        //console.log(recuriterJobs)
         const noOfJobs: any[] = [];
         this.recruiterService.recruiterJobs.map(job => {
 
@@ -142,32 +131,98 @@ export class RecruitersComponent implements OnInit
             this.recruiterService.startRecruiterJob(recuriterJobs.jobassignmentid).then (respone => {
                     //this.jobStatus = respone
                     this.openDialog('Your job has been Started.');
+
+                    if(respone != null && respone != '' && respone != undefined )
+                    {
+                        recuriterJobs.jobassignmentstatusid = respone[0]["Id"]
+                        this.jobTimerSubscribe(recuriterJobs);
+                    }
                 });
         }
          
-        // recuriterJobs.countDown =
-        //           Observable
-        //               .interval(1000)
-        //               .map(value => {
-        //                   return recuriterJobs.diff = recuriterJobs.diff + 1;
-        //               })
-        //               .map(value => {
-        //                   const timeLeft = moment.duration(value, 'seconds');
-
-        //                   return {
-        //                       days   : timeLeft.asDays().toFixed(0),
-        //                       hours  : timeLeft.hours(),
-        //                       minutes: timeLeft.minutes(),
-        //                       seconds: timeLeft.seconds()
-        //                   };
-        //               });        
-        
-        //   recuriterJobs.countDown.subscribe(value => {
-        //      //console.log(value)
-        //     recuriterJobs.countdown = value;
-        // });
+       
 
 
+    }
+
+    jobTimerSubscribe(recuriterJobs : RecruitersJobs)
+    {
+
+        recuriterJobs.countDown =
+                                Observable
+                                    .interval(5000)
+                                    .map(value => {
+                                        return recuriterJobs.diff = recuriterJobs.diff + 5;
+                                    })
+                                    .map(value => {
+                                        const timeLeft = moment.duration(value, 'seconds');
+
+                                        return {
+                                            days   : timeLeft.asDays().toFixed(0),
+                                            hours  : timeLeft.hours(),
+                                            minutes: timeLeft.minutes(),
+                                            seconds: timeLeft.seconds()
+                                        };
+                                    });        
+                        
+                        recuriterJobs.jobTimer = recuriterJobs.countDown.subscribe(value => {
+                            //console.log(value)
+                            recuriterJobs.countdown = value;
+
+                            if(recuriterJobs.countdown["seconds"] > this.jobDuration )
+                            {
+                                recuriterJobs.jobTimer.unsubscribe();
+                                this.openUserDialog(recuriterJobs);
+                                
+                            }
+
+                        });
+    }
+
+    openUserDialog(recuriterJobs : RecruitersJobs)
+    {
+        recuriterJobs.confirmDialogRef = this.dialog.open(FuseConfirmDialogComponent, {
+            disableClose: false
+        });
+
+         recuriterJobs.confirmDialogRef.afterOpen().subscribe(result =>{
+                recuriterJobs.dialogDiff = 1;
+                recuriterJobs.dialogCountDown = Observable.interval(5000).map(value => {
+                                        return recuriterJobs.dialogDiff = recuriterJobs.dialogDiff + 5;
+                                    });      
+                recuriterJobs.dialogTimer =   recuriterJobs.dialogCountDown.subscribe(value => {
+                            //console.log(value)
+                            recuriterJobs.dialogCountDown = value;
+                            if(recuriterJobs.dialogCountDown > this.alertDuration )
+                            {
+                                recuriterJobs.dialogTimer.unsubscribe();
+                                if(recuriterJobs.confirmDialogRef != null)
+                                    recuriterJobs.confirmDialogRef.close();
+                                
+                            }
+
+                        });
+        });
+
+        recuriterJobs.confirmDialogRef.componentInstance.jobCode = recuriterJobs.referenceid;
+        recuriterJobs.confirmDialogRef.componentInstance.confirmMessage = 'Time Elapsed! Do you want to continue?';
+        //this.confirmDialogRef.componentInstance.data = recuriterJobs;
+
+        recuriterJobs.confirmDialogRef.afterClosed().subscribe(result => {
+            if (!result )
+            {
+                recuriterJobs.comment = "stopped"
+                this.stopJobTimer(recuriterJobs)
+                
+            }
+            if (result )
+            {
+                recuriterJobs.diff = 1;
+                this.jobTimerSubscribe(recuriterJobs);
+                
+            }
+            recuriterJobs.confirmDialogRef = null;
+        });
     }
 
     stopJobTimer(recuriterJobs : RecruitersJobs )
@@ -186,6 +241,9 @@ export class RecruitersComponent implements OnInit
         {
             this.recruiterService.stopRecruiterJob(recuriterJobs.jobassignmentid, recuriterJobs.jobassignmentstatusid, recuriterJobs.submission, recuriterJobs.comment ).then (respone => {
                 this.openDialog('Your job has been Stopped.');
+
+                recuriterJobs.dialogTimer.unsubscribe();
+                recuriterJobs.jobTimer.unsubscribe();
             });
         }
     }
@@ -289,12 +347,13 @@ export class FilesDataSource extends DataSource<any>
     }
     sortData(data): any[]
     {
+        
         if ( !this._sort.active || this._sort.direction === '' )
         {
             return data;
         }
 //displayedColumns = ['r_referenceid', 'r_title', 'r_location', 'r_expirydate', 'r_priorityLevel', 'r_createdby', 'r_startbutton', 'r_stopbutton'];
-   
+        
         return data.sort((a, b) => {
             let propertyA: number | string = '';
             let propertyB: number | string = '';

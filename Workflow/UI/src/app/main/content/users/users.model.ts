@@ -11,6 +11,7 @@ export class Contact
 
     email: string;
     roleid : string;
+    oldRoleId : string;
     rolename : string;
 
     workphone: string;
@@ -20,7 +21,9 @@ export class Contact
     location: string;
     imgurl : string;
 
-    status : string;
+    status : number;
+    oldStatus : number;
+
     createdby : string;
     createdon : string;
     modifiedby : string;
@@ -38,6 +41,7 @@ export class Contact
 
             this.email = contact.email || '';
             this.roleid = contact.roleid || '';
+            this.oldRoleId = contact.roleid || '';
             this.rolename = contact.rolename || '';
 
             this.workphone = contact.workphone || '';
@@ -47,7 +51,9 @@ export class Contact
             this.location = contact.location || '';
             this.imgurl = contact.imgurl || 'assets/images/avatars/profile.jpg';
 
-            this.status = contact.status || 1;
+            this.status = contact.status || 0;
+            this.oldStatus = contact.status || 0; 
+
             this.createdby = contact.createdby || '';
             this.createdon = contact.createdon || '';
             this.modifiedby = contact.modifiedby || '';

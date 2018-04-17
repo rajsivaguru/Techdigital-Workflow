@@ -1,6 +1,18 @@
 @import "src/app/core/scss/fuse";
 
+.text-boxed-green
+{
+    background-color:green !important;
+    font-size :14px !important;
+    color : white !important;
+}
 
+.text-boxed-red
+{
+    background-color:red !important;
+    font-size :14px !important;
+    color : white !important;
+}
     .header {
 
         .search-input-wrapper {
@@ -64,13 +76,21 @@
         }
         .mat-column-jn_userlist {
             flex: 0 1 10%;
+            justify-content : center !important;
+            display: flex !important;
         }
         .mat-column-jn_selectedUser {
             flex: 0 1 26%;
         }
         
+        .text-boxed
+        {
+            border-radius: 50%;
+        }
         .mat-column-jn_buttons {
-            flex: 0 1 4%;
+            flex: 0 1 10%;
+            justify-content : center !important;
+            display: flex !important;
         }
 
        

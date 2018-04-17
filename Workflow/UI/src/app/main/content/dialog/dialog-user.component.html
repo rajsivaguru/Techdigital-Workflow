@@ -1,0 +1,13 @@
+<h1 mat-dialog-title>Assign To</h1>
+<div mat-dialog-content class="h-80-p">
+
+    <angular2-multiselect id="selectUser"  [data]= data.userList [(ngModel)]= data.selectedUsers
+                                [settings]="dropdownSettings" 
+                                name="selectUser">
+                            </angular2-multiselect>
+
+</div>
+<div mat-dialog-actions fxLayout="row"  fxLayoutAlign="end center" >
+    <button mat-raised-button color="primary" (click)="onNoClick()" tabindex="-1">No Thanks</button>
+    <button mat-raised-button color="accent" [mat-dialog-close]="data.selectedUsers" tabindex="2">Ok</button>
+</div>
