@@ -4,7 +4,7 @@ import { DataSource } from '@angular/cdk/collections';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 import { HttpClient } from '@angular/common/http';
-import { Http, Response, Headers, RequestOptions } from '@angular/http';
+import { Http, Response } from '@angular/http';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { JobReport, JobReportForm, UserReport, UserReportParam } from './reports.model';
 import { FuseUtils } from '../../../core/fuseUtils';
@@ -31,16 +31,11 @@ export class ReportsService {
 
     serviceURL : String;
 
-    headers: Headers;
-    options: RequestOptions;
-
-
+    
     constructor(private http: HttpClient, private httpObser: Http, private configSer : FuseConfigService, public loginService : LoginService)
     {
         this.serviceURL = configSer.ServiceURL;
-        this.headers = new Headers({ 'Content-Type': 'application/json', 
-                                     'Accept': 'q=0.8;application/json;q=0.9' });
-        this.options = new RequestOptions({ headers: this.headers });
+        
 
     }
 
@@ -118,24 +113,8 @@ getUserReport(userRptParam : UserReportParam): Promise<any>
                 if (this.loginService.loggedUser != undefined)
                     userid = this.loginService.loggedUser.userid;
 
-        //?sUserModel=' + JSON.stringify(contact) + '&loginid='+userid)
-                let params: URLSearchParams = new URLSearchParams();
-                for (var key in userRptParam) {
-                    if (userRptParam.hasOwnProperty(key)) {
-                        let val = userRptParam[key];
-                        params.set(key, val);
-                    }
-                }
-
-                this.headers = new Headers({ 'Content-Type': 'application/json', 
-                                     'Accept': 'q=0.8;application/json;q=0.9' });
-                
-                                    
-                //console.log(params)
-                this.options = new RequestOptions({ headers: this.headers, search: params });
-                
+        
                let tempUrl = 'Report/GetUserReport?userRptParam=' + JSON.stringify(userRptParam) + '&loginid='+userid
-//               let tempUrl = 'Report/GetUserReport'
                this.http.get(this.serviceURL + tempUrl)
                     .subscribe((response: any) => {
                         
@@ -143,8 +122,6 @@ getUserReport(userRptParam : UserReportParam): Promise<any>
                         if ( response != null && response != undefined)
                         {
                         response = JSON.parse(response);
-                        //console.log('fetching jobs...');
-                        //console.log(response)                        
 
                         this.userReports = response;
 

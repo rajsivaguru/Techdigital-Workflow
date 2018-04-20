@@ -59,14 +59,14 @@
 
                     </div>
                     <mat-form-field class="w-5-p mr-20">
-                        <input matInput formControlName="jobcode" placeholder="Job Code" (focusout)="searchValidation()">
+                        <input matInput formControlName="jobcode" placeholder="Job Code" (keyup)="searchValidation()">
                     </mat-form-field>
                     <mat-form-field class="w-15-p mr-20">
-                        <input matInput formControlName="title"  placeholder="Title" (focusout)="searchValidation()">
+                        <input matInput formControlName="title"  placeholder="Title" (keyup)="searchValidation()">
                     </mat-form-field>
 
                     <mat-form-field class="w-10-p mr-20">
-                        <input matInput formControlName="location" placeholder="Location" (focusout)="searchValidation()">
+                        <input matInput formControlName="location" placeholder="Location" (keyup)="searchValidation()">
                     </mat-form-field>
 
                     <mat-form-field class="w-10-p mr-20">
@@ -75,7 +75,7 @@
                         <mat-datepicker touchUi="true" #publisheddate disabled="false"></mat-datepicker>
                     </mat-form-field>
 
-                    <mat-form-field class="w-10-p mr-20">
+                    <mat-form-field style="display:none;" class="w-10-p mr-20">
                         <input matInput  [max]="maxPublishedDate" [matDatepicker]="assigneddate" formControlName="assigneddate" placeholder="Assigned Date" (dateChange)="searchValidation()" readonly>
                         <mat-datepicker-toggle matSuffix [for]="assigneddate"></mat-datepicker-toggle>
                         <mat-datepicker touchUi="true" #assigneddate disabled="false"></mat-datepicker>
@@ -107,7 +107,7 @@
                 </div>
                 <div fxLayout="row" fxLayoutAlign="end center" class="button-row">
                     <a mat-raised-button color="primary" class="mx-8" (click)="clearSearch()">Clear</a>
-                    <a mat-raised-button color="accent" class="mx-8" [disabled] = "!isSearchEnable" (click)="loadReport();">Search</a>
+                    <a mat-raised-button color="accent" class="mx-8" [disabled] = "!isSearchEnable" (click)="loadReport(this);">Search</a>
                 </div>
 
             </mat-expansion-panel>
@@ -186,19 +186,39 @@
                 <ng-container cdkColumnDef="ur_submission">
                     <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Submission</mat-header-cell>
                     <mat-cell *cdkCellDef="let users" fxHide fxShow.gt-md>
-                        <p class="text-center">
+                        <!--<p class="text-center">
+                            {{users.submission}}
+                        </p>-->
+
+                        <p class="text-center text-boxed text-boxed-red" *ngIf="!users.jobstarted" >
                             {{users.submission}}
                         </p>
+                        <p class="text-center text-boxed text-boxed-green" *ngIf="users.jobstarted">
+                            {{users.submission}}
+                        </p>
+
                     </mat-cell>
                 </ng-container>
                 <ng-container cdkColumnDef="ur_jobstarted">
                     <mat-header-cell *cdkHeaderCellDef mat-sort-header>Status</mat-header-cell>
                     <mat-cell *cdkCellDef="let users" >
-                        <p class="phone text-truncate">
+                        <!--<p class="phone text-truncate">
                             {{users.jobstarted}}
+                        </p>-->
+                        <mat-icon *ngIf="users.jobstarted" class="active-icon mat-green-600-bg s-16">check</mat-icon>
+                        <mat-icon *ngIf="!users.jobstarted" class="active-icon mat-red-500-bg s-16">close</mat-icon>
+
+                    </mat-cell>
+                </ng-container>
+                <ng-container cdkColumnDef="ur_comment">
+                    <mat-header-cell *cdkHeaderCellDef mat-sort-header>Comment</mat-header-cell>
+                    <mat-cell *cdkCellDef="let users" >
+                        <p class="text-truncate" title="{{users.comment}}">
+                            {{users.comment}}
                         </p>
                     </mat-cell>
                 </ng-container>
+                
                 
                 <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
                 

@@ -80,7 +80,7 @@ export class JobReportForm
 export class UserReport
 {
 
-            userids   : string;
+            userid   : string;
             username : string;
             jobcode : string;
             title : string;
@@ -92,13 +92,13 @@ export class UserReport
             duration   : string;
             submission  : number;
             jobstarted : boolean
-
+            comment   : string;
   
     constructor(reports?)
     {
         var datePipe = new DatePipe("en-US");
 
-        this.userids = reports.userids || '';
+        this.userid = reports.userid || '';
         this.username = reports.username || '';
         this.jobcode = reports.jobcode || '';
         this.title = reports.title || '';
@@ -109,6 +109,7 @@ export class UserReport
         this.duration = reports.duration || '';
         this.submission = reports.submission || 0;
         this.jobstarted  = reports.jobstarted || false;
+        this.comment  = reports.comment || '';
 
     }
    
@@ -118,7 +119,7 @@ export class UserReportParam
     {
 
 
-            userids         : string;
+            userids         : number[];
             jobcode         : string;
             //clientname      : string;
             title           : string;
@@ -132,7 +133,7 @@ export class UserReportParam
             constructor(reports?)
             {
 
-                this.userids = reports.userids || '';
+                this.userids = reports.userids || [];
                 this.jobcode = reports.jobcode || '';
                 
                 this.title = reports.title || '';

@@ -64,7 +64,7 @@
                                 required>
                     </mat-form-field>-->
                     <mat-form-field class="w-10-p mr-20">
-                        <input matInput formControlName="jobcode" placeholder="Job Code" (focusout)="searchValidation()">
+                        <input matInput formControlName="jobcode" placeholder="Job Code" (keyup)="searchValidation()">
                         <!--<input matInput 
                                 ngui-auto-complete 
                                 formControlName="clientname" 
@@ -79,11 +79,11 @@
                                 required>-->
                     </mat-form-field>
                     <mat-form-field class="mr-20">
-                        <input matInput formControlName="title"  placeholder="Title" (focusout)="searchValidation()">
+                        <input matInput formControlName="title"  placeholder="Title" (keyup)="searchValidation()">
                     </mat-form-field>
 
                     <mat-form-field class="mr-20">
-                        <input matInput formControlName="location" placeholder="Location" (focusout)="searchValidation()">
+                        <input matInput formControlName="location" placeholder="Location" (keyup)="searchValidation()">
                     </mat-form-field>
 
                     <mat-form-field class="w-15-p mr-20">

@@ -1,13 +1,27 @@
 @import "src/app/core/scss/fuse";
 
 
+.custom_userrpt_list
+{
+
 .c-btn
 {
 
 border-top : none !important;
 border-left : none !important;
 border-right: none !important;
+padding :3px !important;
+box-shadow:0px 0px 0px #ffffff !important;
 }
+
+.c-btn span
+{
+    color : rgba(0, 0, 0, 0.54);
+    font-size : 16px;
+}
+
+}
+
 
 
 
@@ -57,26 +71,34 @@ border-right: none !important;
         }
 
         .mat-column-ur_username {
-            flex: 0 1 10%;
+            flex: 0 1 20%;
         }
        .mat-column-ur_jobcode {
             flex: 0 1 10%;
         }
 
         .mat-column-ur_title {
-            flex: 0 1 25%;
+            flex: 0 1 30%;
         }
         .mat-column-ur_location {
-            flex: 0 1 15%;
+            flex: 0 1 25%;
         }
         
         .mat-column-ur_publisheddate, .mat-column-ur_assigneddate {
             flex: 0 1 15%;
         }
+        .mat-column-ur_fromdate, .mat-column-ur_todate {
+            flex: 0 1 20%;
+        }
         
         .mat-column-ur_jobstarted {
             flex: 0 1 5%;
         }
+        .mat-column-ur_comment {
+            flex: 0 1 10%;
+        }
+
+        
        
         .mat-column-ur_duration, .mat-column-ur_submission
         {
@@ -84,7 +106,9 @@ border-right: none !important;
             justify-content : center !important;
             display: flex !important;
         }
-       
+       .active-icon {
+            border-radius: 50%;
+        }
 
 
        

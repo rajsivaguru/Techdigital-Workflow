@@ -48,7 +48,7 @@ export class DialogDataComponent
                                   unSelectAllText:'UnSelect All',
                                   enableSearchFilter: true,
                                   enableCheckAll : false,
-                                  classes : '',
+                                  classes : 'custom_dropdown_tdw',
                                   badgeShowLimit: 2
                 };
     }

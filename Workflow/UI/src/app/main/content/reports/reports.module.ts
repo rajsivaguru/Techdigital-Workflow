@@ -36,7 +36,7 @@ const routes = [
     {
         path        : 'userreport',
         component   : UserReportComponent,
-        canActivate: [AuthGuard],
+        //canActivate: [AuthGuard],
         resolve  : {
             users: ReportsService
         }

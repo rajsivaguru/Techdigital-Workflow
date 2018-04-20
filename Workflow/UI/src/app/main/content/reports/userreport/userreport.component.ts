@@ -38,18 +38,14 @@ export class UserReportComponent implements OnInit, OnDestroy
     @ViewChild('filter') filter: ElementRef;
     @ViewChild(MatSort) sort: MatSort;
 
-    dropdownSettingsUserReport = {};
     usersDataList = [];
     selectedUsers = [];
-
-itemList = [];
-    selectedItems = [];
     settings = {};
 
 
     users: any;
     dataSource: FilesDataSource | null;
-    displayedColumns = [ 'ur_username', 'ur_jobcode', 'ur_title', 'ur_location', 'ur_publisheddate', 'ur_assigneddate', 'ur_duration', 'ur_submission', 'ur_jobstarted'];
+    displayedColumns = [ 'ur_username', 'ur_jobcode', 'ur_title', 'ur_location', 'ur_publisheddate', 'ur_assigneddate', 'ur_duration', 'ur_submission', 'ur_comment'];
     selectedContacts: any[];
     checkboxes: {};
 
@@ -166,32 +162,32 @@ itemList = [];
 
         
         this.settings = {
-                                  maxHeight : '350px',
+                                  maxHeight : '250px',
                                   searchAutofocus : true,
                                   singleSelection: false, 
                                   text:"Users",
                                   selectAllText:'Select All',
                                   unSelectAllText:'UnSelect All',
                                   enableSearchFilter: true,
-                                  enableCheckAll : false,
-                                  classes : '',
+                                  enableCheckAll : true,
+                                  classes : 'custom_userrpt_list',
                                   badgeShowLimit: 1
         };
     
 
     }
 
-    onItemSelect(item:any, editJobs ){
+    onItemSelect(item:any ){
        this.searchValidation();
     }
-    OnItemDeSelect(item:any, editJobs ){
+    OnItemDeSelect(item:any ){
         this.searchValidation();
     }
-    onSelectAll(items: any, editJobs ){
-        //editJobs.isSaveEnable = true;
+    onSelectAll(items: any ){
+        this.searchValidation();
     }
-    onDeSelectAll(items: any, editJobs ){
-        //editJobs.isSaveEnable = true;
+    onDeSelectAll(items: any ){
+        this.searchValidation();
     }
 
     createJobForm()
@@ -222,7 +218,7 @@ itemList = [];
         if (this.rptForm.lastdays == undefined)
             this.rptForm.lastdays = -1;
 
-        if( this.rptForm.userids != "" || this.rptForm.jobcode != "" || this.rptForm.title != "" || this.rptForm.location != "" || this.rptForm.publisheddate != "" || this.rptForm.assigneddate != "" 
+        if( this.rptForm.userids.length >  0 || this.rptForm.jobcode != "" || this.rptForm.title != "" || this.rptForm.location != "" || this.rptForm.publisheddate != "" || this.rptForm.assigneddate != "" 
             || this.rptForm.fromdate != "" || this.rptForm.todate != "" || this.rptForm.lastdays != -1 )
             {
 
@@ -238,7 +234,7 @@ itemList = [];
 
         this.userReport.patchValue(
             {
-                userids         : '',
+                userids         : [],
                 jobcode         : '',
                 title           : '',
                 location        : '',
@@ -257,14 +253,19 @@ itemList = [];
     }
     
 
-    loadReport()
+    loadReport(event)
     {   
         
         this.rptForm = this.userReport.getRawValue();
 
-         let userid = this.userReport.getRawValue()["userids"].map(user => {
+         let userid = [];
+         
+         if (this.userReport.getRawValue()["userids"] != undefined && this.userReport.getRawValue()["userids"] != "" && this.userReport.getRawValue()["userids"].length > 0)
+         {
+           userid = this.userReport.getRawValue()["userids"].map(user => {
                             return (user["id"])
                         });
+         }
 
          this.rptForm.userids = userid;
 
@@ -274,7 +275,7 @@ itemList = [];
         if (this.rptForm.lastdays == undefined)
             this.rptForm.lastdays = -1;
 
-        if( this.rptForm.userids == "" && this.rptForm.jobcode == "" && this.rptForm.title == "" && this.rptForm.location == "" && this.rptForm.publisheddate == "" && this.rptForm.assigneddate == "" 
+        if( this.rptForm.userids.length == 0 && this.rptForm.jobcode == "" && this.rptForm.title == "" && this.rptForm.location == "" && this.rptForm.publisheddate == "" && this.rptForm.assigneddate == "" 
             && this.rptForm.fromdate == "" && this.rptForm.todate == ""  && this.rptForm.lastdays == -1 )
             {
 
@@ -573,6 +574,10 @@ export class FilesDataSource extends DataSource<any>
                 case 'ur_jobstarted':
                     [propertyA, propertyB] = [a.jobstarted, b.jobstarted];
                     break;
+                case 'ur_comment':
+                    [propertyA, propertyB] = [a.comment, b.comment];
+                    break;
+                    
             }
 
             const valueA = isNaN(+propertyA) ? propertyA : +propertyA;

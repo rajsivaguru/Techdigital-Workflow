@@ -30,16 +30,17 @@ export class FuseConfigService
         
         if(location.port == "")
         {
-            this.ServiceURL = location.origin + '/StaffingService/api/'  // live
-            //this.ServiceURL = location.origin + '/WorkflowApi/api/'  // live
+            //this.ServiceURL = location.origin + '/StaffingService/api/'  // local
+            this.ServiceURL = location.origin + '/WorkflowApi/api/'  // live
         }
         else
         {
             //this.ServiceURL = "https://www.apps.techdigitalcorp.com/WorkflowApi/api/"
+            //this.ServiceURL = 'http://demo.csfinance.in/StaffingService/api/';
             this.ServiceURL = location.origin + '0/api/'  // demo
         }
 
-        //this.ServiceURL = 'http://demo.csfinance.in/StaffingService/api/';
+        
 
         //console.log(this.ServiceURL)
 

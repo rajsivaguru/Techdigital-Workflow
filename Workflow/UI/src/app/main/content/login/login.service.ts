@@ -21,7 +21,7 @@ export class LoginService
     public loggedUser : Contact;
     navigationModel : any;
 
-    googleUser: any; //gapi.auth2.GoogleUser
+    public googleUser: any; //gapi.auth2.GoogleUser
 
     constructor(private http: HttpClient, 
                 private configSer : FuseConfigService, 

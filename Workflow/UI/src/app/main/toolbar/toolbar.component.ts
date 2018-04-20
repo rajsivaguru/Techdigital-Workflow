@@ -129,6 +129,6 @@ export class FuseToolbarComponent implements OnInit
         if(this.loginService.googleUser != null && this.loginService.googleUser.isSignedIn())
             this.loginService.googleUser.disconnect();
             
-        this.rouer.navigateByUrl('/login');
+        //this.rouer.navigateByUrl('/login');
     }
 }
