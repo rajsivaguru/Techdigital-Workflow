@@ -36,26 +36,26 @@ export class LoginService
     }
 
     openDialog(message)
-    {
-                
-                   this.confirmDialogRef = this.dialog.open(DialogComponent, {
-                        disableClose: false
-                    });
-
-                    this.confirmDialogRef.componentInstance.data = message;  
+    {                
+        this.confirmDialogRef = this.dialog.open(DialogComponent, {
+             disableClose: false
+         });
+  
+        this.confirmDialogRef.componentInstance.data = message;  
     }
 
     getConfigurationData(): Promise<any>
     {
         return new Promise((resolve, reject) => {
-                this.http.get(this.serviceURL +'TDW/GetConfiguration')
-                    .subscribe((response: any) => {
-                        response = JSON.parse(response);
-                        resolve(response);
-                    }, reject);
+            this.http.get(this.serviceURL +'TDW/GetConfiguration')
+                .subscribe((response: any) => {
+                    response = JSON.parse(response);
+                    resolve(response);
+                }, reject);
             }
         );
     }
+    
     getUserData(email, img, name): Promise<any>
     {
         return new Promise((resolve, reject) => {
@@ -68,6 +68,18 @@ export class LoginService
         );
     }
 
+    syncUserData(email, img, firstname, lastname, name): Promise<any>
+    {
+    debugger;
+        return new Promise((resolve, reject) => {
+                this.http.get(this.serviceURL +'User/Login?email=' + email + '&imgurl=' + img + '&firstname=' + firstname + '&lastname=' + lastname + '&name=' + name)
+                    .subscribe((response: any) => {
+                        response = JSON.parse(response);
+                        resolve(response);
+                    }, reject);
+            }
+        );
+    }
 }
 
 @Injectable()
@@ -123,7 +135,6 @@ constructor(private authService: LoginService,
      }
     else if(this.authService.googleUser != null && !this.authService.googleUser.isSignedIn())
     {
-
         this.fuseConfig.setSettings({
             layout: {
                 navigation: 'none',

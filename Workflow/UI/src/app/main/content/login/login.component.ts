@@ -119,11 +119,10 @@ public googleInit() {
         //private clientId:string = '86746030753-22n6td4v43tdu9ps466t93klsegmrng8.apps.googleusercontent.com'; // live
   
         that.auth2 = gapi.auth2.init({
-                client_id: '86746030753-22n6td4v43tdu9ps466t93klsegmrng8.apps.googleusercontent.com',
-                //client_id: '401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et.apps.googleusercontent.com',
+                //client_id: '86746030753-22n6td4v43tdu9ps466t93klsegmrng8.apps.googleusercontent.com',
+                client_id: '401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et.apps.googleusercontent.com',
                 scope: that.scope
         });
-
 
         // Listen for sign-in state changes.
         that.auth2.isSignedIn.listen(function(isSigned) {
@@ -132,24 +131,21 @@ public googleInit() {
             {
                 that.router.navigateByUrl('/login');
             }
-
         });
 
         // Listen for changes to current user.
         that.auth2.currentUser.listen(function (googleUser) {
         
         
-        //console.log(googleUser)
-        
+        //console.log(googleUser)        
         if(googleUser != null && googleUser != undefined && googleUser["El"] != null && googleUser["Zi"] != null )
         {
-
             let profile = googleUser.getBasicProfile();
             console.log('profile: ');
             console.log(profile);
             // console.log('Token || ' + googleUser.getAuthResponse().id_token);
             // console.log('ID: ' + profile.getId());
-            // console.log('Name: ' + profile.getName());
+             console.log('Name: ' + profile.getName());
             // console.log('Image URL: ' + profile.getImageUrl());
             // console.log('Email: ' + profile.getEmail());
             //YOUR CODE HERE
@@ -160,8 +156,6 @@ public googleInit() {
             //let profile: gapi.auth2.BasicProfile = this.loginService.googleUser.getBasicProfile();
             //console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
             //console.log(event.googleUser);
-
-
 
             that.router.events.subscribe(
                 (event) => {
@@ -184,67 +178,79 @@ public googleInit() {
                         });
 
                         that.openDialog('Error', 'Error occurred. Please contact your administrator!');
-                    }
-
-                    
+                    }                    
                 });
 
             //console.log()
-            that.login.email = that.loginService.googleUser.getBasicProfile().getEmail();
-
-            that.loginService.getUserData(that.login.email, that.loginService.googleUser.getBasicProfile().getImageUrl(), that.loginService.googleUser.getBasicProfile().getName()).then(response =>{
+            var loggedUser = that.loginService.googleUser.getBasicProfile();            
+            that.login.email = loggedUser.getEmail();
+            
+            var loginModel =
+            {
+                "email": loggedUser.getEmail(),
+                "firstname": loggedUser.getGivenName(),
+                "lastname": loggedUser.getFamilyName(),
+                "name": loggedUser.getName(),
+                "imgurl": loggedUser.getImageUrl()
+            };
+            debugger;
+            //that.loginService.getUserData(that.login.email, that.loginService.googleUser.getBasicProfile().getImageUrl(), that.loginService.googleUser.getBasicProfile().getName()).then(response =>{
+            //that.loginService.syncUserData(JSON.stringify(loginModel)).then(response =>{
+            that.loginService.syncUserData(loggedUser.getEmail(), loggedUser.getImageUrl(), loggedUser.getGivenName(), loggedUser.getFamilyName(), loggedUser.getName()).then(response =>{
                 console.log('GetUserData Response:')
                 console.log(response)
+                debugger;
                 if(response != null)
                 {
                     if(response["Result"] == "1")
                     {
                         that._ngZone.run(() => {
                             response = JSON.parse(response["Message"]);
-                            //console.log('user data')
-                            that.loginService.loggedUser = response["Table"][0];
-                            //console.log(that.loginService.loggedUser)
+                            //that.loginService.loggedUser = response["Table"][0];
+                            that.loginService.loggedUser = response;
 
                             that.localStorageService.set("login_id", that.loginService.googleUser.getId())
                             
                             var role = that.loginService.loggedUser.rolename;
-                            //alert(role);
-                                if (role == 'Team Lead' || role == 'Delivery Manager' || role == 'Super User')
+                            if (role == 'Team Lead' || role == 'Delivery Manager' || role == 'Super User')
+                            {
+                                // synch jobs
+                                that.jobsService.synchJobs().then(response =>
                                 {
-                                    // synch jobs
-                                    that.jobsService.synchJobs().then(response =>
-                                    {
-                                        //console.log(response)
-                                        if (response) {
-                                            that.jobsService.getNewJobs();
+                                    if (response) {
+                                        that.jobsService.getNewJobs();
 
-                                            if (response["Result"] == "1") {
-                                                //that.router.navigateByUrl('/jobs');
-                                                //that.openDialog(response["Message"]);
-                                            }
-                                            else {
-                                                //that.openDialog(response["Message"]);
-                                            }
+                                        if (response["Result"] == "1") {
+                                            //that.router.navigateByUrl('/jobs');
+                                            //that.openDialog(response["Message"]);
                                         }
-                                    });
-                                }
+                                        else {
+                                            //that.openDialog(response["Message"]);
+                                        }
+                                    }
+                                });
+                            }
 
                             that.fuseNavigationService.navigationModel = new NavigationModel();
-                            //console.log( that.fuseNavigationService.navigationModel.model)
-                            // console.log('logged')
-
                             that.navigateStartPage();
                         });
                     }
-                    else
+                    else 
                     {
                         that._ngZone.run(() => {
                             that.fuseConfig.setSettings({
                                 showProgress : false
                             });
-                            //that.openDialog(response["Message"]);
-                            console.log('In Else');
-                            that.openDialog('Access Denied', 'You are not authorized to access this site. Please contact your administrator!');
+                        
+                            if(response["Result"] == "0")
+                            {
+                                that.openDialog('Access Denied', 'You are not authorized to access this site. Please contact your administrator!');
+                            }
+                            else
+                            {
+                                that.openDialog('Login failed', 'There is an issue in accessing this site. Please try again later or contact your administrator!');
+                            }   
+                                
                             that.loginService.loggedUser = undefined;
                             that.loginService.googleUser.disconnect();
                         });
