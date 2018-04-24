@@ -125,7 +125,11 @@
                 <ng-container cdkColumnDef="ur_username">
                     <mat-header-cell *cdkHeaderCellDef mat-sort-header>User Name</mat-header-cell>
                     <mat-cell *cdkCellDef="let users">
-                        <p class="text-truncate ">{{users.username}}</p>
+                        
+                        <p class="text-truncate" style="font-weight:bold">
+                            {{users.username}}
+                        </p>
+                        
                     </mat-cell>
                 </ng-container>
 
@@ -233,11 +237,9 @@
             <mat-paginator #paginator
                 [length]="dataSource.filteredData.length"
                 [pageIndex]="0"
-                [pageSize]="25"
+                [pageSize]="100"
                 [pageSizeOptions]="[10, 25, 50, 100]">
             </mat-paginator>
-
-
 
             </div>
             <!-- / CONTENT -->
