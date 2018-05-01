@@ -12,37 +12,26 @@ import { Subject } from 'rxjs/Subject';
 import { FuseConfigService } from '../../../core/services/config.service';
 import { LoginService } from '../login/login.service';
 
-
 @Injectable()
-export class ReportsService {
-
-  
+export class ReportsService {  
     onContactsChanged: BehaviorSubject<any> = new BehaviorSubject({});
-
     onUserReportChanged: BehaviorSubject<any> = new BehaviorSubject({});
-
     onSearchTextChanged: Subject<any> = new Subject();
     onFilterChanged: Subject<any> = new Subject();
-
     jobReports : JobReport[];
     userReports : UserReport[];
     searchText: string;
     filterBy: string;
-
     serviceURL : String;
-
     
     constructor(private http: HttpClient, private httpObser: Http, private configSer : FuseConfigService, public loginService : LoginService)
     {
         this.serviceURL = configSer.ServiceURL;
-        
-
     }
 
     ngOnInit() {
         //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
         //Add 'implements OnInit' to the class.
-        
     }
 
     /**
@@ -107,46 +96,39 @@ export class ReportsService {
 getUserReport(userRptParam : UserReportParam): Promise<any>
     {
 
-        return new Promise((resolve, reject) => {
-
+        return new Promise((resolve, reject) =>
+        {
             let userid  = '0';
-                if (this.loginService.loggedUser != undefined)
-                    userid = this.loginService.loggedUser.userid;
+            
+            if (this.loginService.loggedUser != undefined)
+                userid = this.loginService.loggedUser.userid;
 
-        
                let tempUrl = 'Report/GetUserReport?userRptParam=' + JSON.stringify(userRptParam) + '&loginid='+userid
                this.http.get(this.serviceURL + tempUrl)
-                    .subscribe((response: any) => {
-                        
-
+                    .subscribe((response: any) => {                        
                         if ( response != null && response != undefined)
                         {
-                        response = JSON.parse(response);
-
-                        this.userReports = response;
-
-                         if (this.userReports.length > 0)
-                        {
-                            this.userReports = this.userReports.map(rpt => {
-                                return new UserReport(rpt);
-                            });
-
-                        }
-
-                        //console.log(this.jobReports)
-                        this.onUserReportChanged.next(this.userReports);
-                        resolve(this.userReports);
-                        
-
+                          response = JSON.parse(response);
+  
+                          this.userReports = response;
+  
+                          if (this.userReports.length > 0)
+                          {
+                              this.userReports = this.userReports.map(rpt => {;
+                                  return new UserReport(rpt);
+                              });
+                          }
+  
+                          //console.log(this.jobReports)
+                          this.onUserReportChanged.next(this.userReports);
+                          resolve(this.userReports);
                         }
                         else
                         {
                             this.userReports = [];
                             this.onUserReportChanged.next(this.userReports);
                             resolve(this.userReports);
-                        }
-
-                    
+                        }                    
                     }, reject);
             }
         );

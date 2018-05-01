@@ -37,7 +37,7 @@
                     <mat-form-field fxFlex="100">
                         <input matInput placeholder="Email Address" formControlName="email" #email required >
                          <mat-error *ngIf="formErrors.email.pattern">
-                            Please enter the valid email address
+                            Please enter valid email address
                         </mat-error>
                         <mat-error *ngIf="formErrors.email.required">
                             
@@ -61,7 +61,7 @@
                             <label>Status</label>
                             <mat-radio-group formControlName="status" (change)="changeStatus($event)">
                                 <mat-radio-button class="h5" [value]=1 checked >Active</mat-radio-button>
-                                <mat-radio-button class="h5" [value]=0 >In Active</mat-radio-button>
+                                <mat-radio-button class="h5" [value]=0 >In-Active</mat-radio-button>
                             </mat-radio-group>
                         </div>
                 </div>

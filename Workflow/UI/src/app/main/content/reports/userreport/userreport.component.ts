@@ -18,9 +18,6 @@ import { UsersService } from '../../users/users.service';
 import { DatePipe } from '@angular/common';
 import { FusePerfectScrollbarDirective } from '../../../../core/directives/fuse-perfect-scrollbar/fuse-perfect-scrollbar.directive';
 
-
-
-
 @Component({
     selector   : 'fuse-orderentry',
     templateUrl: './userreport.component.html',
@@ -30,10 +27,7 @@ import { FusePerfectScrollbarDirective } from '../../../../core/directives/fuse-
 })
 export class UserReportComponent implements OnInit, OnDestroy
 {
-
-    @ViewChild('dialogContent') dialogContent: TemplateRef<any>;
-    
-
+    @ViewChild('dialogContent') dialogContent: TemplateRef<any>;    
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild('filter') filter: ElementRef;
     @ViewChild(MatSort) sort: MatSort;
@@ -42,53 +36,29 @@ export class UserReportComponent implements OnInit, OnDestroy
     selectedUsers = [];
     settings = {};
 
-
     users: any;
     dataSource: FilesDataSource | null;
-    displayedColumns = [ 'ur_username', 'ur_jobcode', 'ur_title', 'ur_location', 'ur_publisheddate', 'ur_assigneddate', 'ur_duration', 'ur_submission', 'ur_comment'];
+    //displayedColumns = [ 'ur_username', 'ur_jobcode', 'ur_title', 'ur_location', 'ur_clientname', 'ur_publisheddate', 'ur_assigneddate', 'ur_duration', 'ur_submission', 'ur_comment'];
+    displayedColumns = [ 'ur_username', 'ur_job', 'ur_location', 'ur_clientname', 'ur_publisheddate', 'ur_assigneddate', 'ur_duration', 'ur_submission', 'ur_comment'];
     selectedContacts: any[];
     checkboxes: {};
-
-
-        // public int userids { get; set; }
-        // public string username { get; set; }
-        // public string jobcode { get; set; }
-        // public string title { get; set; }
-        // public string location { get; set; }
-        // public string publisheddate { get; set; }
-        // public string assingeddate { get; set; }
-        // public string duration { get; set; }
-        // public int submission { get; set; }
-        // public bool jobstarted { get; set; }
-
-
     onUserReportChangedSubscription: Subscription;
-    							
-
-
     dialogRef: any;
-
     confirmDialogRef: MatDialogRef<FuseConfirmDialogComponent>;
-
     datePipe = new DatePipe("en-US");
-
     isSearchExpanded : boolean
     isSearchEnable : boolean = false;
-
     lastDaysList  = [];
-
     userReport : FormGroup;
     rptForm : UserReportParam;
-
-    todayDate = new Date();
-    
+    todayDate = new Date();    
     minFromDate = null;
     minToDate = null;
-
     maxFromDate  = null; 
     maxToDate = null;
-
     maxPublishedDate = null;
+    matTableInner: number;
+    reduceHeight: number;
 
     constructor(
         public reportService: ReportsService,
@@ -99,82 +69,61 @@ export class UserReportComponent implements OnInit, OnDestroy
         private loginService : LoginService,
         private userService : UsersService
     )
-    {
-        
-        this.onUserReportChangedSubscription = this.reportService.onUserReportChanged.subscribe(jbs => {
-                this.users = jbs;
-            });
-
+    {        
+        this.onUserReportChangedSubscription = this.reportService.onUserReportChanged.subscribe(jbs => {;
+            this.users = jbs;
+        });
         
         this.rptForm = new UserReportParam({});
-
         this.maxFromDate = new Date(this.todayDate.getFullYear(), this.todayDate.getMonth(), this.todayDate.getDate());
         this.maxToDate = new Date(this.todayDate.getFullYear(), this.todayDate.getMonth(), this.todayDate.getDate());
-
         this.maxPublishedDate = new Date(this.todayDate.getFullYear(), this.todayDate.getMonth(), this.todayDate.getDate());
-
-        this.isSearchExpanded = true;
-
-
-        
+        this.isSearchExpanded = true;        
     }
 
     ngOnInit()
     {
-        // if( this.loginService.loggedUser == undefined)
-        // {
-        //     this.router.navigateByUrl('/login');
-        //     return;
-        // }
-
-        this.userReport = this.createJobForm();
-        
+        //this.reduceHeight = 290;
+        this.matTableInner = (window.innerHeight - 290);        
+        this.userReport = this.createJobForm();        
         this.dataSource = new FilesDataSource(this.reportService, this.paginator, this.sort);
-
-        this.reportService.getLastDays().then(response => {
-
-                if (response)
-                {
-                    response.map(priori => {
-                            this.lastDaysList.push( {"id":priori["Value"], "itemName" : priori["Name"]})
-                        });
-
-                    //console.log(this.priorityList);
-
-                }
-            });
-
+        this.reportService.getLastDays().then(response =>
+        {
+            if (response)
+            {
+                response.map(priori => {
+                    this.lastDaysList.push( {"id":priori["Value"], "itemName" : priori["Name"]})
+                });
+            }
+        });
         
-        
-        this.userService.getAssignedUser(1).then(response => {
-
-                if (response)
-                {
-                    response.map(user => {
-                            this.usersDataList.push( { "roleName": user["rolename"], "id":user["userid"], "itemName" : user["name"]})
-                        });
-
-                    //console.log(this.usersDataList);
-
-                }
-            });
-
-
+        this.userService.getAssignedUser(1).then(response =>
+        {
+            if (response)
+            {
+                response.map(user => {
+                    this.usersDataList.push( { "roleName": user["rolename"], "id":user["userid"], "itemName" : user["name"]})
+                });
+            }
+        });
         
         this.settings = {
-                                  maxHeight : '250px',
-                                  searchAutofocus : true,
-                                  singleSelection: false, 
-                                  text:"Users",
-                                  selectAllText:'Select All',
-                                  unSelectAllText:'UnSelect All',
-                                  enableSearchFilter: true,
-                                  enableCheckAll : true,
-                                  classes : 'custom_userrpt_list',
-                                  badgeShowLimit: 1
+            maxHeight : '250px',
+            searchAutofocus : true,
+            singleSelection: false, 
+            text:"Users",
+            selectAllText:'Select All',
+            unSelectAllText:'UnSelect All',
+            enableSearchFilter: true,
+            enableCheckAll : true,
+            classes : 'custom_userrpt_list',
+            badgeShowLimit: 1
         };
+    }
     
-
+    onResize(event)
+    {
+        this.matTableInner = (window.innerHeight - 290);
     }
 
     onItemSelect(item:any ){
@@ -201,16 +150,13 @@ export class UserReportComponent implements OnInit, OnDestroy
             assigneddate    : [this.rptForm.assigneddate],
             fromdate        : [this.rptForm.fromdate],
             todate          : [this.rptForm.todate],
-            lastdays       : [this.rptForm.lastdays]
+            lastdays        : [this.rptForm.lastdays]
         });
     }
 
     searchValidation()
     {
         this.rptForm = this.userReport.getRawValue();
-
-       
-       
 
         // if(this.rptForm.status == undefined)
         //     this.rptForm.status = -2;
@@ -220,12 +166,11 @@ export class UserReportComponent implements OnInit, OnDestroy
 
         if( this.rptForm.userids.length >  0 || this.rptForm.jobcode != "" || this.rptForm.title != "" || this.rptForm.location != "" || this.rptForm.publisheddate != "" || this.rptForm.assigneddate != "" 
             || this.rptForm.fromdate != "" || this.rptForm.todate != "" || this.rptForm.lastdays != -1 )
-            {
-
-                this.isSearchEnable = true;
-            }
-            else
-                this.isSearchEnable = false;
+        {
+            this.isSearchEnable = true;
+        }
+        else
+            this.isSearchEnable = false;
     }
 
     clearSearch()
@@ -233,18 +178,17 @@ export class UserReportComponent implements OnInit, OnDestroy
         //this.jobReport.reset();
 
         this.userReport.patchValue(
-            {
-                userids         : [],
-                jobcode         : '',
-                title           : '',
-                location        : '',
-                publisheddate   : '',
-                assigneddate    : '',
-                fromdate        : '',
-                todate          : '',
-                lastdays       : -1
-            }
-        );
+        {
+            userids         : [],
+            jobcode         : '',
+            title           : '',
+            location        : '',
+            publisheddate   : '',
+            assigneddate    : '',
+            fromdate        : '',
+            todate          : '',
+            lastdays       : -1
+        });
 
         this.rptForm = this.userReport.getRawValue();
         this.reportService.getUserReport(this.rptForm);
@@ -254,17 +198,16 @@ export class UserReportComponent implements OnInit, OnDestroy
     
 
     loadReport(event)
-    {   
-        
+    {        
         this.rptForm = this.userReport.getRawValue();
 
          let userid = [];
          
          if (this.userReport.getRawValue()["userids"] != undefined && this.userReport.getRawValue()["userids"] != "" && this.userReport.getRawValue()["userids"].length > 0)
          {
-           userid = this.userReport.getRawValue()["userids"].map(user => {
-                            return (user["id"])
-                        });
+            userid = this.userReport.getRawValue()["userids"].map(user => {
+                return (user["id"])
+            });
          }
 
          this.rptForm.userids = userid;
@@ -278,7 +221,6 @@ export class UserReportComponent implements OnInit, OnDestroy
         if( this.rptForm.userids.length == 0 && this.rptForm.jobcode == "" && this.rptForm.title == "" && this.rptForm.location == "" && this.rptForm.publisheddate == "" && this.rptForm.assigneddate == "" 
             && this.rptForm.fromdate == "" && this.rptForm.todate == ""  && this.rptForm.lastdays == -1 )
             {
-
                 this.openDialog("Please filter by any Values!")
                 return;
             }
@@ -303,24 +245,19 @@ export class UserReportComponent implements OnInit, OnDestroy
             this.openDialog("Please select the From date")
             return;
         }
-
+        
         this.paginator.pageIndex = 0;
         this.isSearchExpanded = false;
         this.reportService.getUserReport(this.rptForm);
-        
-        
     }
-
 
     ngOnDestroy()
     {
         this.onUserReportChangedSubscription.unsubscribe();
     }
-
     
-    selectedFromDate(type: string, event: MatDatepickerInputEvent<Date>) {
-        
-        
+    selectedFromDate(type: string, event: MatDatepickerInputEvent<Date>)
+    {
         this.minToDate = event.value; 
         this.searchValidation();
         this.userReport.patchValue(
@@ -329,8 +266,9 @@ export class UserReportComponent implements OnInit, OnDestroy
             }
         );
     }
-    selectedToDate(type: string, event: MatDatepickerInputEvent<Date>) {
-
+    
+    selectedToDate(type: string, event: MatDatepickerInputEvent<Date>)
+    {
         this.maxFromDate = event.value;
         this.searchValidation();
         this.userReport.patchValue(
@@ -425,20 +363,12 @@ export class UserReportComponent implements OnInit, OnDestroy
             duration: 2000,
             verticalPosition : 'top',
             extraClasses: ['mat-light-blue-100-bg']
-
-
         });
-
-
     }
-    
-
-
 }
 
 export class FilesDataSource extends DataSource<any>
-{
-    
+{    
     @ViewChild(FusePerfectScrollbarDirective) directiveScroll: FusePerfectScrollbarDirective;
 
     _filterChange = new BehaviorSubject('');
@@ -479,10 +409,8 @@ export class FilesDataSource extends DataSource<any>
             this._paginator.page,
             this._filterChange,
             this._sort.sortChange
-        ];
-        
+        ];      
        
-
         return Observable.merge(...displayDataChanges).map(() => {
 
             if(this.reportService.userReports != undefined)
@@ -529,15 +457,12 @@ export class FilesDataSource extends DataSource<any>
     }
 
     sortData(data): any[]
-    {
-
-        
+    {        
         if ( !this._sort.active || this._sort.direction === '' )
         {
             return data;
         }
 //displayedColumns = [ 'ur_userids', 'ur_username', 'ur_jobcode', 'ur_title', 'ur_location', 'ur_publisheddate', 'ur_assingeddate', 'ur_duration', 'ur_submission', 'ur_jobstarted'];
-
 
         //this._paginator.pageIndex = 0;
 
@@ -576,8 +501,7 @@ export class FilesDataSource extends DataSource<any>
                     break;
                 case 'ur_comment':
                     [propertyA, propertyB] = [a.comment, b.comment];
-                    break;
-                    
+                    break;                    
             }
 
             const valueA = isNaN(+propertyA) ? propertyA : +propertyA;

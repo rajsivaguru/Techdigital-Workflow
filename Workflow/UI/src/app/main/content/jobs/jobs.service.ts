@@ -4,7 +4,7 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Jobs,JobStatus, JobStatusHistory, JobsList } from './jobs.model';
+import { Jobs,JobStatus, JobStatusHistory, JobsList,JobAssignment } from './jobs.model';
 import { FuseUtils } from '../../../core/fuseUtils';
 import { Subject } from 'rxjs/Subject';
 import { FuseConfigService } from '../../../core/services/config.service';
@@ -259,6 +259,17 @@ getNewJobs(): Promise<any>
             }
         );
     }
+    getClients(): Promise<any>
+    {
+        return new Promise((resolve, reject) => {
+                this.http.get(this.serviceURL+'Job/GetClients')
+                    .subscribe((response: any) => {
+                        response = JSON.parse(response);
+                        resolve(response);
+                    }, reject);
+            }
+        );
+    }
 
     searchJob = (keyword: any): Observable<any[]> => {
         try
@@ -463,15 +474,17 @@ toggleSelectedNewJob(id)
         });
     }
 
-    saveJobUser(users, jobid, priorityid)
+    saveJobUser(jobAssign : JobAssignment)
     {
-        let userid  = '0';
+        jobAssign.loginid  = '0';
         if (this.loginService.loggedUser != undefined)
-            userid = this.loginService.loggedUser.userid;
+            jobAssign.loginid = this.loginService.loggedUser.userid;
 
         return new Promise((resolve, reject) => {
-            this.http.get(this.serviceURL+'TDW/SaveJobUser?userid=' + users +'&jobid='+ jobid +'&priorityid='+ priorityid  + '&loginid='+ userid)
-                .subscribe( (response : any )=> {
+            //this.http.get(this.serviceURL+'TDW/SaveJobUser?userid=' + users +'&jobid='+ jobid +'&priorityid='+ priorityid +'&clientname='+ clientname  + '&loginid='+ userid)
+            //this.http.get(this.serviceURL+'TDW/SaveJobUser?objJobAssignParam=' + JSON.stringify(jobAssign))
+            this.http.get(this.serviceURL+'Job/AssignJobUser?source=' + JSON.stringify(jobAssign))
+                .subscribe((response : any )=> {
                     response = JSON.parse(response);
                     this.getNewJobs();
                     resolve(response);

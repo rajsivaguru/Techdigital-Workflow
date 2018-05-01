@@ -70,7 +70,6 @@ export class LoginService
 
     syncUserData(email, img, firstname, lastname, name): Promise<any>
     {
-    debugger;
         return new Promise((resolve, reject) => {
                 this.http.get(this.serviceURL +'User/Login?email=' + email + '&imgurl=' + img + '&firstname=' + firstname + '&lastname=' + lastname + '&name=' + name)
                     .subscribe((response: any) => {

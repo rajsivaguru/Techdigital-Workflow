@@ -24,17 +24,13 @@ import { LocalStorageService } from 'angular-2-local-storage'
 })
 export class LoginComponent implements OnInit
 {
-
     loginForm: FormGroup;
     loginFormErrors: any;
     login : Login;
-
-    
    
     private myClientId: string;
     private scope = ['profile','email'].join(' ');
     public auth2: any;
-
 
     constructor(
         private fuseConfig: FuseConfigService,
@@ -52,8 +48,6 @@ export class LoginComponent implements OnInit
     {   
         // if(this.loginService.googleUser != null && this.loginService.googleUser.isSignedIn())
         //     this.loginService.googleUser.disconnect();
-                
-        //console.log(this.loginService.googleUser)
 
         this.loginFormErrors = {
             email   : {},
@@ -61,15 +55,12 @@ export class LoginComponent implements OnInit
         };
 
         this.login = new Login({});
-
         this.loginService.loggedUser = new Contact({});
 
         this.loginService.getConfigurationData().then(data => {
-
             if(data == "" || data == undefined )
             {
-                this.myClientId = fuseConfig.GoogleClientID +'.apps.googleusercontent.com';
-               
+                this.myClientId = fuseConfig.GoogleClientID +'.apps.googleusercontent.com';               
             }
             else
             {
@@ -78,9 +69,7 @@ export class LoginComponent implements OnInit
                 this.fuseConfig.AlertTimerDuration = data["AlertTimerDuration"]
                 //this.myClientId = "401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et";
             }
-
-        });
-        
+        });        
 
         // this.errorMessage1 = "";
         // this.errorMessage2 = "";
@@ -110,6 +99,7 @@ export class LoginComponent implements OnInit
 
 public googleInit() {
     let that = this;
+    let counter = 0;
     gapi.load('auth2', function(){
         /**
          * Retrieve the singleton for the GoogleAuth library and set up the
@@ -125,8 +115,8 @@ public googleInit() {
         });
 
         // Listen for sign-in state changes.
-        that.auth2.isSignedIn.listen(function(isSigned) {
-            //console.log(isSigned)
+        that.auth2.isSignedIn.listen(function(isSigned)
+        {
             if(!isSigned)
             {
                 that.router.navigateByUrl('/login');
@@ -134,229 +124,203 @@ public googleInit() {
         });
 
         // Listen for changes to current user.
-        that.auth2.currentUser.listen(function (googleUser) {
-        
-        
-        //console.log(googleUser)        
-        if(googleUser != null && googleUser != undefined && googleUser["El"] != null && googleUser["Zi"] != null )
-        {
-            let profile = googleUser.getBasicProfile();
-            console.log('profile: ');
-            console.log(profile);
-            // console.log('Token || ' + googleUser.getAuthResponse().id_token);
-            // console.log('ID: ' + profile.getId());
-             console.log('Name: ' + profile.getName());
-            // console.log('Image URL: ' + profile.getImageUrl());
-            // console.log('Email: ' + profile.getEmail());
-            //YOUR CODE HERE
-
-            
-            that.loginService.googleUser = googleUser;
-            //let id: string = this.loginService.googleUser.getId();
-            //let profile: gapi.auth2.BasicProfile = this.loginService.googleUser.getBasicProfile();
-            //console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-            //console.log(event.googleUser);
-
-            that.router.events.subscribe(
-                (event) => {
-                    if ( event instanceof NavigationStart )
-                    {
-                        that.fuseConfig.setSettings({
-                                showProgress : true
-                            });
-                    }
-                    if ( event instanceof NavigationEnd )
-                    {
-                        that.fuseConfig.setSettings({
-                            showProgress : false
-                        });
-                    }
-                    if ( event instanceof NavigationError )
-                    {
-                        that.fuseConfig.setSettings({
-                            showProgress : false
-                        });
-
-                        that.openDialog('Error', 'Error occurred. Please contact your administrator!');
-                    }                    
-                });
-
-            //console.log()
-            var loggedUser = that.loginService.googleUser.getBasicProfile();            
-            that.login.email = loggedUser.getEmail();
-            
-            var loginModel =
+        that.auth2.currentUser.listen(function (googleUser)
+        {                
+            if(googleUser != null && googleUser != undefined && googleUser["El"] != null && googleUser["Zi"] != null && counter < 1)
             {
-                "email": loggedUser.getEmail(),
-                "firstname": loggedUser.getGivenName(),
-                "lastname": loggedUser.getFamilyName(),
-                "name": loggedUser.getName(),
-                "imgurl": loggedUser.getImageUrl()
-            };
-            debugger;
-            //that.loginService.getUserData(that.login.email, that.loginService.googleUser.getBasicProfile().getImageUrl(), that.loginService.googleUser.getBasicProfile().getName()).then(response =>{
-            //that.loginService.syncUserData(JSON.stringify(loginModel)).then(response =>{
-            that.loginService.syncUserData(loggedUser.getEmail(), loggedUser.getImageUrl(), loggedUser.getGivenName(), loggedUser.getFamilyName(), loggedUser.getName()).then(response =>{
-                console.log('GetUserData Response:')
-                console.log(response)
-                debugger;
-                if(response != null)
-                {
-                    if(response["Result"] == "1")
-                    {
-                        that._ngZone.run(() => {
-                            response = JSON.parse(response["Message"]);
-                            //that.loginService.loggedUser = response["Table"][0];
-                            that.loginService.loggedUser = response;
-
-                            that.localStorageService.set("login_id", that.loginService.googleUser.getId())
-                            
-                            var role = that.loginService.loggedUser.rolename;
-                            if (role == 'Team Lead' || role == 'Delivery Manager' || role == 'Super User')
-                            {
-                                // synch jobs
-                                that.jobsService.synchJobs().then(response =>
-                                {
-                                    if (response) {
-                                        that.jobsService.getNewJobs();
-
-                                        if (response["Result"] == "1") {
-                                            //that.router.navigateByUrl('/jobs');
-                                            //that.openDialog(response["Message"]);
-                                        }
-                                        else {
-                                            //that.openDialog(response["Message"]);
-                                        }
-                                    }
+            	counter = counter + 1;
+                let profile = googleUser.getBasicProfile();
+                console.log(profile);
+                // console.log('Token || ' + googleUser.getAuthResponse().id_token);
+                
+                that.loginService.googleUser = googleUser;
+    
+                that.router.events.subscribe(
+                    (event) => {
+                        if ( event instanceof NavigationStart )
+                        {
+                            that.fuseConfig.setSettings({
+                                    showProgress : true
                                 });
-                            }
-
-                            that.fuseNavigationService.navigationModel = new NavigationModel();
-                            that.navigateStartPage();
-                        });
-                    }
-                    else 
-                    {
-                        that._ngZone.run(() => {
+                        }
+                        if ( event instanceof NavigationEnd )
+                        {
                             that.fuseConfig.setSettings({
                                 showProgress : false
                             });
-                        
-                            if(response["Result"] == "0")
-                            {
-                                that.openDialog('Access Denied', 'You are not authorized to access this site. Please contact your administrator!');
-                            }
-                            else
-                            {
-                                that.openDialog('Login failed', 'There is an issue in accessing this site. Please try again later or contact your administrator!');
-                            }   
+                        }
+                        if ( event instanceof NavigationError )
+                        {
+                            that.fuseConfig.setSettings({
+                                showProgress : false
+                            });
+    
+                            that.openDialog('Error', 'Error occurred. Please contact your administrator!');
+                        }                    
+                    });
+    
+                var loggedUser = that.loginService.googleUser.getBasicProfile();            
+                that.login.email = loggedUser.getEmail();
+                
+                var loginModel =
+                {
+                    "email": loggedUser.getEmail(),
+                    "firstname": loggedUser.getGivenName(),
+                    "lastname": loggedUser.getFamilyName(),
+                    "name": loggedUser.getName(),
+                    "imgurl": loggedUser.getImageUrl()
+                };
+                
+                //that.loginService.getUserData(that.login.email, that.loginService.googleUser.getBasicProfile().getImageUrl(), that.loginService.googleUser.getBasicProfile().getName()).then(response =>{
+                //that.loginService.syncUserData(JSON.stringify(loginModel)).then(response =>{
+                that.loginService.syncUserData(loggedUser.getEmail(), loggedUser.getImageUrl(), loggedUser.getGivenName(), loggedUser.getFamilyName(), loggedUser.getName()).then(response =>{
+                    console.log('GetUserData Response:')
+                    console.log(response)
+                    
+                    if(response != null)
+                    {
+                        if(response["Result"] == "1")
+                        {
+                            that._ngZone.run(() => {
+                                response = JSON.parse(response["Message"]);
+                                that.loginService.loggedUser = response;
+    
+                                that.localStorageService.set("login_id", that.loginService.googleUser.getId())
                                 
-                            that.loginService.loggedUser = undefined;
-                            that.loginService.googleUser.disconnect();
-                        });
+                                var role = that.loginService.loggedUser.rolename;
+                                if (role == 'Team Lead' || role == 'Delivery Manager' || role == 'Super User')
+                                {
+                                    // synch jobs
+                                    that.jobsService.synchJobs().then(response =>
+                                    {
+                                        if (response) {
+                                            that.jobsService.getNewJobs();
+                                        }
+                                    });
+                                }
+    
+                                that.fuseNavigationService.navigationModel = new NavigationModel();
+                                that.navigateStartPage();
+                            });
+                        }
+                        else 
+                        {
+                            that._ngZone.run(() => {
+                                that.fuseConfig.setSettings({
+                                    showProgress : false
+                                });
+                            
+                                if(response["Result"] == "0")
+                                {
+                                    that.openDialog('Access Denied', 'You are not authorized to access this site or your role has not been set. Please contact your administrator!');
+                                }
+                                else
+                                {
+                                    that.openDialog('Login failed', 'There is an issue in sign-in to this site. Please try again later or contact your administrator!');
+                                }
+                                    
+                                that.loginService.loggedUser = undefined;
+                                that.loginService.googleUser.disconnect();
+                            });
+                        }
                     }
-                }
-            }).catch( ex =>{
-
+                }).catch( ex =>
+                {    
+                    that._ngZone.run(() => {
+                        that.fuseConfig.setSettings({
+                            showProgress : false
+                        });
+                        that.openDialog('Login failed', 'Something went wrong. Please try again later or contact your administrator!');
+                    });
+                });
+            }
+            else
+            {
+                that.fuseConfig.setSettings({
+                    showProgress : false,
+                    layout: {
+                        navigation: 'none',
+                        toolbar   : 'none',
+                        footer    : 'none'
+                    }
+                });                
+            }
+          });
+    
+            // Sign in the user if they are currently signed in.
+            if (that.auth2.isSignedIn.get() == true) {
+                that.auth2.signIn();
+            }
+    
+            // Attach the click handler to the sign-in button
+            that.auth2.attachClickHandler(that.element.nativeElement.firstChild, {},  function (googleUser) { }, function (error) {
                 that._ngZone.run(() => {
                     that.fuseConfig.setSettings({
                         showProgress : false
                     });
-                    //that.openDialog(response["Message"]);
-                    console.log('In Catch');
+                    console.log('In Error');
                     that.openDialog('Access Denied', 'You are not authorized to access this site. Please contact your administrator!');
                 });
             });
-        }
-        else
-        {
-            that.fuseConfig.setSettings({
-                                showProgress : false,
-                                layout: {
-                                    navigation: 'none',
-                                    toolbar   : 'none',
-                                    footer    : 'none'
-                                }
-                            });
-            
-        }
       });
-
-        // Sign in the user if they are currently signed in.
-        if (that.auth2.isSignedIn.get() == true) {
-            that.auth2.signIn();
-        }
-
-        // Attach the click handler to the sign-in button
-        that.auth2.attachClickHandler(that.element.nativeElement.firstChild, {},  function (googleUser) { }, function (error) {
-                that._ngZone.run(() => {
-                    that.fuseConfig.setSettings({
-                            showProgress : false
-                        });
-                        //that.openDialog(response["Message"]);
-                        console.log('In Error');
-                        that.openDialog('Access Denied', 'You are not authorized to access this site. Please contact your administrator!');
-                    });
-        });
-  });
   }
 
     navigateStartPage()
     {
          if(this.loginService.loggedUser != null && this.loginService.loggedUser != undefined)
          {
-                        // 1	Recruiter
-                        // 2	Team Lead
-                        // 3	Delivery Manager
-                        // 4	Report User
-                        // 5	Super User
-                        if(this.loginService.loggedUser.roleid == "1") //Recruiter
-                        {
-                            this.fuseNavigationService.removeMenu("newjobs");    
-                            this.fuseNavigationService.removeMenu("users");    
-                            this.fuseNavigationService.removeMenu("reports");  
-                            this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
-                            this.router.navigate(['/myjobs']);
-                        }
-                        else if(this.loginService.loggedUser.roleid == "2")//Team Lead
-                        {
-                            this.fuseNavigationService.removeMenu("users");     
-                            this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
-                            this.router.navigate(['/jobsload']);
-                        }
-                        else if(this.loginService.loggedUser.roleid == "3")//Delivery Manager
-                        {
-                            this.fuseNavigationService.removeMenu("users");     
-                            this.fuseNavigationService.removeMenu("recruiters");  
-                            this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
-                            this.router.navigate(['/jobsload']);
-                        }
-                        else if(this.loginService.loggedUser.roleid == "4")//Report User
-                        {
-                            this.fuseNavigationService.removeMenu("newjobs");    
-                            this.fuseNavigationService.removeMenu("users");    
-                            this.fuseNavigationService.removeMenu("recruiters");   
-                            this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
-                            this.router.navigate(['/jobreport']);
-                        }
-                        else if(this.loginService.loggedUser.roleid == "5")//Super User
-                        {
-                            this.fuseNavigationService.removeMenu("recruiters");   
-                            this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
-                            this.router.navigate(['/jobsload']);
-                        }
-                        else 
-                        {
-                            this.fuseConfig.setSettings({
-                                showProgress : false,
-                                layout: {
-                                    navigation: 'none',
-                                    toolbar   : 'none',
-                                    footer    : 'none'
-                                }
-                            });
-                            //this.router.navigate(['/login']);
-                        }
+              // 1	Recruiter
+              // 2	Team Lead
+              // 3	Delivery Manager
+              // 4	Report User
+              // 5	Super User
+              if(this.loginService.loggedUser.roleid == "1") //Recruiter
+              {
+                  this.fuseNavigationService.removeMenu("newjobs");    
+                  this.fuseNavigationService.removeMenu("users");    
+                  this.fuseNavigationService.removeMenu("reports");  
+                  this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
+                  this.router.navigate(['/myjobs']);
+              }
+              else if(this.loginService.loggedUser.roleid == "2")//Team Lead
+              {
+                  this.fuseNavigationService.removeMenu("users");     
+                  this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
+                  this.router.navigate(['/jobsload']);
+              }
+              else if(this.loginService.loggedUser.roleid == "3")//Delivery Manager
+              {
+                  this.fuseNavigationService.removeMenu("users");     
+                  this.fuseNavigationService.removeMenu("recruiters");  
+                  this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
+                  this.router.navigate(['/jobsload']);
+              }
+              else if(this.loginService.loggedUser.roleid == "4")//Report User
+              {
+                  this.fuseNavigationService.removeMenu("newjobs");    
+                  this.fuseNavigationService.removeMenu("users");    
+                  this.fuseNavigationService.removeMenu("recruiters");   
+                  this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
+                  this.router.navigate(['/jobreport']);
+              }
+              else if(this.loginService.loggedUser.roleid == "5")//Super User
+              {
+                  this.fuseNavigationService.removeMenu("recruiters");   
+                  this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
+                  this.router.navigate(['/jobsload']);
+              }
+              else 
+              {
+                  this.fuseConfig.setSettings({
+                      showProgress : false,
+                      layout: {
+                          navigation: 'none',
+                          toolbar   : 'none',
+                          footer    : 'none'
+                      }
+                  });
+                  //this.router.navigate(['/login']);
+              }
          }
          else
         {
@@ -370,9 +334,9 @@ public googleInit() {
             });
         }
     }
+    
     checkLoingStatus()
-    {
-        
+    {        
         if(this.loginService.googleUser != null && this.loginService.googleUser.isSignedIn())
         {
             this.navigateStartPage();
@@ -381,25 +345,24 @@ public googleInit() {
         {
             this.navigateStartPage();
         }
-
     }
+    
     submitLogin()
     {
         this.fuseConfig.setSettings({
             showProgress : true
         });
     }
+    
     openDialog(title, message) : void
     {
-
          this.dialog.open(DialogComponent, {
             width: '550px',
             data: { 
                 title : title,
                 message : message 
             }
-            });
-
+          });
     }
 
     onLoginFormValuesChanged()
@@ -422,8 +385,7 @@ public googleInit() {
                 this.loginFormErrors[field] = control.errors;
             }
         }
-    }
- 
+    } 
 }
 
 export class Login

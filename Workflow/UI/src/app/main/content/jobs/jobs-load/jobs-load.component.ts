@@ -2,8 +2,9 @@ import { Component,Inject,  OnDestroy, OnInit, ElementRef,TemplateRef, ViewChild
 import { JobsService } from '../jobs.service';
 import { UsersService } from '../../users/users.service';
 import { Observable } from 'rxjs/Observable';
+import {startWith} from 'rxjs/operators/startWith';
+import {map} from 'rxjs/operators/map';
 import { FormControl, FormGroup } from '@angular/forms';
-
 import { MatDialog, MAT_DIALOG_DATA, MatDialogRef, MatPaginator, MatSort, MatSnackBar } from '@angular/material';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { FuseConfirmDialogComponent } from '../../../../core/components/confirm-dialog/confirm-dialog.component';
@@ -12,7 +13,7 @@ import { fuseAnimations } from '../../../../core/animations';
 import { Subscription } from 'rxjs/Subscription';
 import { Router }   from '@angular/router';
 import { LoginService } from '../../login/login.service';
-import { JobStatusHistory, JobStatus, JobsList } from '../jobs.model';
+import { JobStatusHistory, JobStatus, JobsList, JobAssignment } from '../jobs.model';
 import { DialogComponent, DialogDataComponent } from '../../dialog/dialog.component'
 import { FuseUtils } from '../../../../core/fuseUtils';
 import { FusePerfectScrollbarDirective } from '../../../../core/directives/fuse-perfect-scrollbar/fuse-perfect-scrollbar.directive';
@@ -33,7 +34,7 @@ export class JobsLoadComponent implements OnInit, OnDestroy
     newJobs: any;
     user: any;
     dataSource: FilesDataSource | null;
-    displayedColumns = ['jn_referenceid', 'jn_title', 'jn_location', 'jn_publisheddate', 'jn_priorityid', 'jn_userlist', 'jn_selectedUser', 'jn_buttons'];
+    displayedColumns = ['jn_referenceid', 'jn_title', 'jn_location', 'jn_clientname', 'jn_publisheddate', 'jn_priorityid', 'jn_userlist', 'jn_selectedUser', 'jn_buttons'];
     selectedContacts: any[];
     checkboxes: {};
     searchInput: FormControl;
@@ -49,15 +50,20 @@ export class JobsLoadComponent implements OnInit, OnDestroy
 
     usersList = [];
     priorityList = [];
+    clientList = [];
+
     dropdownSettings = {};
     dropdownPrioritySettings = {};
     formModel : any;
+
+    myControl: FormControl = new FormControl();
+    filteredOptions: Observable<string[]>;
+    jobAssign : JobAssignment;
 
     constructor(
         private jobsService: JobsService,
         public dialog: MatDialog,
         public snackBar: MatSnackBar,
-      
         public router : Router,
         private loginService : LoginService,
         private userService : UsersService
@@ -65,6 +71,7 @@ export class JobsLoadComponent implements OnInit, OnDestroy
     {
         
         this.searchInput = new FormControl('');
+        
         this.onNewJobsChangedSubscription =
             this.jobsService.newJobsChanged.subscribe(contacts => {
 
@@ -89,6 +96,8 @@ export class JobsLoadComponent implements OnInit, OnDestroy
             this.jobsService.onUserDataChanged.subscribe(user => {
                 this.user = user;
             });
+
+        
 
     }
 
@@ -120,6 +129,9 @@ export class JobsLoadComponent implements OnInit, OnDestroy
             });
 
 
+        
+       
+
         this.userService.getAssignedUser(1).then(response => {
 
                 if (response)
@@ -146,6 +158,10 @@ export class JobsLoadComponent implements OnInit, OnDestroy
                 }
             });
 
+        // bind the clients
+        this.bindClients();
+        
+
 
         this.dropdownSettings =  { 
                                   singleSelection: false, 
@@ -156,10 +172,67 @@ export class JobsLoadComponent implements OnInit, OnDestroy
                                   badgeShowLimit: 2
                 };
 
-       
+        
        
 
     }
+
+    bindClients()
+    {
+        this.clientList = [];
+        this.jobsService.getClients().then(response => {
+
+                if (response)
+                {
+                    response.map(client => {
+                            this.clientList.push( {"clientname":client["clientname"]})
+                        });
+
+                    // this.filteredOptions = this.clientList.map ;
+                    // console.log(this.clientList);
+
+                    this.filteredOptions = this.myControl.valueChanges.startWith(null)
+                                   .map(val => val ? this.filterClient(val) : this.clientList.slice());
+                
+
+                }
+            });
+    }
+
+    filterClient(val: string): string[]
+    {
+        return this.clientList.filter(option =>
+            option.clientname.toLowerCase().indexOf(val.toLowerCase()) === 0);
+    }
+
+    clientNameTyped(evet, editJobs : JobsList)
+    {
+        editJobs.clientname = evet.target.value;
+
+        if (editJobs.clientname == editJobs.oldclientname)
+            editJobs.isSaveEnable = false;
+        else
+            editJobs.isSaveEnable = true;
+
+        // this.filteredOptions = this.myControl.valueChanges
+        //                            .startWith(null)
+        //                            .map(val => val ? this.filterClient(val) : this.clientList.slice());
+    }
+
+    clientSelected(evet, editJobs : JobsList)
+    {
+        editJobs.clientname = evet.option.value;
+
+        if (editJobs.clientname == editJobs.oldclientname)
+            editJobs.isSaveEnable = false;
+        else
+            editJobs.isSaveEnable = true;
+
+        this.filteredOptions = this.myControl.valueChanges
+                                   .startWith(null)
+                                   .map(val => val ? this.filterClient(val) : this.clientList.slice());
+    }
+   
 
     changePriorityLevel(event, editJobs : JobsList)
     {
@@ -186,13 +259,21 @@ export class JobsLoadComponent implements OnInit, OnDestroy
         //if(editJobs.selectedUser.length >0 )
         {
 
-         this.jobsService.saveJobUser(userid.join(','),editJobs.jobid, editJobs.priorityLevel)
+        this.jobAssign = new JobAssignment({});
+        this.jobAssign.userids = userid;
+        this.jobAssign.clientname = editJobs.clientname;
+        this.jobAssign.jobid = editJobs.jobid;
+        this.jobAssign.priorityid = editJobs.priorityLevel;
+
+
+         this.jobsService.saveJobUser(this.jobAssign)
             .then(response => {
                 editJobs.isSaveEnable = false;
                 editJobs.isSaveEnableSelectedUser = false;
                 //console.log(response)
                 if (response)
                 {
+                    this.bindClients();
                     if(response["Result"]=="1")
                     {
                         //this.router.navigateByUrl('/jobs');
@@ -485,6 +566,10 @@ export class FilesDataSource extends DataSource<any>
                     break;
                 case 'jn_location':
                     [propertyA, propertyB] = [a.location, b.location];
+                    break;
+                    
+                case 'jn_clientname':
+                    [propertyA, propertyB] = [a.clientname, b.clientname];
                     break;
                 case 'jn_publisheddate':
                     [propertyA, propertyB] = [a.publisheddate, b.publisheddate];

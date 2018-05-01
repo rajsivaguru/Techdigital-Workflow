@@ -31,6 +31,9 @@ export class JobsList
     location : string;
     duration : string;
     description : string;
+    clientname : string;
+    oldclientname : string;
+
     publisheddate : string;
     referenceid : string;
     
@@ -59,6 +62,10 @@ export class JobsList
             this.location = job.location || '';
             this.duration = job.duration || '';
             this.description = job.description || '';
+            this.clientname = job.clientname || '';
+            this.oldclientname = job.clientname || '';
+            
+
             //this.publisheddate = job.publisheddate || '';
             this.publisheddate = datePipe.transform(job.publisheddate, 'MM/dd/yyyy hh:mm aa')  || '';
             this.referenceid = job.referenceid || '';
@@ -137,3 +144,29 @@ export class Jobs
             this.modifiedon = datePipe.transform(job.modifiedon, 'MM/dd/yyyy hh:mm aa')  || '';
     }
 }
+
+
+export class JobAssignment
+    {
+
+            jobid           : string;
+            clientname      : string;
+            priorityid      : string;
+            userids         : number[];
+            loginid         : string;
+
+            constructor(jobs?)
+            {
+                this.jobid = jobs.jobid || 0;
+                this.clientname = jobs.clientname || '';
+                this.priorityid = jobs.priorityid || 0;
+                this.userids = jobs.userids || [];
+                this.loginid = jobs.loginid || 0;
+            }
+
+        // public int jobid { get; set; }
+        // public string clientname { get; set; }
+        // public int priorityid { get; set; }
+        // public List<int> userids { get; set; }
+        // public int loginid { get; set; }
+    }

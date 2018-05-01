@@ -88,6 +88,24 @@
                     </mat-cell>
                 </ng-container>
 
+                <ng-container cdkColumnDef="jn_clientname">
+                    <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Client</mat-header-cell>
+                    <mat-cell *cdkCellDef="let newJobs" fxHide fxShow.gt-md>
+                        <!-- <p class="company text-truncate">
+                            {{newJobs.clientname}}
+                        </p> -->
+                                <mat-form-field >
+                                <!--<input type="text" value="newJobs.clientname" matInput name="clientname" id="clientname" [(ngModel)]="newJobs.clientname"  [formControl]="myControl" (keyup)="clientNameTyped($event, newJobs)" [matAutocomplete]="auto">-->
+                                <input type="text" value="newJobs.clientname" matInput name="clientname" id="clientname" [(ngModel)]="newJobs.clientname" (keyup)="clientNameTyped($event, newJobs)" [matAutocomplete]="auto">
+                                <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete" (optionSelected)="clientSelected($event, newJobs)" > 
+                                    <mat-option *ngFor="let option of filteredOptions | async" [value]="option.clientname">
+                                        {{ option.clientname }}
+                                    </mat-option>
+                                </mat-autocomplete>
+                            </mat-form-field>
+                    </mat-cell>
+                </ng-container>
+
                 <!-- Email Column -->
                 <!--<ng-container cdkColumnDef="duration">
                     <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-sm>Duration</mat-header-cell>
