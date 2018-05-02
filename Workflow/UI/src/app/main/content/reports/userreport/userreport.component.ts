@@ -78,14 +78,14 @@ export class UserReportComponent implements OnInit, OnDestroy
         this.maxFromDate = new Date(this.todayDate.getFullYear(), this.todayDate.getMonth(), this.todayDate.getDate());
         this.maxToDate = new Date(this.todayDate.getFullYear(), this.todayDate.getMonth(), this.todayDate.getDate());
         this.maxPublishedDate = new Date(this.todayDate.getFullYear(), this.todayDate.getMonth(), this.todayDate.getDate());
-        this.isSearchExpanded = true;        
+        this.isSearchExpanded = true;
     }
 
     ngOnInit()
     {
-        //this.reduceHeight = 290;
-        this.matTableInner = (window.innerHeight - 290);        
-        this.userReport = this.createJobForm();        
+        this.reduceHeight = 290;
+        this.matTableInner = (window.innerHeight - this.reduceHeight);
+        this.userReport = this.createJobForm();
         this.dataSource = new FilesDataSource(this.reportService, this.paginator, this.sort);
         this.reportService.getLastDays().then(response =>
         {
@@ -123,7 +123,7 @@ export class UserReportComponent implements OnInit, OnDestroy
     
     onResize(event)
     {
-        this.matTableInner = (window.innerHeight - 290);
+        this.matTableInner = (window.innerHeight - this.reduceHeight);
     }
 
     onItemSelect(item:any ){
@@ -175,8 +175,6 @@ export class UserReportComponent implements OnInit, OnDestroy
 
     clearSearch()
     {
-        //this.jobReport.reset();
-
         this.userReport.patchValue(
         {
             userids         : [],

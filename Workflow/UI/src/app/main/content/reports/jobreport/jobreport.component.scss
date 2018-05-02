@@ -29,11 +29,19 @@
        .mat-header-row {
             
         }
+        
+        .mat-row:hover
+        {
+            background-color: #F2F4F4 !important;
+        }
 
         .mat-header-cell
         {
             font-weight: bold !important;
             font-size : 15px !important;
+            justify-content : center !important;
+            padding-right: 10px;
+            padding-left: 5px;
         }
 
         .product {
@@ -43,36 +51,50 @@
         }
 
         .mat-cell {
+            padding-right: 10px;
+            padding-left: 5px;
         }
 
        .mat-column-r_ReferenceId {
             flex: 0 1 10%;
         }
-
         .mat-column-r_Title {
             flex: 0 1 25%;
         }
         .mat-column-r_Location {
-            flex: 0 1 15%;
+            flex: 0 1 14%;
+            font-size:small;
         }
-        
+        .mat-column-r_ClientName {
+            flex: 0 1 9%;
+            font-size:small;
+        }
         .mat-column-r_PublishedDate {
-            flex: 0 1 15%;
-        }
-        
+            flex: 0 1 12%;
+            font-size:small;
+        }        
         .mat-column-r_IsActive {
             flex: 0 1 5%;
+            font-size:small;
         }
         .mat-column-r_UserCount {
             flex: 0 1 10%;
             justify-content : center !important;
             display: flex !important;
         }
-        .mat-column-r_Duration, .mat-column-r_Submission
+        .mat-column-r_Duration
         {
-            flex: 0 1 10%;
+            flex: 0 1 9%;
             justify-content : center !important;
             display: flex !important;
+            font-size:small;
+        }
+        .mat-column-r_Submission
+        {
+            flex: 0 1 5%;
+            justify-content : center !important;
+            display: flex !important;
+            font-size:small;
         }
         .mat-column-r_Users {
             flex: 0 1 15%;
@@ -80,8 +102,5 @@
         
         .mat-column-jl_buttons {
             flex: 0 1 40px;
-        }
-
-
-       
+        }       
     }

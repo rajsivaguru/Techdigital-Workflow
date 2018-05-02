@@ -54,6 +54,11 @@
             
         }
         
+        .mat-row:hover
+        {
+            background-color: #F2F4F4 !important;
+        }
+        
         .mat-row-total
         {
             background-color: lightgray !important;
@@ -86,11 +91,9 @@
        .mat-column-ur_jobcode {
             flex: 0 1 9%;
         }
-
         .mat-column-ur_title {
             flex: 0 1 30%;
         }
-        
         .mat-column-ur_job {
             flex: 0 1 25%;
         }
@@ -101,31 +104,36 @@
         .mat-column-ur_clientname {
             flex: 0 1 9%;
             font-size:small;
-        }
-        
+        }        
         .mat-column-ur_publisheddate, .mat-column-ur_assigneddate {
             flex: 0 1 12%;
             font-size:small;
         }
         .mat-column-ur_fromdate, .mat-column-ur_todate {
             flex: 0 1 20%;
-        }
-        
+        }        
         .mat-column-ur_jobstarted {
             flex: 0 1 5%;
         }
         .mat-column-ur_comment {
-            flex: 0 1 15%;
+            flex: 0 1 18%;
             font-size:small;
-        }        
-       
-        .mat-column-ur_duration, .mat-column-ur_submission
+        }
+        .mat-column-ur_duration
         {
             flex: 0 1 9%;
             justify-content : center !important;
             display: flex !important;
             font-size:small;
         }
+        .mat-column-ur_submission
+        {
+            flex: 0 1 5%;
+            justify-content : center !important;
+            display: flex !important;
+            font-size:small;
+        }
+        
        .active-icon {
             border-radius: 50%;
         }       

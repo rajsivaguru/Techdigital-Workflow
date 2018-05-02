@@ -121,50 +121,50 @@
                 
                 <ng-container cdkColumnDef="ur_job">
                     <mat-header-cell *cdkHeaderCellDef>Job</mat-header-cell>
-                    <mat-cell *cdkCellDef="let users" fxHide fxShow.gt-md>
+                    <mat-cell *cdkCellDef="let users">
                         <p class="" *ngIf="!users.jobcode"> </p>
                         <p class="" title="{{users.jobcode}} - {{users.title}}" *ngIf="users.jobcode">{{users.jobcode}} - {{users.title}}</p>
                     </mat-cell>
                 </ng-container>
 
                 <ng-container cdkColumnDef="ur_location">
-                    <mat-header-cell *cdkHeaderCellDef >Location</mat-header-cell>
-                    <mat-cell *cdkCellDef="let users" fxHide fxShow.gt-md>
+                    <mat-header-cell *cdkHeaderCellDef>Location</mat-header-cell>
+                    <mat-cell *cdkCellDef="let users">
                         <p class="" title="{{users.location}}">{{users.location}}</p>
                     </mat-cell>
                 </ng-container>
                 
                 <ng-container cdkColumnDef="ur_clientname">
-                    <mat-header-cell *cdkHeaderCellDef >Client</mat-header-cell>
-                    <mat-cell *cdkCellDef="let users" fxHide fxShow.gt-md>
+                    <mat-header-cell *cdkHeaderCellDef>Client</mat-header-cell>
+                    <mat-cell *cdkCellDef="let users">
                         <p class="" title="{{users.clientname}}"> {{users.clientname}} </p>
                     </mat-cell>
                 </ng-container>
 
                 <ng-container cdkColumnDef="ur_publisheddate">
-                    <mat-header-cell *cdkHeaderCellDef >Published Date</mat-header-cell>
-                    <mat-cell *cdkCellDef="let users" >
+                    <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Published Date</mat-header-cell>
+                    <mat-cell *cdkCellDef="let users" fxHide fxShow.gt-md>
                         <p class="company text-truncate" title="{{users.publisheddate}}"> {{users.publisheddate}} </p>
                     </mat-cell>
                 </ng-container>]
 
                  <ng-container cdkColumnDef="ur_assigneddate">
-                    <mat-header-cell *cdkHeaderCellDef>Assigned Date</mat-header-cell>
-                    <mat-cell *cdkCellDef="let users" >
+                    <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Assigned Date</mat-header-cell>
+                    <mat-cell *cdkCellDef="let users" fxHide fxShow.gt-md>
                         <p class="company text-truncate" title="{{users.assigneddate}}"> {{users.assigneddate}} </p>
                     </mat-cell>
                 </ng-container>                
                
                 <ng-container cdkColumnDef="ur_duration">
-                    <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Duration</mat-header-cell>
-                    <mat-cell *cdkCellDef="let users" fxHide fxShow.gt-md>
+                    <mat-header-cell *cdkHeaderCellDef>Duration</mat-header-cell>
+                    <mat-cell *cdkCellDef="let users">
                         <p class="text-center">  {{users.duration}} </p>
                     </mat-cell>
                 </ng-container>
 
                 <ng-container cdkColumnDef="ur_submission">
-                    <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Submission</mat-header-cell>
-                    <mat-cell *cdkCellDef="let users">
+                    <mat-header-cell *cdkHeaderCellDef title="No. of Submission" fxHide fxShow.gt-md>#</mat-header-cell>
+                    <mat-cell *cdkCellDef="let users" fxHide fxShow.gt-md>
                     <!-- <mat-cell *cdkCellDef="let users" [ngClass]="{'text-boxed-red' : !users.jobstarted && users.jobcode, 'text-boxed-green' : users.jobstarted && users.jobcode}"> -->
                         <p class="text-center" *ngIf="!users.jobcode"> {{users.submission}} </p>
                         <p class="text-center text-boxed text-boxed-red" *ngIf="!users.jobstarted && users.jobcode" >
@@ -177,8 +177,8 @@
                 </ng-container>
                 
                 <ng-container cdkColumnDef="ur_comment">
-                    <mat-header-cell *cdkHeaderCellDef>Comment</mat-header-cell>
-                    <mat-cell *cdkCellDef="let users" >
+                    <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Comment</mat-header-cell>
+                    <mat-cell *cdkCellDef="let users" fxHide fxShow.gt-md>
                         <p class="text-truncate" title="{{users.comment}}"> {{users.comment}} </p>
                     </mat-cell>
                 </ng-container>

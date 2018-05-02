@@ -17,9 +17,6 @@ import { ReportsService} from '../reports.service';
 import { DatePipe } from '@angular/common';
 import { FusePerfectScrollbarDirective } from '../../../../core/directives/fuse-perfect-scrollbar/fuse-perfect-scrollbar.directive';
 
-
-
-
 @Component({
     selector   : 'fuse-orderentry',
     templateUrl: './jobreport.component.html',
@@ -27,12 +24,10 @@ import { FusePerfectScrollbarDirective } from '../../../../core/directives/fuse-
     encapsulation: ViewEncapsulation.None,
     animations   : fuseAnimations
 })
+
 export class JobReportComponent implements OnInit, OnDestroy
 {
-
     @ViewChild('dialogContent') dialogContent: TemplateRef<any>;
-    
-
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild('filter') filter: ElementRef;
     @ViewChild(MatSort) sort: MatSort;
@@ -40,38 +35,27 @@ export class JobReportComponent implements OnInit, OnDestroy
     jobs: any;
     user: any;
     dataSource: FilesDataSource | null;
-    displayedColumns = [ 'r_ReferenceId', 'r_Title', 'r_Location', 'r_PublishedDate', 'r_IsActive', 'r_UserCount', 'r_Users', 'r_Duration', 'r_Submission'];
+    //displayedColumns = [ 'r_ReferenceId', 'r_Title', 'r_Location', 'r_PublishedDate', 'r_IsActive', 'r_UserCount', 'r_Users', 'r_Duration', 'r_Submission'];
+    displayedColumns = [ 'r_ReferenceId', 'r_Title', 'r_Location', 'r_ClientName', 'r_PublishedDate', 'r_IsActive', 'r_UserCount', 'r_Users', 'r_Duration', 'r_Submission'];
     selectedContacts: any[];
-    checkboxes: {};
-
-
+    checkboxes: {};    
     onContactsChangedSubscription: Subscription;
-    							
-
-
     dialogRef: any;
-
     confirmDialogRef: MatDialogRef<FuseConfirmDialogComponent>;
-
     datePipe = new DatePipe("en-US");
-
     isSearchExpanded : boolean
     isSearchEnable : boolean = false;
-
     lastDaysList  = [];
-
     jobReport : FormGroup;
     rptForm : JobReportForm;
-
-    todayDate = new Date();
-    
+    todayDate = new Date();    
     minFromDate = null;
     minToDate = null;
-
     maxFromDate  = null; 
     maxToDate = null;
-
     maxPublishedDate = null;
+    matTableInner: number;
+    reduceHeight: number;
 
     constructor(
         public reportService: ReportsService,
@@ -81,49 +65,37 @@ export class JobReportComponent implements OnInit, OnDestroy
         private formBuilder: FormBuilder,
         private loginService : LoginService
     )
-    {
-        
+    {        
         this.onContactsChangedSubscription = this.reportService.onContactsChanged.subscribe(jbs => {
-                this.jobs = jbs;
-            });
-
+            this.jobs = jbs;
+        });
         
         this.rptForm = new JobReportForm({});
-
         this.maxFromDate = new Date(this.todayDate.getFullYear(), this.todayDate.getMonth(), this.todayDate.getDate());
         this.maxToDate = new Date(this.todayDate.getFullYear(), this.todayDate.getMonth(), this.todayDate.getDate());
-
         this.maxPublishedDate = new Date(this.todayDate.getFullYear(), this.todayDate.getMonth(), this.todayDate.getDate());
-
         this.isSearchExpanded = true;
-        
     }
 
     ngOnInit()
     {
-        // if( this.loginService.loggedUser == undefined)
-        // {
-        //     this.router.navigateByUrl('/login');
-        //     return;
-        // }
-
+        this.reduceHeight = 290;
+        this.matTableInner = (window.innerHeight - this.reduceHeight);
         this.jobReport = this.createJobForm();
-        
         this.dataSource = new FilesDataSource(this.reportService, this.paginator, this.sort);
-
         this.reportService.getLastDays().then(response => {
-
-                if (response)
-                {
-                    response.map(priori => {
-                            this.lastDaysList.push( {"id":priori["Value"], "itemName" : priori["Name"]})
-                        });
-
-                    //console.log(this.priorityList);
-
-                }
-            });
-
+            if (response)
+            {
+                response.map(priori => {
+                    this.lastDaysList.push( {"id":priori["Value"], "itemName" : priori["Name"]})
+                });
+            }
+        });
+    }
+    
+    onResize(event)
+    {
+        this.matTableInner = (window.innerHeight - this.reduceHeight);
     }
 
     createJobForm()
@@ -152,41 +124,36 @@ export class JobReportComponent implements OnInit, OnDestroy
 
         if( this.rptForm.jobcode != "" || this.rptForm.title != "" || this.rptForm.location != "" || this.rptForm.publishedDate != "" 
             || this.rptForm.fromDate != "" || this.rptForm.toDate != "" || this.rptForm.status != -2 || this.rptForm.lastDatys != -1 )
-            {
+        {
 
-                this.isSearchEnable = true;
-            }
-            else
-                this.isSearchEnable = false;
+            this.isSearchEnable = true;
+        }
+        else
+            this.isSearchEnable = false;
     }
 
     clearSearch()
     {
-        //this.jobReport.reset();
-
         this.jobReport.patchValue(
-            {
-                jobcode         : '',
-                title           : '',
-                location        : '',
-                publishedDate   : '',
-                status          : -2,
-                fromDate        : '',
-                toDate          : '',
-                lastDatys       : -1
-            }
-        );
+        {
+            jobcode         : '',
+            title           : '',
+            location        : '',
+            publishedDate   : '',
+            status          : -2,
+            fromDate        : '',
+            toDate          : '',
+            lastDatys       : -1
+        });
 
         this.rptForm = this.jobReport.getRawValue();
         this.reportService.getJobs(this.rptForm);
         this.isSearchExpanded = true;
         this.isSearchEnable = false;
-    }
-    
+    }    
 
     loadReport()
     {   
-        
         this.rptForm = this.jobReport.getRawValue();
 
         if(this.rptForm.status == undefined)
@@ -197,11 +164,10 @@ export class JobReportComponent implements OnInit, OnDestroy
 
         if( this.rptForm.jobcode == "" && this.rptForm.title == "" && this.rptForm.location == "" && this.rptForm.publishedDate == "" 
             && this.rptForm.fromDate == "" && this.rptForm.toDate == "" && this.rptForm.status == -2 && this.rptForm.lastDatys == -1 )
-            {
-
-                this.openDialog("Please filter by any Values!")
-                return;
-            }
+        {
+            this.openDialog("Please filter by any Values!")
+            return;
+        }
 
         if( this.rptForm.publishedDate != "")
             this.rptForm.publishedDate = this.datePipe.transform(this.rptForm.publishedDate, 'MM/dd/yyyy');
@@ -214,8 +180,8 @@ export class JobReportComponent implements OnInit, OnDestroy
 
         if( this.rptForm.fromDate != "" && this.rptForm.toDate == "")
         {
-                this.openDialog("Please select the To date")
-                return;
+            this.openDialog("Please select the To date")
+            return;
         }
         
         if( this.rptForm.fromDate == "" && this.rptForm.toDate != "")
@@ -227,43 +193,35 @@ export class JobReportComponent implements OnInit, OnDestroy
         this.paginator.pageIndex = 0;
         this.isSearchExpanded = false;
         this.reportService.getJobs(this.rptForm);
-        
-        
     }
-
 
     ngOnDestroy()
     {
         this.onContactsChangedSubscription.unsubscribe();
     }
-
     
-    selectedFromDate(type: string, event: MatDatepickerInputEvent<Date>) {
-        
-        
+    selectedFromDate(type: string, event: MatDatepickerInputEvent<Date>)
+    {
         this.minToDate = event.value; 
         this.searchValidation();
         this.jobReport.patchValue(
-            {
-                lastDatys     : -1
-            }
-        );
+        {
+            lastDatys     : -1
+        });
     }
-    selectedToDate(type: string, event: MatDatepickerInputEvent<Date>) {
-
+    
+    selectedToDate(type: string, event: MatDatepickerInputEvent<Date>)
+    {
         this.maxFromDate = event.value;
         this.searchValidation();
         this.jobReport.patchValue(
-            {
-                lastDatys     : -1
-            }
-        );
+        {
+            lastDatys     : -1
+        });
     }
 
     selectedNoOfDays(event)
     {
-        //console.log(event)
-        
         if(event.value != undefined)
         {
             this.searchValidation();
@@ -275,33 +233,28 @@ export class JobReportComponent implements OnInit, OnDestroy
         }
     }
 
-     searchJob = (keyword: any): Observable<any[]> => {
+    searchJob = (keyword: any): Observable<any[]> => {
+       try
+       {
+           if (keyword) {
 
-        try
-        {
-            if (keyword) {
+               return this.reportService.searchJob(keyword);
 
-                return this.reportService.searchJob(keyword);
-
-            } else 
-            {
-                return Observable.of([]);
-            }
-        }
-        catch(ex)
-        {
-            //console.log(ex)
-            return Observable.of([]);
-        }
-    
+           } else 
+           {
+               return Observable.of([]);
+           }
+       }
+       catch(ex)
+       {
+           return Observable.of([]);
+       }
     }
 
     searchUser = (keyword: any): Observable<any[]> => {
-
         try
         {
-            if (keyword) {
-            
+            if (keyword) {            
                 return this.reportService.searchUser(keyword);
             } else 
             {
@@ -310,33 +263,28 @@ export class JobReportComponent implements OnInit, OnDestroy
         }
         catch(ex)
         {
-            //console.log(ex)
             return Observable.of([]);
         }
     }
 
     autocompleListFormatterJob = (data: any) : SafeHtml => {
-        //console.log(data)
-            let html = `<span class="font-weight-900 font-size-12">${data.title} </span><span class="font-size-10">${data.location} </span>`;
-            return this._sanitizer.bypassSecurityTrustHtml(html);
-            
-        }
+        let html = `<span class="font-weight-900 font-size-12">${data.title} </span><span class="font-size-10">${data.location} </span>`;
+        return this._sanitizer.bypassSecurityTrustHtml(html);        
+    }
+    
     autocompleListFormatterUser = (data: any) : SafeHtml => {
-            let html = `<span class="font-weight-900 font-size-12">${data.name} </span><span class="font-size-10">${data.email} </span>`;
-            return this._sanitizer.bypassSecurityTrustHtml(html);
-            
-        }
+        let html = `<span class="font-weight-900 font-size-12">${data.name} </span><span class="font-size-10">${data.email} </span>`;
+        return this._sanitizer.bypassSecurityTrustHtml(html);            
+    }
+    
     autocompleListSelectedJob = (data : any) : void =>
     {
-        //console.log('selected')
         return (data["title"]);
-        //console.log(data)
     }
+    
     autocompleListSelectedUser = (data : any) : void =>
     {
-        //console.log('selected')
         return (data["name"]);
-        //console.log(data)
     }
 
     openDialog(message) : void
@@ -345,20 +293,12 @@ export class JobReportComponent implements OnInit, OnDestroy
             duration: 2000,
             verticalPosition : 'top',
             extraClasses: ['mat-light-blue-100-bg']
-
-
         });
-
-
     }
-    
-
-
 }
 
 export class FilesDataSource extends DataSource<any>
-{
-    
+{    
     @ViewChild(FusePerfectScrollbarDirective) directiveScroll: FusePerfectScrollbarDirective;
 
     _filterChange = new BehaviorSubject('');
@@ -400,45 +340,30 @@ export class FilesDataSource extends DataSource<any>
             this._filterChange,
             this._sort.sortChange
         ];
-        
-       
 
         return Observable.merge(...displayDataChanges).map(() => {
 
             if(this.reportService.jobReports != undefined)
             {
-            let data = this.reportService.jobReports.slice();
+                let data = this.reportService.jobReports.slice();
+    
+                data = this.filterData(data);
+                this.filteredData = [...data];
+                data = this.sortData(data);
 
-            data = this.filterData(data);
-
-            this.filteredData = [...data];
-
-            data = this.sortData(data);
-
-             if ( this.directiveScroll )
-            {
-                this.directiveScroll.scrollToTop(0, 500);
-                this.directiveScroll.update();
-                
-            }
-
-            // Grab the page's slice of data.
-            // if(this._paginator.pageSize.toString() == "All")
-            // {
-            //     this._paginator.pageIndex = 0;
-            //     this._paginator.pageSize = data.length;
-            //     return data;
-            // }
-            // else
-            {
-                //console.log(this._sort.active)
-                //console.log(this._sort.direction)
-                const startIndex = this._paginator.pageIndex * this._paginator.pageSize;
-                return data.splice(startIndex, this._paginator.pageSize);
-            }
+                if ( this.directiveScroll )
+                {
+                    this.directiveScroll.scrollToTop(0, 500);
+                    this.directiveScroll.update();                    
+                }
+                {
+                    const startIndex = this._paginator.pageIndex * this._paginator.pageSize;
+                    return data.splice(startIndex, this._paginator.pageSize);
+                }
             }
         });
     }
+    
     filterData(data)
     {
         if ( !this.filter )
@@ -449,18 +374,12 @@ export class FilesDataSource extends DataSource<any>
     }
 
     sortData(data): any[]
-    {
-
-        
+    {        
         if ( !this._sort.active || this._sort.direction === '' )
         {
             return data;
         }
-//displayedColumns = [ 'r_ReferenceId', 'r_Title', 'r_Location', 'r_PublishedDate', 'r_IsActive', 'r_UserCount', 'r_Duration', 'r_Submission'];
-//ReferenceId	Title	Location	PublishedDate	IsActive	UserCount	Duration	Submission
-
-        //this._paginator.pageIndex = 0;
-
+        
         return data.sort((a, b) => {
             let propertyA: number | string = '';
             let propertyB: number | string = '';
@@ -475,6 +394,9 @@ export class FilesDataSource extends DataSource<any>
                     break;
                 case 'r_Location':
                     [propertyA, propertyB] = [a.Location, b.Location];
+                    break;
+                case 'r_ClientName':
+                    [propertyA, propertyB] = [a.ClientName, b.ClientName];
                     break;
                 case 'r_PublishedDate':
                     [propertyA, propertyB] = [a.PublishedDate, b.PublishedDate];
@@ -505,5 +427,4 @@ export class FilesDataSource extends DataSource<any>
     disconnect()
     {
     }
-
 }

@@ -49,87 +49,67 @@ export class ReportsService {
 
     getJobs(rptForm : JobReportForm): Promise<any>
     {
-
         return new Promise((resolve, reject) => {
+            let tempUrl = 'TDW/GetJobReport?jobcode='+ rptForm.jobcode +'&title='+ rptForm.title +'&location='+ rptForm.location +'&publisheddate='+ rptForm.publishedDate +'&isactive='+ rptForm.status +'&fromdate='+ rptForm.fromDate +'&todate='+ rptForm.toDate +'&lastdays='+ rptForm.lastDatys +'';
+            this.http.get(this.serviceURL + tempUrl).subscribe((response: any) => {
+                if ( response != null && response != undefined)
+                {
+                    response = JSON.parse(response);
+                    this.jobReports = response;
 
-               let tempUrl = 'TDW/GetJobReport?jobcode='+ rptForm.jobcode +'&title='+ rptForm.title +'&location='+ rptForm.location +'&publisheddate='+ rptForm.publishedDate +'&isactive='+ rptForm.status +'&fromdate='+ rptForm.fromDate +'&todate='+ rptForm.toDate +'&lastdays='+ rptForm.lastDatys +'';
-               this.http.get(this.serviceURL + tempUrl)
-                    .subscribe((response: any) => {
-                        
-                        //console.log(response)
-                        if ( response != null && response != undefined)
-                        {
-                        response = JSON.parse(response);
-                        //console.log('fetching jobs...');
-                        
+                    if (this.jobReports.length > 0)
+                    {
+                        this.jobReports = this.jobReports.map(rpt => {
+                            return new JobReport(rpt);
+                        });    
+                    }
 
-                        this.jobReports = response;
-
-                         if (this.jobReports.length > 0)
-                        {
-                            this.jobReports = this.jobReports.map(rpt => {
-                                return new JobReport(rpt);
-                            });
-
-                        }
-
-                        //console.log(this.jobReports)
-                        this.onContactsChanged.next(this.jobReports);
-                        resolve(this.jobReports);
-                        
-
-                        }
-                        else
-                        {
-                            this.jobReports = [];
-                            this.onContactsChanged.next(this.jobReports);
-                            resolve(this.jobReports);
-                        }
-
-                    
-                    }, reject);
-            }
-        );
+                    this.onContactsChanged.next(this.jobReports);
+                    resolve(this.jobReports);
+                }
+                else
+                {
+                    this.jobReports = [];
+                    this.onContactsChanged.next(this.jobReports);
+                    resolve(this.jobReports);
+                }
+            }, reject);
+        });
     }
 
-
-getUserReport(userRptParam : UserReportParam): Promise<any>
+    getUserReport(userRptParam : UserReportParam): Promise<any>
     {
-
         return new Promise((resolve, reject) =>
         {
             let userid  = '0';
             
             if (this.loginService.loggedUser != undefined)
                 userid = this.loginService.loggedUser.userid;
-
-               let tempUrl = 'Report/GetUserReport?userRptParam=' + JSON.stringify(userRptParam) + '&loginid='+userid
-               this.http.get(this.serviceURL + tempUrl)
-                    .subscribe((response: any) => {                        
-                        if ( response != null && response != undefined)
-                        {
-                          response = JSON.parse(response);
-  
-                          this.userReports = response;
-  
-                          if (this.userReports.length > 0)
-                          {
-                              this.userReports = this.userReports.map(rpt => {;
-                                  return new UserReport(rpt);
-                              });
-                          }
-  
-                          //console.log(this.jobReports)
-                          this.onUserReportChanged.next(this.userReports);
-                          resolve(this.userReports);
-                        }
-                        else
-                        {
-                            this.userReports = [];
-                            this.onUserReportChanged.next(this.userReports);
-                            resolve(this.userReports);
-                        }                    
-                    }, reject);
+    
+                let tempUrl = 'Report/GetUserReport?userRptParam=' + JSON.stringify(userRptParam) + '&loginid='+userid
+                this.http.get(this.serviceURL + tempUrl).subscribe((response: any) => {                        
+                    if ( response != null && response != undefined)
+                    {
+                      response = JSON.parse(response);      
+                      this.userReports = response;
+      
+                      if (this.userReports.length > 0)
+                      {
+                          this.userReports = this.userReports.map(rpt => {
+                              return new UserReport(rpt);
+                          });
+                      }
+      
+                      this.onUserReportChanged.next(this.userReports);
+                      resolve(this.userReports);
+                    }
+                    else
+                    {
+                        this.userReports = [];
+                        this.onUserReportChanged.next(this.userReports);
+                        resolve(this.userReports);
+                    }
+                }, reject);
             }
         );
     }
@@ -137,11 +117,11 @@ getUserReport(userRptParam : UserReportParam): Promise<any>
     getLastDays(): Promise<any>
     {
         return new Promise((resolve, reject) => {
-                this.http.get(this.serviceURL+'Report/GetPeriods')
-                    .subscribe((response: any) => {
-                        response = JSON.parse(response);
-                        resolve(response);
-                    }, reject);
+            this.http.get(this.serviceURL+'Report/GetPeriods')
+                .subscribe((response: any) => {
+                    response = JSON.parse(response);
+                    resolve(response);
+                }, reject);
             }
         );
     }
@@ -161,22 +141,16 @@ getUserReport(userRptParam : UserReportParam): Promise<any>
         catch(ex)
         {
             return Observable.of([]);
-        }
-    
+        }    
     }
     
-
     searchUser (keyword) : any
     {
-            //console.log('call service'+keyword+this.serviceURL+'SearchUser?keyword=' + keyword);
-            return this.httpObser.get(this.serviceURL+'TDW/SearchUser?keyword=' + keyword)
-                .map(res => {
-                let json = res.json();
-                //console.log(json)
-                return JSON.parse(json);
-            })
+        return this.httpObser.get(this.serviceURL+'TDW/SearchUser?keyword=' + keyword)
+            .map(res => {
+            let json = res.json();
+            //console.log(json)
+            return JSON.parse(json);
+        })
     }
-
-
-
 }
