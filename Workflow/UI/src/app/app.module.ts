@@ -23,7 +23,6 @@ import { RecruitersModule } from './main/content/recruiters/recruiters.module';
 
 
 
-
 import { ReportsModule } from './main/content/reports/reports.module';
 import { LoginComponent } from './main/content/login/login.component';
 
@@ -59,7 +58,8 @@ const appRoutes: Routes = [
         HttpModule,
         HttpClientModule,
         BrowserAnimationsModule,
-        RouterModule.forRoot(appRoutes, { useHash: true }),
+        //RouterModule.forRoot(appRoutes, { useHash: true }),
+        RouterModule.forRoot(appRoutes, { useHash: true, onSameUrlNavigation : 'reload'}),
         TranslateModule.forRoot(),
 
         LocalStorageModule.withConfig({
@@ -96,3 +96,4 @@ const appRoutes: Routes = [
 export class AppModule
 {
 }
+
