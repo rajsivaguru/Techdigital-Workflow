@@ -110,7 +110,6 @@ export class UsersService implements Resolve<any>
                         {
                         response = JSON.parse(response);
                         //console.log('fetchin user..');
-
                         this.contacts = response;
 
                         if ( this.filterBy === 'starred' )
@@ -158,7 +157,6 @@ export class UsersService implements Resolve<any>
                         // this.contacts = this.contacts.map(contact => {
                         //     return new Contact(contact);
                         // });
-
                         // this.onContactsChanged.next(this.contacts);
                         // resolve(this.contacts);
             }
@@ -241,6 +239,28 @@ export class UsersService implements Resolve<any>
     //         this.selectContacts();
     //     }
     // }
+
+    exportUser(): Promise<any>
+    {
+        return new Promise((resolve, reject) => {
+                let userid  = '0';
+                if (this.loginService.loggedUser != undefined)
+                    userid = this.loginService.loggedUser.userid;
+                
+                 this.http.get(this.serviceURL+'TDW/UsersExport?statusId=' + "1" + '&loginId='+"1")
+                    .subscribe((response: any) => {
+                            console.log(response)
+                            var a = document.createElement('a');
+                            a.href = 'http://localhost:43000/temp/'+response;
+                            a.download = "Download";
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                        resolve(response);
+                    }, reject);
+            }
+        );
+    }
 
     selectContacts(filterParameter?, filterValue?)
     {
@@ -329,3 +349,4 @@ export class UsersService implements Resolve<any>
     // }
 
 }
+
