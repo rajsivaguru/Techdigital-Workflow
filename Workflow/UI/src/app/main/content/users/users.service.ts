@@ -247,7 +247,7 @@ export class UsersService implements Resolve<any>
                 if (this.loginService.loggedUser != undefined)
                     userid = this.loginService.loggedUser.userid;
                 
-                 this.http.get(this.serviceURL+'TDW/UsersExport?statusId=' + "1" + '&loginId='+"1")
+                 this.http.get(this.serviceURL+'User/UsersExport?statusId=' + "1" + '&loginId='+"1")
                     .subscribe((response: any) => {
                             console.log(response)
                             var a = document.createElement('a');
