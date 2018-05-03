@@ -249,6 +249,12 @@ export class JobsLoadComponent implements OnInit, OnDestroy
 
     saveItemSelect(editJobs : JobsList){
         //console.log(editJobs.selectedUser);
+      
+         if(editJobs.clientname == "")
+         {
+             this.openDialog("Please enter the Client Name!")
+             return;
+         }
         
          let userid = editJobs.selectedUser.map(user => {
                             return (user["id"])
