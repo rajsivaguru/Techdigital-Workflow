@@ -35,6 +35,10 @@ export class UserReportComponent implements OnInit, OnDestroy
     usersDataList = [];
     selectedUsers = [];
     settings = {};
+    reportOptions = [
+        { value: 'Pdf', viewValue: 'Pdf' },
+        { value: 'Excel', viewValue: 'Excel' }
+    ];
 
     users: any;
     dataSource: FilesDataSource | null;
@@ -129,12 +133,15 @@ export class UserReportComponent implements OnInit, OnDestroy
     onItemSelect(item:any ){
        this.searchValidation();
     }
+
     OnItemDeSelect(item:any ){
         this.searchValidation();
     }
+
     onSelectAll(items: any ){
         this.searchValidation();
     }
+
     onDeSelectAll(items: any ){
         this.searchValidation();
     }
@@ -160,7 +167,7 @@ export class UserReportComponent implements OnInit, OnDestroy
 
         // if(this.rptForm.status == undefined)
         //     this.rptForm.status = -2;
-        
+
         if (this.rptForm.lastdays == undefined)
             this.rptForm.lastdays = -1;
 
@@ -194,59 +201,69 @@ export class UserReportComponent implements OnInit, OnDestroy
         this.isSearchEnable = false;
     }
     
-
-    loadReport(event)
-    {        
+    validateReportCriteria()
+    {
         this.rptForm = this.userReport.getRawValue();
 
-         let userid = [];
-         
-         if (this.userReport.getRawValue()["userids"] != undefined && this.userReport.getRawValue()["userids"] != "" && this.userReport.getRawValue()["userids"].length > 0)
-         {
+        let userid = [];
+
+        if (this.userReport.getRawValue()["userids"] != undefined && this.userReport.getRawValue()["userids"] != "" && this.userReport.getRawValue()["userids"].length > 0) {
             userid = this.userReport.getRawValue()["userids"].map(user => {
                 return (user["id"])
             });
-         }
+        }
 
-         this.rptForm.userids = userid;
+        this.rptForm.userids = userid;
 
         // if(this.rptForm.status == undefined)
         //     this.rptForm.status = -2;
-        
+
         if (this.rptForm.lastdays == undefined)
             this.rptForm.lastdays = -1;
 
-        if( this.rptForm.userids.length == 0 && this.rptForm.jobcode == "" && this.rptForm.title == "" && this.rptForm.location == "" && this.rptForm.publisheddate == "" && this.rptForm.assigneddate == "" 
-            && this.rptForm.fromdate == "" && this.rptForm.todate == ""  && this.rptForm.lastdays == -1 )
-            {
-                this.openDialog("Please filter by any Values!")
-                return;
-            }
+        if (this.rptForm.userids.length == 0 && this.rptForm.jobcode == "" && this.rptForm.title == "" && this.rptForm.location == "" && this.rptForm.publisheddate == "" && this.rptForm.assigneddate == ""
+            && this.rptForm.fromdate == "" && this.rptForm.todate == "" && this.rptForm.lastdays == -1) {
+            this.openDialog("Please filter by any Values!")
+            return false;
+        }
 
-        if( this.rptForm.publisheddate != "")
+        if (this.rptForm.publisheddate != "")
             this.rptForm.publisheddate = this.datePipe.transform(this.rptForm.publisheddate, 'MM/dd/yyyy');
 
-        if( this.rptForm.fromdate != "")
+        if (this.rptForm.fromdate != "")
             this.rptForm.fromdate = this.datePipe.transform(this.rptForm.fromdate, 'MM/dd/yyyy');
-        
-        if( this.rptForm.todate != "")
+
+        if (this.rptForm.todate != "")
             this.rptForm.todate = this.datePipe.transform(this.rptForm.todate, 'MM/dd/yyyy');
 
-        if( this.rptForm.fromdate != "" && this.rptForm.todate == "")
-        {
-                this.openDialog("Please select the To date")
-                return;
+        if (this.rptForm.fromdate != "" && this.rptForm.todate == "") {
+            this.openDialog("Please select the To date")
+            return false;
         }
-        
-        if( this.rptForm.fromdate == "" && this.rptForm.todate != "")
-        {
+
+        if (this.rptForm.fromdate == "" && this.rptForm.todate != "") {
             this.openDialog("Please select the From date")
-            return;
+            return false;
         }
         
-        this.paginator.pageIndex = 0;
-        this.isSearchExpanded = false;
-        this.reportService.getUserReport(this.rptForm);
+        return true;
+    }
+
+    loadReport(event)
+    {   
+        if (this.validateReportCriteria())
+        {
+            this.paginator.pageIndex = 0;
+            this.isSearchExpanded = false;
+            this.reportService.getUserReport(this.rptForm);
+        }
+    }
+
+    loadDownloadableReport(fileType) {
+        if (this.validateReportCriteria()) {
+            this.rptForm.reporttype = fileType;
+            this.reportService.getUserReportPdf(this.rptForm);
+        }
     }
 
     ngOnDestroy()
@@ -290,16 +307,22 @@ export class UserReportComponent implements OnInit, OnDestroy
             });
         }
     }
-
-     searchJob = (keyword: any): Observable<any[]> => {
-
+    
+    selectedExport(event) {
+        if (event.value != undefined) {
+            //this.reportService.getUserReportPdf();
+        }
+    }
+    
+    searchJob = (keyword: any): Observable<any[]> =>
+    {
         try
         {
-            if (keyword) {
-
+            if (keyword)
+            {
                 return this.reportService.searchJob(keyword);
-
-            } else 
+            }
+            else 
             {
                 return Observable.of([]);
             }
@@ -308,8 +331,7 @@ export class UserReportComponent implements OnInit, OnDestroy
         {
             //console.log(ex)
             return Observable.of([]);
-        }
-    
+        }    
     }
 
     searchUser = (keyword: any): Observable<any[]> => {
@@ -334,20 +356,22 @@ export class UserReportComponent implements OnInit, OnDestroy
     autocompleListFormatterJob = (data: any) : SafeHtml => {
         //console.log(data)
             let html = `<span class="font-weight-900 font-size-12">${data.title} </span><span class="font-size-10">${data.location} </span>`;
-            return this._sanitizer.bypassSecurityTrustHtml(html);
-            
-        }
+            return this._sanitizer.bypassSecurityTrustHtml(html);            
+    }
+
     autocompleListFormatterUser = (data: any) : SafeHtml => {
             let html = `<span class="font-weight-900 font-size-12">${data.name} </span><span class="font-size-10">${data.email} </span>`;
             return this._sanitizer.bypassSecurityTrustHtml(html);
             
-        }
+    }
+
     autocompleListSelectedJob = (data : any) : void =>
     {
         //console.log('selected')
         return (data["title"]);
         //console.log(data)
     }
+
     autocompleListSelectedUser = (data : any) : void =>
     {
         //console.log('selected')

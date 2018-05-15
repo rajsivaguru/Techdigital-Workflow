@@ -17,6 +17,7 @@ import { JobStatusHistory, JobStatus, JobsList, JobAssignment } from '../jobs.mo
 import { DialogComponent, DialogDataComponent } from '../../dialog/dialog.component'
 import { FuseUtils } from '../../../../core/fuseUtils';
 import { FusePerfectScrollbarDirective } from '../../../../core/directives/fuse-perfect-scrollbar/fuse-perfect-scrollbar.directive';
+
 @Component({
     selector     : 'jobs-load',
     templateUrl  : './jobs-load.component.html',
@@ -24,6 +25,7 @@ import { FusePerfectScrollbarDirective } from '../../../../core/directives/fuse-
     encapsulation: ViewEncapsulation.None,
     animations   : fuseAnimations
 })
+
 export class JobsLoadComponent implements OnInit, OnDestroy
 {
     @ViewChild('dialogContent') dialogContent: TemplateRef<any>;
@@ -96,25 +98,11 @@ export class JobsLoadComponent implements OnInit, OnDestroy
             this.jobsService.onUserDataChanged.subscribe(user => {
                 this.user = user;
             });
-
-        
-
     }
 
     ngOnInit()
-    {
-        // if( this.loginService.loggedUser == undefined)
-        // {
-        //     this.router.navigateByUrl('/login');
-        //     return;
-        // }
-
-        //console.log('job load initialse')
-        
-        this.dataSource = new FilesDataSource(this.jobsService, this.paginator, this.sort);
-
-        
-
+    {   
+        this.dataSource = new FilesDataSource(this.jobsService, this.paginator, this.sort);        
         this.jobsService.onSelectedNewJobsChanged
             .subscribe(selectedNewJobs => {
                 this.hasSelectedNewJobs = selectedNewJobs.length > 0;
@@ -127,10 +115,6 @@ export class JobsLoadComponent implements OnInit, OnDestroy
                 this.paginator.pageIndex = 0;
                 this.jobsService.onSearchNewJobsTextChanged.next(searchText);
             });
-
-
-        
-       
 
         this.userService.getAssignedUser(1).then(response => {
 
@@ -145,64 +129,47 @@ export class JobsLoadComponent implements OnInit, OnDestroy
                 }
             });
 
-         this.jobsService.getPriority().then(response => {
-
-                if (response)
-                {
-                    response.map(priori => {
-                            this.priorityList.push( {"id":priori["priorityid"], "itemName" : priori["name"]})
-                        });
-
-                    //console.log(this.priorityList);
-
-                }
-            });
+        this.jobsService.getPriority().then(response => {
+            if (response)
+            {
+                response.map(priori => {
+                        this.priorityList.push( {"id":priori["priorityid"], "itemName" : priori["name"]})
+                    });
+            }
+        });
 
         // bind the clients
         this.bindClients();
         
-
-
         this.dropdownSettings =  { 
-                                  singleSelection: false, 
-                                  text:"Recruiters",
-                                  selectAllText:'Select All',
-                                  unSelectAllText:'UnSelect All',
-                                  enableSearchFilter: true,
-                                  badgeShowLimit: 2
-                };
-
-        
-       
-
+            singleSelection: false, 
+            text:"Recruiters",
+            selectAllText:'Select All',
+            unSelectAllText:'UnSelect All',
+            enableSearchFilter: true,
+            badgeShowLimit: 2
+        };
     }
 
     bindClients()
     {
         this.clientList = [];
         this.jobsService.getClients().then(response => {
+            if (response)
+            {
+                response.map(client => {
+                        this.clientList.push( {"clientname":client["clientname"]})
+                });
 
-                if (response)
-                {
-                    response.map(client => {
-                            this.clientList.push( {"clientname":client["clientname"]})
-                        });
-
-                    // this.filteredOptions = this.clientList.map ;
-                    // console.log(this.clientList);
-
-                    this.filteredOptions = this.myControl.valueChanges.startWith(null)
-                                   .map(val => val ? this.filterClient(val) : this.clientList.slice());
-                
-
-                }
-            });
+                this.filteredOptions = this.myControl.valueChanges.startWith(null)
+                                .map(val => val ? this.filterClient(val) : this.clientList.slice());
+            }
+        });
     }
 
     filterClient(val: string): string[]
     {
-        return this.clientList.filter(option =>
-            option.clientname.toLowerCase().indexOf(val.toLowerCase()) === 0);
+        return this.clientList.filter(option => option.clientname.toLowerCase().indexOf(val.toLowerCase()) === 0);
     }
 
     clientNameTyped(evet, editJobs : JobsList)
@@ -213,10 +180,6 @@ export class JobsLoadComponent implements OnInit, OnDestroy
             editJobs.isSaveEnable = false;
         else
             editJobs.isSaveEnable = true;
-
-        // this.filteredOptions = this.myControl.valueChanges
-        //                            .startWith(null)
-        //                            .map(val => val ? this.filterClient(val) : this.clientList.slice());
     }
 
     clientSelected(evet, editJobs : JobsList)
@@ -232,15 +195,11 @@ export class JobsLoadComponent implements OnInit, OnDestroy
                                    .startWith(null)
                                    .map(val => val ? this.filterClient(val) : this.clientList.slice());
     }
-   
 
     changePriorityLevel(event, editJobs : JobsList)
-    {
-      
+    {      
         editJobs.priorityLevel = event.value;
-
-        //console.log(editJobs.priorityLevel)
-        //console.log(editJobs.oldPriorityLevel)
+        
         if (editJobs.priorityLevel == editJobs.oldPriorityLevel)
             editJobs.isSaveEnable = false;
         else
@@ -248,41 +207,32 @@ export class JobsLoadComponent implements OnInit, OnDestroy
     }
 
     saveItemSelect(editJobs : JobsList){
-        //console.log(editJobs.selectedUser);
-      
-         if(editJobs.clientname == "")
-         {
-             this.openDialog("Please enter the Client Name!")
-             return;
-         }
+        if (editJobs.clientname == "" || editJobs.clientname == undefined) {
+            this.openDialog("Please enter the Client.")
+            return;
+        }
         
-         let userid = editJobs.selectedUser.map(user => {
-                            return (user["id"])
-                        });
+        let userid = editJobs.selectedUser.map(user => {
+            return (user["id"])
+        });
 
-        //console.log(editJobs)
-
-        //if(editJobs.selectedUser.length >0 )
         {
-
-        this.jobAssign = new JobAssignment({});
-        this.jobAssign.userids = userid;
-        this.jobAssign.clientname = editJobs.clientname;
-        this.jobAssign.jobid = editJobs.jobid;
-        this.jobAssign.priorityid = editJobs.priorityLevel;
-
-
-         this.jobsService.saveJobUser(this.jobAssign)
+            this.jobAssign = new JobAssignment({});
+            this.jobAssign.userids = userid;
+            this.jobAssign.clientname = editJobs.clientname;
+            this.jobAssign.jobid = editJobs.jobid;
+            this.jobAssign.priorityid = editJobs.priorityLevel;
+            
+            this.jobsService.saveJobUser(this.jobAssign)
             .then(response => {
                 editJobs.isSaveEnable = false;
                 editJobs.isSaveEnableSelectedUser = false;
-                //console.log(response)
+
                 if (response)
                 {
                     this.bindClients();
                     if(response["Result"]=="1")
                     {
-                        //this.router.navigateByUrl('/jobs');
                         this.openDialog(response["Message"]);
                     }
                     else
@@ -291,10 +241,8 @@ export class JobsLoadComponent implements OnInit, OnDestroy
                     }
                 }
             });
-        }
-        
+        }        
     }
-
 
     ngOnDestroy()
     {
@@ -325,6 +273,7 @@ export class JobsLoadComponent implements OnInit, OnDestroy
                 }
             });
     }
+
     editJob(job)
     {
 
@@ -393,7 +342,6 @@ export class JobsLoadComponent implements OnInit, OnDestroy
             }
             this.confirmDialogRef = null;
         });
-
     }
 
     onSelectedChange(contactId)
@@ -415,8 +363,7 @@ export class JobsLoadComponent implements OnInit, OnDestroy
         this.jobsService.updateUserData(this.user);
     }
 
-    mapOrder (array, order, key) {
-  
+    mapOrder (array, order, key) {  
         array.sort( function (A, B) {
 
             let resultArray = order.filter(
@@ -426,12 +373,10 @@ export class JobsLoadComponent implements OnInit, OnDestroy
                 return -1;
             else
                 return 1;
-            
         });
         
         return array;
     };
-
 
     openUserDialog(editJobs : JobsList, userlist, selectedusers)
     {
@@ -442,45 +387,39 @@ export class JobsLoadComponent implements OnInit, OnDestroy
             width : "400px",
             data: {
                 userList: userlist,
-                selectedUsers : selectedusers
+                selectedUsers: selectedusers
             }
         });
 
-        
-
-        dialogUserList.afterClosed().subscribe(result => {
-            //console.log(editJobs.oldSelectedUser);
-            //console.log(editJobs.selectedUser);
-
-            
-            if(JSON.stringify(editJobs.selectedUser) === JSON.stringify(editJobs.oldSelectedUser) ) 
+        dialogUserList.afterClosed().subscribe(result =>
+        {
+            if (result == undefined)
+            {
+                editJobs.selectedUser = editJobs.oldSelectedUser;
                 editJobs.isSaveEnableSelectedUser = false;
+            }
             else
-                editJobs.isSaveEnableSelectedUser = true;
+            {
+                if (JSON.stringify(editJobs.selectedUser) === JSON.stringify(editJobs.oldSelectedUser))
+                    editJobs.isSaveEnableSelectedUser = false;
+                else
+                    editJobs.isSaveEnableSelectedUser = true;
+            }
         });
     }
+
     openDialog(message) : void
     {
-        // this.dialog.open(DialogComponent, {
-        //     width: '450px',
-        //     data: { message : message }
-        //     });
-
         this.snackBar.open(message, '', {
             duration: 2000,
             verticalPosition : 'top',
             extraClasses: ['mat-light-blue-100-bg']
-
-
         });
-
-
     }
 }
 
 export class FilesDataSource extends DataSource<any>
 {
-
     @ViewChild(FusePerfectScrollbarDirective) directiveScroll: FusePerfectScrollbarDirective;
     _filterChange = new BehaviorSubject('');
     _filteredDataChange = new BehaviorSubject('');

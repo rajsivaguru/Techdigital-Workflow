@@ -96,10 +96,11 @@ export class UserReportParam
     title           : string;
     location        : string;
     publisheddate   : string;
-    assigneddate          : string;
+    assigneddate    : string;
     fromdate        : string;
     todate          : string;
-    lastdays       : number;
+    lastdays        : number;
+    reporttype      : string;
 
     constructor(reports?)
     {
@@ -112,6 +113,7 @@ export class UserReportParam
         this.fromdate = reports.fromdate || '';
         this.todate = reports.todate || '';
         this.lastdays = reports.lastdays || -1;
+        this.reporttype = reports.reporttype || '';
     }
 }
 

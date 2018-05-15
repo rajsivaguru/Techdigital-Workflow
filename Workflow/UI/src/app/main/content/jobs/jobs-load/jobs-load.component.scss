@@ -9,6 +9,16 @@
 
 }
 
+/* Assign To modal */
+.list-area
+{
+    height: 300px !important;
+
+    div:nth-child(2){
+        height: 250px !important;
+    }
+}
+
 .mat-input-placeholder
 {
   font-weight: 400 !important;

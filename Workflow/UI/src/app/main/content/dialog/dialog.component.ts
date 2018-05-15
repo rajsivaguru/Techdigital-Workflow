@@ -20,15 +20,14 @@ export class DialogComponent {
     //console.log('closed')
     this.dialogRef.close();
   }
-
 }
-
 
 @Component({
     selector   : 'jobs-load-dialog',
     styleUrls    : ['./dialog.component.scss'],
     templateUrl: 'dialog-user.component.html'
 })
+
 export class DialogDataComponent
 {
     dropdownSettings = {};
@@ -37,26 +36,24 @@ export class DialogDataComponent
       @Inject(MAT_DIALOG_DATA) public data: any
       )
     {
-
       this.dropdownSettings =  { 
-                                  groupBy :"roleName",
-                                  maxHeight : '350px',
-                                  searchAutofocus : true,
-                                  singleSelection: false, 
-                                  text:"",
-                                  selectAllText:'Select All',
-                                  unSelectAllText:'UnSelect All',
-                                  enableSearchFilter: true,
-                                  enableCheckAll : false,
-                                  classes : 'custom_dropdown_tdw',
-                                  badgeShowLimit: 2
-                };
+            groupBy :"roleName",
+            maxHeight : '350px',
+            searchAutofocus : true,
+            singleSelection: false, 
+            text:"",
+            selectAllText:'Select All',
+            unSelectAllText:'UnSelect All',
+            enableSearchFilter: true,
+            enableCheckAll : false,
+            classes : 'custom_dropdown_tdw',
+            badgeShowLimit: 2
+        };
     }
 
     onNoClick(): void
     {
         this.dialogRef.close();
     }
-
 }
 

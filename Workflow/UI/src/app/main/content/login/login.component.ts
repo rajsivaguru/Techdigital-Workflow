@@ -107,11 +107,17 @@ public googleInit() {
          */
         //private clientId:string = '401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et.apps.googleusercontent.com';  // localhost
         //private clientId:string = '86746030753-22n6td4v43tdu9ps466t93klsegmrng8.apps.googleusercontent.com'; // live
-  
+        
+        let clientId = '401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et.apps.googleusercontent.com';
+
+        if (window.location.hostname != 'localhost')
+            clientId = '86746030753-22n6td4v43tdu9ps466t93klsegmrng8.apps.googleusercontent.com'
+
         that.auth2 = gapi.auth2.init({
-                //client_id: '86746030753-22n6td4v43tdu9ps466t93klsegmrng8.apps.googleusercontent.com',
-                client_id: '401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et.apps.googleusercontent.com',
-                scope: that.scope
+            //client_id: '86746030753-22n6td4v43tdu9ps466t93klsegmrng8.apps.googleusercontent.com',
+            //client_id: '401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et.apps.googleusercontent.com',
+            client_id: clientId,
+            scope: that.scope
         });
 
         // Listen for sign-in state changes.
@@ -130,8 +136,6 @@ public googleInit() {
             {
             	counter = counter + 1;
                 let profile = googleUser.getBasicProfile();
-                console.log(profile);
-                // console.log('Token || ' + googleUser.getAuthResponse().id_token);
                 
                 that.loginService.googleUser = googleUser;
     
@@ -174,8 +178,6 @@ public googleInit() {
                 //that.loginService.getUserData(that.login.email, that.loginService.googleUser.getBasicProfile().getImageUrl(), that.loginService.googleUser.getBasicProfile().getName()).then(response =>{
                 //that.loginService.syncUserData(JSON.stringify(loginModel)).then(response =>{
                 that.loginService.syncUserData(loggedUser.getEmail(), loggedUser.getImageUrl(), loggedUser.getGivenName(), loggedUser.getFamilyName(), loggedUser.getName()).then(response =>{
-                    console.log('GetUserData Response:')
-                    console.log(response)
                     
                     if(response != null)
                     {

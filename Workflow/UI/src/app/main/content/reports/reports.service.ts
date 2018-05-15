@@ -86,11 +86,13 @@ export class ReportsService {
             if (this.loginService.loggedUser != undefined)
                 userid = this.loginService.loggedUser.userid;
     
-                let tempUrl = 'Report/GetUserReport?userRptParam=' + JSON.stringify(userRptParam) + '&loginid='+userid
-                this.http.get(this.serviceURL + tempUrl).subscribe((response: any) => {                        
+            let tempUrl = 'Report/GetUserReport?userRptParam=' + JSON.stringify(userRptParam) + '&loginid=' + userid
+            
+            this.http.get(this.serviceURL + tempUrl)
+                .subscribe((response: any) => {
                     if ( response != null && response != undefined)
                     {
-                      response = JSON.parse(response);      
+                      response = JSON.parse(response);
                       this.userReports = response;
       
                       if (this.userReports.length > 0)
@@ -114,6 +116,13 @@ export class ReportsService {
         );
     }
 
+
+    getUserReportPdf(userRptParam: UserReportParam): Promise<any> {
+        return new Promise((resolve, reject) => {            
+            window.open(this.serviceURL + 'Report/GetUserReportFile?userRptParam=' + JSON.stringify(userRptParam), "_blank");            
+        });
+    }
+    
     getLastDays(): Promise<any>
     {
         return new Promise((resolve, reject) => {

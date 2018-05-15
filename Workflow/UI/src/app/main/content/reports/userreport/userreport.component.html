@@ -5,28 +5,36 @@
          fxLayout.gt-xs="row" fxLayoutAlign.gt-xs="space-between center">
 
         <!-- APP TITLE -->
-        <div fxLayout="row" fxLayoutAlign="start center">
+        <div fxLayout="column" fxLayoutAlign="start center">
             <div class="logo" fxLayout="row" fxLayoutAlign="start center">
                 <mat-icon class="logo-icon mr-16" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'50ms',scale:'0.2'}}">work</mat-icon>
                 <span class="logo-text h1" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'100ms',x:'-25px'}}">Users</span>
             </div>
+            <div class="logo" fxLayout="row" fxLayoutAlign="start center">
+                
+            </div>
+        </div>
 
+        <div class="search-input-wrapper mt-16 m-sm-0" fxLayout="row" fxLayoutAlign="start center">
+            <button mat-mini-fab class="mat-red-100-bg" [matMenuTriggerFor]="menu" matTooltip="More Actions">
+                <mat-icon class="mat-20">more_horiz</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+                <button mat-menu-item [disabled] = "!isSearchEnable" (click)="loadDownloadableReport('pdf');">Export As Pdf</button>
+                <button mat-menu-item [disabled] = "!isSearchEnable" (click)="loadDownloadableReport('excel');">Export As Excel</button>
+            </mat-menu>
         </div>
         <!-- / APP TITLE -->
 
         <!-- SEARCH -->
        
         <!-- / SEARCH -->
-        
-
     </div>
     <!-- / HEADER -->
 
     <!-- SELECTED BAR -->
     <!--<fuse-selected-bar class="mat-accent-600-bg" *ngIf="hasSelectedContacts" [@slideInTop]></fuse-selected-bar>-->
     <!-- / SELECTED BAR -->
-
-
         <!-- CENTER -->
          <!--<div fxLayout="row"  fxLayoutAlign="start center" fxFlex="1 0 auto" class="button-row">
                 <a mat-raised-button color="primary" class="mx-8" (click)="clearForm();">Clear</a>
@@ -46,7 +54,7 @@
                 </mat-expansion-panel-header>
 
                 <div fxLayout="row" fxLayoutAlign="start center" class="w-100-p button-row">
-                    <div class="w-300">
+                    <div class="w-300 filterby-users">
                         <angular2-multiselect id="userids" [data]="usersDataList" [(ngModel)]="selectedUsers" [settings]="settings" 
                           (onSelect)="onItemSelect($event)" (onDeSelect)="OnItemDeSelect($event)" (onSelectAll)="onSelectAll($event)" 
                           (onDeSelectAll)="onDeSelectAll($event)" formControlName="userids">
@@ -56,6 +64,7 @@
                     <mat-form-field class="w-5-p mr-20">
                         <input matInput formControlName="jobcode" placeholder="Job Code" (keyup)="searchValidation()">
                     </mat-form-field>
+
                     <mat-form-field class="w-15-p mr-20">
                         <input matInput formControlName="title"  placeholder="Title" (keyup)="searchValidation()">
                     </mat-form-field>
@@ -88,30 +97,44 @@
                         <mat-datepicker touchUi="true" #todate disabled="false"></mat-datepicker>
                     </mat-form-field>
                 </div>
+
                 <div fxLayout="row" fxLayoutAlign="center center" class="separator">
                     <span class="text">OR</span>
                 </div>
+
                 <div fxLayout="row" fxLayoutAlign="center center" class="button-row">
-                    <mat-form-field>
-                       
+                    <mat-form-field>                       
                         <mat-select formControlName="lastdays" placeholder="No.of Days" (selectionChange)="selectedNoOfDays($event)" >
                             <mat-option></mat-option>
                             <mat-option *ngFor="let rptPeriod of lastDaysList" [value]="rptPeriod.id">{{rptPeriod.itemName}}</mat-option>
                         </mat-select>
                     </mat-form-field>
                 </div>
+
                 <div fxLayout="row" fxLayoutAlign="end center" class="button-row">
                     <a mat-raised-button color="primary" class="mx-8" (click)="clearSearch()">Clear</a>
                     <a mat-raised-button color="accent" class="mx-8" [disabled] = "!isSearchEnable" (click)="loadReport(this);">Search</a>
                 </div>
 
+                <!--<div fxLayout="row" fxLayoutAlign="end center" class="button-row">
+                    <a mat-raised-button color="accent" class="mx-8" [disabled]="!isSearchEnable" (click)="loadDownloadableReport(this);">Export As Pdf</a>
+                </div>-->
             </mat-expansion-panel>
             </form>
+
+            <!--<mat-form-field>
+                <mat-select placeholder="Export" (selectionChange)="selectedExport($event)">
+                    <mat-option>None</mat-option>
+                    <mat-option *ngFor="let reportOption of reportOptions" [value]="reportOption.value">
+                        {{ reportOption.viewValue }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>-->
             
             <!-- CONTENT -->
             <div class="content mat-white-bg mat-elevation-z4">
               <div id="mat-table-inner" style="overflow-y: scroll !important" [style.height.px]= "matTableInner" (window:resize)="onResize($event)">
-              <mat-table class="products-table" #table [dataSource]="dataSource" matSort [@animateStagger]="{value:'50'}" fusePerfectScrollbar>
+              <mat-table class="userreport-table" #table [dataSource]="dataSource" matSort [@animateStagger]="{value:'50'}" fusePerfectScrollbar>
                 <ng-container cdkColumnDef="ur_username">
                     <mat-header-cell *cdkHeaderCellDef>Name</mat-header-cell>
                     <mat-cell *cdkCellDef="let users">
@@ -123,35 +146,35 @@
                     <mat-header-cell *cdkHeaderCellDef>Job</mat-header-cell>
                     <mat-cell *cdkCellDef="let users">
                         <p class="" *ngIf="!users.jobcode"> </p>
-                        <p class="" title="{{users.jobcode}} - {{users.title}}" *ngIf="users.jobcode">{{users.jobcode}} - {{users.title}}</p>
+                        <p class="" matTooltip="{{users.jobcode}} - {{users.title}}" *ngIf="users.jobcode">{{users.jobcode}} - {{users.title}}</p>
                     </mat-cell>
                 </ng-container>
 
                 <ng-container cdkColumnDef="ur_location">
                     <mat-header-cell *cdkHeaderCellDef>Location</mat-header-cell>
                     <mat-cell *cdkCellDef="let users">
-                        <p class="" title="{{users.location}}">{{users.location}}</p>
+                        <p class="" matTooltip="{{users.location}}">{{users.location}}</p>
                     </mat-cell>
                 </ng-container>
                 
                 <ng-container cdkColumnDef="ur_clientname">
                     <mat-header-cell *cdkHeaderCellDef>Client</mat-header-cell>
                     <mat-cell *cdkCellDef="let users">
-                        <p class="" title="{{users.clientname}}"> {{users.clientname}} </p>
+                        <p class="" matTooltip="{{users.clientname}}"> {{users.clientname}} </p>
                     </mat-cell>
                 </ng-container>
 
                 <ng-container cdkColumnDef="ur_publisheddate">
                     <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Published Date</mat-header-cell>
                     <mat-cell *cdkCellDef="let users" fxHide fxShow.gt-md>
-                        <p class="company text-truncate" title="{{users.publisheddate}}"> {{users.publisheddate}} </p>
+                        <p class="company text-truncate" matTooltip="{{users.publisheddate}}"> {{users.publisheddate}} </p>
                     </mat-cell>
                 </ng-container>]
 
                  <ng-container cdkColumnDef="ur_assigneddate">
                     <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Assigned Date</mat-header-cell>
                     <mat-cell *cdkCellDef="let users" fxHide fxShow.gt-md>
-                        <p class="company text-truncate" title="{{users.assigneddate}}"> {{users.assigneddate}} </p>
+                        <p class="company text-truncate" matTooltip="{{users.assigneddate}}"> {{users.assigneddate}} </p>
                     </mat-cell>
                 </ng-container>                
                
@@ -163,7 +186,7 @@
                 </ng-container>
 
                 <ng-container cdkColumnDef="ur_submission">
-                    <mat-header-cell *cdkHeaderCellDef title="No. of Submission" fxHide fxShow.gt-md>#</mat-header-cell>
+                    <mat-header-cell *cdkHeaderCellDef matTooltip="No. of Submission" fxHide fxShow.gt-md>#</mat-header-cell>
                     <mat-cell *cdkCellDef="let users" fxHide fxShow.gt-md>
                     <!-- <mat-cell *cdkCellDef="let users" [ngClass]="{'text-boxed-red' : !users.jobstarted && users.jobcode, 'text-boxed-green' : users.jobstarted && users.jobcode}"> -->
                         <p class="text-center" *ngIf="!users.jobcode"> {{users.submission}} </p>
@@ -179,7 +202,7 @@
                 <ng-container cdkColumnDef="ur_comment">
                     <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Comment</mat-header-cell>
                     <mat-cell *cdkCellDef="let users" fxHide fxShow.gt-md>
-                        <p class="text-truncate" title="{{users.comment}}"> {{users.comment}} </p>
+                        <p class="text-truncate" matTooltip="{{users.comment}}"> {{users.comment}} </p>
                     </mat-cell>
                 </ng-container>
 

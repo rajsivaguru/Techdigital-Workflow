@@ -29,7 +29,7 @@ export class UsersComponent implements OnInit
     )
     {
 
-
+        
 
         this.searchInput = new FormControl('');
     }
@@ -59,10 +59,7 @@ export class UsersComponent implements OnInit
 
        
     }
-     exportToExcel(event) {
-        this.contactsService.exportUser().then(response => {
-        });
-    }
+
     newContact()
     {
         this.contactsService.action =  'new';
@@ -91,5 +88,4 @@ export class UsersComponent implements OnInit
     
 
 }
-
 
