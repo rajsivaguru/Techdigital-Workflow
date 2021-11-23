@@ -17,17 +17,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
-var Observable_1 = require("rxjs/Observable");
 var material_1 = require("@angular/material");
-var BehaviorSubject_1 = require("rxjs/BehaviorSubject");
 var collections_1 = require("@angular/cdk/collections");
+var common_1 = require("@angular/common");
+var Observable_1 = require("rxjs/Observable");
+var BehaviorSubject_1 = require("rxjs/BehaviorSubject");
+var fuse_perfect_scrollbar_directive_1 = require("../../../../core/directives/fuse-perfect-scrollbar/fuse-perfect-scrollbar.directive");
 var animations_1 = require("../../../../core/animations");
 var fuseUtils_1 = require("../../../../core/fuseUtils");
+var app_model_1 = require("../../../../app.model");
 var reports_model_1 = require("../reports.model");
-var common_1 = require("@angular/common");
-var fuse_perfect_scrollbar_directive_1 = require("../../../../core/directives/fuse-perfect-scrollbar/fuse-perfect-scrollbar.directive");
 var UserReportComponent = /** @class */ (function () {
-    function UserReportComponent(reportService, snackBar, _sanitizer, router, formBuilder, loginService, userService) {
+    function UserReportComponent(reportService, snackBar, _sanitizer, router, formBuilder, loginService, userService, snackComp, utilities) {
         var _this = this;
         this.reportService = reportService;
         this.snackBar = snackBar;
@@ -36,14 +37,11 @@ var UserReportComponent = /** @class */ (function () {
         this.formBuilder = formBuilder;
         this.loginService = loginService;
         this.userService = userService;
+        this.snackComp = snackComp;
+        this.utilities = utilities;
         this.usersDataList = [];
         this.selectedUsers = [];
         this.settings = {};
-        this.reportOptions = [
-            { value: 'Pdf', viewValue: 'Pdf' },
-            { value: 'Excel', viewValue: 'Excel' }
-        ];
-        //displayedColumns = [ 'ur_username', 'ur_jobcode', 'ur_title', 'ur_location', 'ur_clientname', 'ur_publisheddate', 'ur_assigneddate', 'ur_duration', 'ur_submission', 'ur_comment'];
         this.displayedColumns = ['ur_username', 'ur_job', 'ur_location', 'ur_clientname', 'ur_publisheddate', 'ur_assigneddate', 'ur_duration', 'ur_submission', 'ur_comment'];
         this.datePipe = new common_1.DatePipe("en-US");
         this.isSearchEnable = false;
@@ -54,34 +52,6 @@ var UserReportComponent = /** @class */ (function () {
         this.maxFromDate = null;
         this.maxToDate = null;
         this.maxPublishedDate = null;
-        this.searchJob = function (keyword) {
-            try {
-                if (keyword) {
-                    return _this.reportService.searchJob(keyword);
-                }
-                else {
-                    return Observable_1.Observable.of([]);
-                }
-            }
-            catch (ex) {
-                //console.log(ex)
-                return Observable_1.Observable.of([]);
-            }
-        };
-        this.searchUser = function (keyword) {
-            try {
-                if (keyword) {
-                    return _this.reportService.searchUser(keyword);
-                }
-                else {
-                    return Observable_1.Observable.of([]);
-                }
-            }
-            catch (ex) {
-                //console.log(ex)
-                return Observable_1.Observable.of([]);
-            }
-        };
         this.autocompleListFormatterJob = function (data) {
             //console.log(data)
             var html = "<span class=\"font-weight-900 font-size-12\">" + data.title + " </span><span class=\"font-size-10\">" + data.location + " </span>";
@@ -112,27 +82,15 @@ var UserReportComponent = /** @class */ (function () {
         this.isSearchExpanded = true;
     }
     UserReportComponent.prototype.ngOnInit = function () {
-        var _this = this;
-        this.reduceHeight = 290;
-        this.matTableInner = (window.innerHeight - this.reduceHeight);
-        this.userReport = this.createJobForm();
+        this.matTableInner = this.utilities.GetPageContentHeightWithAccordion();
+        this.progressbar = new app_model_1.ProgressBarConfig({});
+        this.userReport = this.createReportForm();
         this.dataSource = new FilesDataSource(this.reportService, this.paginator, this.sort);
-        this.reportService.getLastDays().then(function (response) {
-            if (response) {
-                response.map(function (priori) {
-                    _this.lastDaysList.push({ "id": priori["Value"], "itemName": priori["Name"] });
-                });
-            }
-        });
-        this.userService.getAssignedUser(1).then(function (response) {
-            if (response) {
-                response.map(function (user) {
-                    _this.usersDataList.push({ "roleName": user["rolename"], "id": user["userid"], "itemName": user["name"] });
-                });
-            }
-        });
+        this.getDays();
+        this.getUsersForReport();
         this.settings = {
-            maxHeight: '250px',
+            height: '350px',
+            maxHeight: '350px',
             searchAutofocus: true,
             singleSelection: false,
             text: "Users",
@@ -140,12 +98,15 @@ var UserReportComponent = /** @class */ (function () {
             unSelectAllText: 'UnSelect All',
             enableSearchFilter: true,
             enableCheckAll: true,
-            classes: 'custom_userrpt_list',
+            classes: 'custom_userreport_list',
             badgeShowLimit: 1
         };
     };
+    UserReportComponent.prototype.ngOnDestroy = function () {
+        this.onUserReportChangedSubscription.unsubscribe();
+    };
     UserReportComponent.prototype.onResize = function (event) {
-        this.matTableInner = (window.innerHeight - this.reduceHeight);
+        this.matTableInner = this.utilities.GetPageContentHeightWithAccordion();
     };
     UserReportComponent.prototype.onItemSelect = function (item) {
         this.searchValidation();
@@ -159,19 +120,6 @@ var UserReportComponent = /** @class */ (function () {
     UserReportComponent.prototype.onDeSelectAll = function (items) {
         this.searchValidation();
     };
-    UserReportComponent.prototype.createJobForm = function () {
-        return this.formBuilder.group({
-            userids: [this.rptForm.userids],
-            jobcode: [this.rptForm.jobcode],
-            title: [this.rptForm.title],
-            location: [this.rptForm.location],
-            publisheddate: [this.rptForm.publisheddate],
-            assigneddate: [this.rptForm.assigneddate],
-            fromdate: [this.rptForm.fromdate],
-            todate: [this.rptForm.todate],
-            lastdays: [this.rptForm.lastdays]
-        });
-    };
     UserReportComponent.prototype.searchValidation = function () {
         this.rptForm = this.userReport.getRawValue();
         // if(this.rptForm.status == undefined)
@@ -179,7 +127,7 @@ var UserReportComponent = /** @class */ (function () {
         if (this.rptForm.lastdays == undefined)
             this.rptForm.lastdays = -1;
         if (this.rptForm.userids.length > 0 || this.rptForm.jobcode != "" || this.rptForm.title != "" || this.rptForm.location != "" || this.rptForm.publisheddate != "" || this.rptForm.assigneddate != ""
-            || this.rptForm.fromdate != "" || this.rptForm.todate != "" || this.rptForm.lastdays != -1) {
+            || (this.rptForm.fromdate != "" && this.rptForm.todate != "") || this.rptForm.lastdays != -1) {
             this.isSearchEnable = true;
         }
         else
@@ -198,9 +146,79 @@ var UserReportComponent = /** @class */ (function () {
             lastdays: -1
         });
         this.rptForm = this.userReport.getRawValue();
-        this.reportService.getUserReport(this.rptForm);
+        ////this.reportService.getUserReport(this.rptForm);
         this.isSearchExpanded = true;
         this.isSearchEnable = false;
+    };
+    UserReportComponent.prototype.loadReport = function () {
+        var _this = this;
+        if (this.validateReportCriteria()) {
+            this.paginator.pageIndex = 0;
+            this.isSearchExpanded = false;
+            this.progressbar.showProgress();
+            this.reportService.getUserReport(this.rptForm)
+                .then(function (response) {
+                _this.progressbar.hideProgress();
+                _this.snackComp.showSnackBarGet(response, '');
+            });
+        }
+    };
+    UserReportComponent.prototype.loadDownloadableReport = function (fileType) {
+        if (this.validateReportCriteria()) {
+            this.rptForm.reporttype = fileType;
+            this.reportService.getUserReportExport(this.rptForm);
+        }
+    };
+    UserReportComponent.prototype.selectedFromDate = function (type, event) {
+        this.minToDate = event.value;
+        this.userReport.patchValue({ lastdays: -1 });
+        this.searchValidation();
+    };
+    UserReportComponent.prototype.selectedToDate = function (type, event) {
+        this.maxFromDate = event.value;
+        this.userReport.patchValue({ lastdays: -1 });
+        this.searchValidation();
+    };
+    UserReportComponent.prototype.selectedNoOfDays = function (event) {
+        if (event.value != undefined) {
+            this.userReport.patchValue({ fromdate: '', todate: '' });
+            this.searchValidation();
+        }
+    };
+    UserReportComponent.prototype.createReportForm = function () {
+        return this.formBuilder.group({
+            userids: [this.rptForm.userids],
+            jobcode: [this.rptForm.jobcode],
+            title: [this.rptForm.title],
+            location: [this.rptForm.location],
+            publisheddate: [this.rptForm.publisheddate],
+            assigneddate: [this.rptForm.assigneddate],
+            fromdate: [this.rptForm.fromdate],
+            todate: [this.rptForm.todate],
+            lastdays: [this.rptForm.lastdays]
+        });
+    };
+    UserReportComponent.prototype.getDays = function () {
+        var _this = this;
+        this.lastDaysList = [];
+        this.reportService.getLastDays().then(function (response) {
+            if (response) {
+                response.map(function (day) {
+                    _this.lastDaysList.push({ "id": day["Value"], "itemName": day["Name"] });
+                });
+            }
+        });
+    };
+    UserReportComponent.prototype.getUsersForReport = function () {
+        var _this = this;
+        this.usersDataList = [];
+        this.reportService.getUserForReport(1, false).then(function (response) {
+            if (response) {
+                response.map(function (user) {
+                    _this.usersDataList.push({ "roleName": user["rolename"], "id": user["userid"], "itemName": user["name"] });
+                });
+            }
+        });
     };
     UserReportComponent.prototype.validateReportCriteria = function () {
         this.rptForm = this.userReport.getRawValue();
@@ -211,13 +229,11 @@ var UserReportComponent = /** @class */ (function () {
             });
         }
         this.rptForm.userids = userid;
-        // if(this.rptForm.status == undefined)
-        //     this.rptForm.status = -2;
         if (this.rptForm.lastdays == undefined)
             this.rptForm.lastdays = -1;
         if (this.rptForm.userids.length == 0 && this.rptForm.jobcode == "" && this.rptForm.title == "" && this.rptForm.location == "" && this.rptForm.publisheddate == "" && this.rptForm.assigneddate == ""
             && this.rptForm.fromdate == "" && this.rptForm.todate == "" && this.rptForm.lastdays == -1) {
-            this.openDialog("Please filter by any Values!");
+            this.snackComp.showSimpleWarning("Please filter by any values!");
             return false;
         }
         if (this.rptForm.publisheddate != "")
@@ -227,66 +243,14 @@ var UserReportComponent = /** @class */ (function () {
         if (this.rptForm.todate != "")
             this.rptForm.todate = this.datePipe.transform(this.rptForm.todate, 'MM/dd/yyyy');
         if (this.rptForm.fromdate != "" && this.rptForm.todate == "") {
-            this.openDialog("Please select the To date");
+            this.snackComp.showSimpleWarning("Please select the 'To Date'");
             return false;
         }
         if (this.rptForm.fromdate == "" && this.rptForm.todate != "") {
-            this.openDialog("Please select the From date");
+            this.snackComp.showSimpleWarning("Please select the 'From Date'");
             return false;
         }
         return true;
-    };
-    UserReportComponent.prototype.loadReport = function (event) {
-        if (this.validateReportCriteria()) {
-            this.paginator.pageIndex = 0;
-            this.isSearchExpanded = false;
-            this.reportService.getUserReport(this.rptForm);
-        }
-    };
-    UserReportComponent.prototype.loadDownloadableReport = function (fileType) {
-        if (this.validateReportCriteria()) {
-            this.rptForm.reporttype = fileType;
-            this.reportService.getUserReportPdf(this.rptForm);
-        }
-    };
-    UserReportComponent.prototype.ngOnDestroy = function () {
-        this.onUserReportChangedSubscription.unsubscribe();
-    };
-    UserReportComponent.prototype.selectedFromDate = function (type, event) {
-        this.minToDate = event.value;
-        this.searchValidation();
-        this.userReport.patchValue({
-            lastdays: -1
-        });
-    };
-    UserReportComponent.prototype.selectedToDate = function (type, event) {
-        this.maxFromDate = event.value;
-        this.searchValidation();
-        this.userReport.patchValue({
-            lastdays: -1
-        });
-    };
-    UserReportComponent.prototype.selectedNoOfDays = function (event) {
-        //console.log(event)
-        if (event.value != undefined) {
-            this.searchValidation();
-            this.userReport.patchValue({
-                fromdate: '',
-                todate: ''
-            });
-        }
-    };
-    UserReportComponent.prototype.selectedExport = function (event) {
-        if (event.value != undefined) {
-            //this.reportService.getUserReportPdf();
-        }
-    };
-    UserReportComponent.prototype.openDialog = function (message) {
-        this.snackBar.open(message, '', {
-            duration: 2000,
-            verticalPosition: 'top',
-            extraClasses: ['mat-light-blue-100-bg']
-        });
     };
     __decorate([
         core_1.ViewChild('dialogContent')

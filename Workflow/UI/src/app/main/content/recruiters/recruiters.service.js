@@ -35,6 +35,7 @@ var RecruitersService = /** @class */ (function () {
     RecruitersService.prototype.resolve = function (route, state) {
         var _this = this;
         this.searchText = "";
+        this.headerOptions = this.loginService.getHeaders();
         return new Promise(function (resolve, reject) {
             Promise.all([
                 _this.getRecruiterJobs()
@@ -55,15 +56,10 @@ var RecruitersService = /** @class */ (function () {
     RecruitersService.prototype.getRecruiterJobs = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            var userid = '0';
-            if (_this.loginService.loggedUser != undefined)
-                userid = _this.loginService.loggedUser.userid;
-            _this.http.get(_this.serviceURL + 'TDW/GetRecruiterJobList?loginid=' + userid)
+            _this.http.get(_this.serviceURL + 'Recruiter/GetRecruiterJobList', _this.headerOptions)
                 .subscribe(function (response) {
                 if (response != null && response != undefined) {
-                    response = JSON.parse(response);
-                    _this.recruiterJobs = response;
-                    //console.log(this.recruiterJobs);
+                    _this.recruiterJobs = response.Output;
                     if (_this.searchText && _this.searchText !== '') {
                         _this.recruiterJobs = fuseUtils_1.FuseUtils.filterArrayByString(_this.recruiterJobs, _this.searchText);
                     }
@@ -86,42 +82,34 @@ var RecruitersService = /** @class */ (function () {
                 else {
                     resolve([]);
                 }
-            }, reject);
+            }, function (exception) {
+                resolve(exception.error);
+            });
         });
     };
     RecruitersService.prototype.startRecruiterJob = function (jobassignmentid) {
         var _this = this;
-        var userid = '0';
-        if (this.loginService.loggedUser != undefined)
-            userid = this.loginService.loggedUser.userid;
         return new Promise(function (resolve, reject) {
-            _this.http.get(_this.serviceURL + 'TDW/StartRecruiterJobStatus?jobassignmentid=' + jobassignmentid + '&userid=' + userid)
+            _this.http.post(_this.serviceURL + 'Recruiter/StartRecruiterJob?jobassignmentid=' + jobassignmentid, null, _this.headerOptions)
                 .subscribe(function (response) {
-                if (response != null && response != undefined && response != "") {
-                    response = JSON.parse(response);
-                    _this.getRecruiterJobs();
-                    resolve(response);
-                }
-                else
-                    resolve('');
+                response = response;
+                _this.getRecruiterJobs();
+                resolve(response);
+            }, function (exception) {
+                resolve(exception.error);
             });
         });
     };
-    RecruitersService.prototype.stopRecruiterJob = function (jaid, jobassignmentstatusid, submission, comment) {
+    RecruitersService.prototype.stopRecruiterJob = function (job) {
         var _this = this;
-        var userid = '0';
-        if (this.loginService.loggedUser != undefined)
-            userid = this.loginService.loggedUser.userid;
         return new Promise(function (resolve, reject) {
-            _this.http.get(_this.serviceURL + 'TDW/StopRecruiterJobStatus?jobassignmentid=' + jaid + '&jobassignmentstatusid=' + jobassignmentstatusid + '&submission=' + submission + '&comment=' + comment + '&userid=' + userid)
+            _this.http.post(_this.serviceURL + 'Recruiter/StopRecruiterJob', job, _this.headerOptions)
                 .subscribe(function (response) {
-                if (response != null && response != undefined && response != "") {
-                    response = JSON.parse(response);
-                    _this.getRecruiterJobs();
-                    resolve(response);
-                }
-                else
-                    resolve('');
+                response = response;
+                _this.getRecruiterJobs();
+                resolve(response);
+            }, function (exception) {
+                resolve(exception.error);
             });
         });
     };

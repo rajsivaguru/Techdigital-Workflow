@@ -13,8 +13,9 @@ import { FuseNavigationService } from '../../../core/components/navigation/navig
 import { NavigationModel } from '../../../navigation.model';
 import { NavigationEnd, NavigationStart, NavigationError, Router } from '@angular/router';
 import { JobsService } from '../jobs/jobs.service';
-
+import { Utilities } from '../common/commonUtil';
 import { LocalStorageService } from 'angular-2-local-storage'
+declare let $: any;
 
 @Component({
     selector   : 'fuse-login-2',
@@ -26,10 +27,12 @@ export class LoginComponent implements OnInit
 {
     loginForm: FormGroup;
     loginFormErrors: any;
-    login : Login;
+    login: Login;
+    deploymentNotificationMessage: string;
    
     private myClientId: string;
-    private scope = ['profile','email'].join(' ');
+    ////private scope = ['profile', 'email', 'https://www.googleapis.com/auth/indexing'].join(' ');
+    private scope = ['profile', 'email'].join(' ');
     public auth2: any;
 
     constructor(
@@ -43,7 +46,8 @@ export class LoginComponent implements OnInit
         public loginService : LoginService,
         private jobsService: JobsService,
         private fuseNavigationService : FuseNavigationService,
-        private _ngZone: NgZone
+        private _ngZone: NgZone,
+        private utilities: Utilities
     )
     {   
         // if(this.loginService.googleUser != null && this.loginService.googleUser.isSignedIn())
@@ -54,26 +58,30 @@ export class LoginComponent implements OnInit
             password: {}
         };
 
+        this.deploymentNotificationMessage = '';
         this.login = new Login({});
         this.loginService.loggedUser = new Contact({});
-
+        
         this.loginService.getConfigurationData().then(data => {
+            
             if(data == "" || data == undefined )
             {
-                this.myClientId = fuseConfig.GoogleClientID +'.apps.googleusercontent.com';               
+                this.myClientId = fuseConfig.GoogleClientID +'.apps.googleusercontent.com';
             }
             else
             {
                 this.myClientId = data["GoogleClientID"]
+                this.fuseConfig.GoogleClientID = data["GoogleClientID"]
+                this.deploymentNotificationMessage = data["DeploymentNotificationMessage"]
                 this.fuseConfig.JobTimerDuration = data["JobTimerDuration"]
                 this.fuseConfig.AlertTimerDuration = data["AlertTimerDuration"]
+                this.fuseConfig.helpDeskURL = "https://goo.gl/forms/d19uhpWwomYr0wx22"
+                this.fuseConfig.staffDirectoryURL = "https://docs.google.com/spreadsheets/d/106gBhrqH2gws2EqXpvrMfQJRtF7vTbKLkT5SO_iKwxo/edit?usp=sharing"
                 //this.myClientId = "401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et";
             }
-        });        
-
-        // this.errorMessage1 = "";
-        // this.errorMessage2 = "";
+        });
     }
+
     ngOnInit()
     {
         this.loginForm = this.formBuilder.group({
@@ -94,13 +102,14 @@ export class LoginComponent implements OnInit
             }
         });
 
-        this.googleInit();  
+        this.googleInit();
     }
 
-public googleInit() {
+    googleInit() {
     let that = this;
     let counter = 0;
-    gapi.load('auth2', function(){
+
+    gapi.load('auth2', function () {
         /**
          * Retrieve the singleton for the GoogleAuth library and set up the
          * client.
@@ -108,14 +117,14 @@ public googleInit() {
         //private clientId:string = '401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et.apps.googleusercontent.com';  // localhost
         //private clientId:string = '86746030753-22n6td4v43tdu9ps466t93klsegmrng8.apps.googleusercontent.com'; // live
         
+        /* Getting client id is now comes from server. */
         let clientId = '401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et.apps.googleusercontent.com';
-
+        
         if (window.location.hostname != 'localhost')
             clientId = '86746030753-22n6td4v43tdu9ps466t93klsegmrng8.apps.googleusercontent.com'
+        //let clientId = that.myClientId + '.apps.googleusercontent.com';
 
         that.auth2 = gapi.auth2.init({
-            //client_id: '86746030753-22n6td4v43tdu9ps466t93klsegmrng8.apps.googleusercontent.com',
-            //client_id: '401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et.apps.googleusercontent.com',
             client_id: clientId,
             scope: that.scope
         });
@@ -128,11 +137,12 @@ public googleInit() {
                 that.router.navigateByUrl('/login');
             }
         });
-
+        
         // Listen for changes to current user.
         that.auth2.currentUser.listen(function (googleUser)
-        {                
-            if(googleUser != null && googleUser != undefined && googleUser["El"] != null && googleUser["Zi"] != null && counter < 1)
+        { 
+            /* Commenting && googleUser["El"] != null && googleUser["Zi"] != null && counter < 1), since the google return codes are changed. */
+            if (googleUser != null && googleUser != undefined && counter < 1) //////&& googleUser["El"] != null && googleUser["Zi"] != null)
             {
             	counter = counter + 1;
                 let profile = googleUser.getBasicProfile();
@@ -174,11 +184,9 @@ public googleInit() {
                     "name": loggedUser.getName(),
                     "imgurl": loggedUser.getImageUrl()
                 };
-                
-                //that.loginService.getUserData(that.login.email, that.loginService.googleUser.getBasicProfile().getImageUrl(), that.loginService.googleUser.getBasicProfile().getName()).then(response =>{
+
                 //that.loginService.syncUserData(JSON.stringify(loginModel)).then(response =>{
-                that.loginService.syncUserData(loggedUser.getEmail(), loggedUser.getImageUrl(), loggedUser.getGivenName(), loggedUser.getFamilyName(), loggedUser.getName()).then(response =>{
-                    
+                that.loginService.syncUserData(loggedUser.getEmail(), loggedUser.getImageUrl(), loggedUser.getGivenName(), loggedUser.getFamilyName(), loggedUser.getName()).then(response =>{                    
                     if(response != null)
                     {
                         if(response["Result"] == "1")
@@ -188,17 +196,18 @@ public googleInit() {
                                 that.loginService.loggedUser = response;
     
                                 that.localStorageService.set("login_id", that.loginService.googleUser.getId())
+                                localStorage.setItem('userToken', that.loginService.loggedUser.token);
                                 
                                 var role = that.loginService.loggedUser.rolename;
-                                if (role == 'Team Lead' || role == 'Delivery Manager' || role == 'Super User')
+                                if (role == that.utilities.rn_teamlead || role == that.utilities.rn_deliverymanager || role == that.utilities.rn_superuser)
                                 {
                                     // synch jobs
-                                    that.jobsService.synchJobs().then(response =>
-                                    {
-                                        if (response) {
-                                            that.jobsService.getNewJobs();
-                                        }
-                                    });
+                                    ////that.jobsService.synchJobs().then(response =>
+                                    ////{
+                                    ////    ////if (response) {
+                                    ////    ////    that.jobsService.getNewJobs();
+                                    ////    ////}
+                                    ////});
                                 }
     
                                 that.fuseNavigationService.navigationModel = new NavigationModel();
@@ -275,54 +284,116 @@ public googleInit() {
               // 2	Team Lead
               // 3	Delivery Manager
               // 4	Report User
-              // 5	Super User
-              if(this.loginService.loggedUser.roleid == "1") //Recruiter
-              {
-                  this.fuseNavigationService.removeMenu("newjobs");    
-                  this.fuseNavigationService.removeMenu("users");    
-                  this.fuseNavigationService.removeMenu("reports");  
-                  this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
-                  this.router.navigate(['/myjobs']);
-              }
-              else if(this.loginService.loggedUser.roleid == "2")//Team Lead
-              {
-                  this.fuseNavigationService.removeMenu("users");     
-                  this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
-                  this.router.navigate(['/jobsload']);
-              }
-              else if(this.loginService.loggedUser.roleid == "3")//Delivery Manager
-              {
-                  this.fuseNavigationService.removeMenu("users");     
-                  this.fuseNavigationService.removeMenu("recruiters");  
-                  this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
-                  this.router.navigate(['/jobsload']);
-              }
-              else if(this.loginService.loggedUser.roleid == "4")//Report User
-              {
-                  this.fuseNavigationService.removeMenu("newjobs");    
-                  this.fuseNavigationService.removeMenu("users");    
-                  this.fuseNavigationService.removeMenu("recruiters");   
-                  this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
-                  this.router.navigate(['/jobreport']);
-              }
-              else if(this.loginService.loggedUser.roleid == "5")//Super User
-              {
-                  this.fuseNavigationService.removeMenu("recruiters");   
-                  this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
-                  this.router.navigate(['/jobsload']);
-              }
-              else 
-              {
-                  this.fuseConfig.setSettings({
-                      showProgress : false,
-                      layout: {
-                          navigation: 'none',
-                          toolbar   : 'none',
-                          footer    : 'none'
-                      }
-                  });
-                  //this.router.navigate(['/login']);
-              }
+             // 5	Super User
+             if (this.loginService.loggedUser.rolename == "" || this.loginService.loggedUser.rolename == undefined)
+             {
+                 this.fuseConfig.setSettings({
+                     showProgress: false,
+                     layout: {
+                         navigation: 'none',
+                         toolbar: 'none',
+                         footer: 'none'
+                     }
+                 });
+                 //this.router.navigate(['/login']);
+             }
+             else if (this.loginService.loggedUser.rolename == this.utilities.rn_recruiter) 
+             {
+                this.fuseNavigationService.removeMenu("newjobs");
+                this.fuseNavigationService.removeMenu("users");
+                 this.fuseNavigationService.removeMenu("reports");
+                 this.fuseNavigationService.removeMenu("accountreports");
+                this.fuseNavigationService.removeMenu("accounts");
+                this.fuseNavigationService.removeMenu("jobsclient");
+                 this.fuseNavigationService.removeMenu("admintools");
+                 this.fuseNavigationService.removeMenu("customervendor");
+                this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
+                this.router.navigate(['/myjobs']);
+             }
+             else if (this.loginService.loggedUser.rolename == this.utilities.rn_teamlead) 
+             {
+                 this.fuseNavigationService.removeMenu("users");
+                 this.fuseNavigationService.removeMenu("jobsclient");
+                 this.fuseNavigationService.removeMenu("accounts");
+                 this.fuseNavigationService.removeMenu("admintools");
+                 this.fuseNavigationService.removeMenu("customervendor");
+                 this.fuseNavigationService.removeMenu("accountreports");
+                 this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
+                 this.router.navigate(['/jobs']);
+             }
+             else if (this.loginService.loggedUser.rolename == this.utilities.rn_deliverymanager)
+             {
+                this.fuseNavigationService.removeMenu("users");
+                this.fuseNavigationService.removeMenu("recruiters");  
+                 this.fuseNavigationService.removeMenu("jobsclient");
+                 this.fuseNavigationService.removeMenu("customervendor");
+                this.fuseNavigationService.removeMenu("accounts");
+                 this.fuseNavigationService.removeMenu("admintools");
+                 this.fuseNavigationService.removeMenu("accountreports");
+                this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
+                this.router.navigate(['/jobs']);
+             }
+             else if (this.loginService.loggedUser.rolename == this.utilities.rn_reportuser) 
+             {
+                this.fuseNavigationService.removeMenu("newjobs");
+                this.fuseNavigationService.removeMenu("users");
+                this.fuseNavigationService.removeMenu("recruiters");
+                this.fuseNavigationService.removeMenu("jobsclient");
+                 this.fuseNavigationService.removeMenu("priorityjob");
+                 this.fuseNavigationService.removeMenu("customervendor");
+                 this.fuseNavigationService.removeMenu("accounts");
+                 this.fuseNavigationService.removeMenu("accountreports");
+                this.fuseNavigationService.removeMenu("tools");
+                this.fuseNavigationService.removeMenu("admintools");
+                this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
+                this.router.navigate(['/jobreport']);
+             }
+             else if (this.loginService.loggedUser.rolename == this.utilities.rn_superuser) 
+             {
+                this.fuseNavigationService.removeMenu("recruiters");
+                this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
+                this.router.navigate(['/jobs']);
+             }
+             else if (this.loginService.loggedUser.rolename == this.utilities.rn_accountsadmin)
+             {
+                 this.fuseNavigationService.removeMenu("newjobs");
+                 this.fuseNavigationService.removeMenu("users");
+                 this.fuseNavigationService.removeMenu("recruiters");
+                 this.fuseNavigationService.removeMenu("reports");
+                 this.fuseNavigationService.removeMenu("jobsclient");
+                 this.fuseNavigationService.removeMenu("priorityjob");
+                 this.fuseNavigationService.removeMenu("tools");
+                 this.fuseNavigationService.removeMenu("admintools");
+                 this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
+                 this.router.navigate(['/consultants']);
+             }
+             else if (this.loginService.loggedUser.rolename == this.utilities.rn_accountsclerk)
+             {
+                 this.fuseNavigationService.removeMenu("newjobs");
+                 this.fuseNavigationService.removeMenu("users");
+                 this.fuseNavigationService.removeMenu("recruiters");
+                 this.fuseNavigationService.removeMenu("reports");
+                 this.fuseNavigationService.removeMenu("jobsclient"); 
+                 this.fuseNavigationService.removeMenu("priorityjob");
+                 this.fuseNavigationService.removeMenu("customervendor");
+                 this.fuseNavigationService.removeMenu("tools");
+                 this.fuseNavigationService.removeMenu("admintools");
+                 this.fuseNavigationService.removeChildMenu("accounts", "consultants");
+                 this.fuseNavigationService.onNavigationModelChange.next(this.fuseNavigationService.navigationModel.model);
+                 this.router.navigate(['/invoices']);
+             }
+            else 
+            {
+                this.fuseConfig.setSettings({
+                    showProgress : false,
+                    layout: {
+                        navigation: 'none',
+                        toolbar   : 'none',
+                        footer    : 'none'
+                    }
+                });
+                //this.router.navigate(['/login']);
+             }
          }
          else
         {

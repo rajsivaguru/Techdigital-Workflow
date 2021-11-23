@@ -1,0 +1,140 @@
+﻿@import "src/app/core/scss/fuse";
+
+/* Checkbox Label only */
+.checkbox-label
+{
+    font-size: 16px !important;
+    margin-right: 10px !important;
+}
+
+/* Mandatory mark(*) */
+.mandatory
+{
+    width: 10px !important;
+    color:Red !important;
+    font-weight: bold !important; 
+    margin-top: -15px !important;
+}
+
+.mat-expansion-panel-header
+{
+    padding : 0 24px !important;
+}
+
+.mat-expansion-panel-body
+{
+    padding : 0 24px;
+}
+
+.filter-by{
+    .div{
+        margin-right: 10px !important;
+    }
+}
+.filterby-users{
+
+    margin-right: 10px !important;
+}
+
+.list-area
+{
+    .lazyContainer
+    {
+        height: 250px !important;
+    }
+}
+
+.matlist-custom
+{
+    .mat-list-item:hover
+    {
+        background-color: #F2F4F4 !important;
+    }
+}
+
+.borderPopUp{
+  padding-left: 20px;
+  padding-right: 20px;
+  position: absolute;
+  background: #d3d3d4;
+  animation: openLikeDrawer 800ms ease-in-out;
+  width: 50%;
+  left: 20%;
+}
+
+@keyframes openLikeDrawer{
+  from {left:0px; }
+  to { left: 20%; }
+}
+
+#container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+#mat-table-innerGrid,
+#card {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#card {
+  z-index: 10;
+}
+
+.inout-table {
+    flex: 1 1 auto;
+    border-bottom: 1px solid rgba(0, 0, 0, .12);
+
+    #mat-table-innerGrid{
+        overflow-y: scroll !important;
+        height: 400px !important;
+    }
+        
+    .mat-header-row {
+            
+    }
+        
+    .mat-row:hover
+    {
+        background-color: #F2F4F4 !important;
+    }
+        
+    .mat-row-total
+    {
+        background-color: lightgray !important;
+        font-weight: bold;
+    }
+
+    .mat-header-cell
+    {
+        font-weight: bold !important;
+        /*font-size : 15px !important;*/
+        justify-content : center !important;
+        padding-right: 10px;
+        padding-left: 5px;
+    }
+    
+    .mat-cell {
+        padding-right: 10px;
+        padding-left: 5px;
+    }
+
+    .mat-row {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .mat-column-pt_date {
+        flex: 0 1 20%;
+    }
+    .mat-column-pt_intime {
+        flex: 0 1 15%;
+    }
+    .mat-column-pt_outtime {
+        flex: 0 1 15%;
+    }
+}

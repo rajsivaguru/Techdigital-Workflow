@@ -7,15 +7,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
-var shared_module_1 = require("../../../core/modules/shared.module");
 var router_1 = require("@angular/router");
+var angular2_text_mask_1 = require("angular2-text-mask");
+var shared_module_1 = require("../../../core/modules/shared.module");
 var users_component_1 = require("./users.component");
 var users_service_1 = require("./users.service");
 var users_list_component_1 = require("./users-list/users-list.component");
 var users_form_component_1 = require("./users-form/users-form.component");
-var angular2_text_mask_1 = require("angular2-text-mask");
 var dialog_component_1 = require("../dialog/dialog.component");
 var login_service_1 = require("../login/login.service");
+var snackbar_service_1 = require("../dialog/snackbar.service");
+var commonUtil_1 = require("../common/commonUtil");
 var routes = [
     {
         path: 'users',
@@ -26,7 +28,7 @@ var routes = [
         }
     },
     {
-        path: 'usersform',
+        path: 'user',
         component: users_form_component_1.UsersFormComponent,
         canActivate: [login_service_1.AuthGuard],
         resolve: {
@@ -50,9 +52,7 @@ var UsersModule = /** @class */ (function () {
                 users_form_component_1.UsersFormComponent,
                 dialog_component_1.DialogComponent
             ],
-            providers: [
-                users_service_1.UsersService
-            ],
+            providers: [users_service_1.UsersService, snackbar_service_1.SnackBarService, commonUtil_1.Utilities],
             entryComponents: [dialog_component_1.DialogComponent, users_form_component_1.UsersFormComponent]
         })
     ], UsersModule);

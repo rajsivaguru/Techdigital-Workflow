@@ -17,7 +17,6 @@ var DialogComponent = /** @class */ (function () {
         this.data = data;
     }
     DialogComponent.prototype.onNoClick = function () {
-        //console.log('closed')
         this.dialogRef.close();
     };
     DialogComponent = __decorate([
@@ -36,7 +35,7 @@ var DialogDataComponent = /** @class */ (function () {
         this.data = data;
         this.dropdownSettings = {};
         this.dropdownSettings = {
-            groupBy: "roleName",
+            groupBy: data.groupByField,
             maxHeight: '350px',
             searchAutofocus: true,
             singleSelection: false,
@@ -63,3 +62,61 @@ var DialogDataComponent = /** @class */ (function () {
     return DialogDataComponent;
 }());
 exports.DialogDataComponent = DialogDataComponent;
+var DialogProfileSeachReportDetailComponent = /** @class */ (function () {
+    function DialogProfileSeachReportDetailComponent(dialogRef, data) {
+        this.dialogRef = dialogRef;
+        this.data = data;
+        this.dropdownSettings = {};
+        this.dropdownSettings = {
+            groupBy: data.groupByField,
+            maxHeight: '350px',
+            searchAutofocus: true,
+            singleSelection: false,
+            text: "",
+            selectAllText: 'Select All',
+            unSelectAllText: 'UnSelect All',
+            enableSearchFilter: true,
+            enableCheckAll: false,
+            classes: 'custom_dropdown_tdw',
+            badgeShowLimit: 2
+        };
+    }
+    DialogProfileSeachReportDetailComponent.prototype.onNoClick = function () {
+        this.dialogRef.close();
+    };
+    DialogProfileSeachReportDetailComponent = __decorate([
+        core_1.Component({
+            selector: 'profilesearchreport-dialog',
+            styleUrls: ['./dialog.component.scss'],
+            templateUrl: 'dialog-profilesearchreportdetail.component.html'
+        }),
+        __param(1, core_1.Inject(material_1.MAT_DIALOG_DATA))
+    ], DialogProfileSeachReportDetailComponent);
+    return DialogProfileSeachReportDetailComponent;
+}());
+exports.DialogProfileSeachReportDetailComponent = DialogProfileSeachReportDetailComponent;
+////@Component({
+////    selector: 'externalconsultant-dialog',
+////    ////templateUrl: '../visa/question/consultant.component.html',
+////    templateUrl: 'dialog-user.component.html'
+////})
+////export class DialogConsultantComponent implements OnInit
+////{
+////    firstFormGroup: FormGroup;
+////    secondFormGroup: FormGroup;
+////    constructor(
+////        private formBuilder: FormBuilder,
+////        public dialogRef: MatDialogRef<DialogConsultantComponent>,
+////        @Inject(MAT_DIALOG_DATA) public data: any) { }
+////    ngOnInit() {
+////        this.firstFormGroup = this.formBuilder.group({
+////            firstCtrl: ['']
+////        });
+////        this.secondFormGroup = this.formBuilder.group({
+////            secondCtrl: ['']
+////        });
+////    }
+////    onNoClick(): void {
+////        this.dialogRef.close();
+////    }
+////}

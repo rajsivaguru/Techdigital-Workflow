@@ -1,14 +1,17 @@
 import { NgModule } from '@angular/core';
-import { SharedModule } from '../../../core/modules/shared.module';
 import { RouterModule, Routes } from '@angular/router';
+import { TextMaskModule } from 'angular2-text-mask';
+import { SharedModule } from '../../../core/modules/shared.module';
+
 import { UsersComponent } from './users.component';
 import { UsersService } from './users.service';
 import { UserListComponent } from './users-list/users-list.component';
-
 import { UsersFormComponent } from './users-form/users-form.component';
-import { TextMaskModule } from 'angular2-text-mask';
 import { DialogComponent } from '../dialog/dialog.component'
-import { LoginService,AuthGuard } from '../login/login.service';
+import { LoginService, AuthGuard } from '../login/login.service';
+import { SnackBarService } from '../dialog/snackbar.service';
+import { Utilities } from '../common/commonUtil';
+
 const routes: Routes = [
     {
         path     : 'users',
@@ -19,7 +22,7 @@ const routes: Routes = [
         }
     },
     {
-        path     : 'usersform',
+        path     : 'user',
         component: UsersFormComponent,
         canActivate: [AuthGuard],
         resolve  : {
@@ -36,15 +39,11 @@ const routes: Routes = [
     ],
     declarations   : [
         UsersComponent,
-        UserListComponent,
-        
+        UserListComponent,        
         UsersFormComponent,
         DialogComponent
-
     ],
-    providers      : [
-        UsersService
-    ],
+    providers: [UsersService, SnackBarService, Utilities ],
     entryComponents: [DialogComponent,UsersFormComponent]
 })
 export class UsersModule

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot, Router } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
-import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { FuseUtils } from '../../../core/fuseUtils';
 import { Subject } from 'rxjs/Subject';
@@ -25,14 +25,12 @@ export class LoginService
 
     constructor(private http: HttpClient, 
                 private configSer : FuseConfigService, 
-                private localStorageService: LocalStorageService,
-                
-                public dialog: MatDialog,)
+                private localStorageService: LocalStorageService,                
+                public dialog: MatDialog,
+                private router: Router)
     {
         this.serviceURL = configSer.ServiceURL;
         //this.navigationModel = fuseNavigationService.navigationModel.model;
-        
-        
     }
 
     openDialog(message)
@@ -56,10 +54,10 @@ export class LoginService
         );
     }
     
-    getUserData(email, img, name): Promise<any>
+    syncUserData(email, img, firstname, lastname, name): Promise<any>
     {
         return new Promise((resolve, reject) => {
-                this.http.get(this.serviceURL +'TDW/Login?email='+email+'&img='+img  +'&name='+name  )
+            this.http.get(this.serviceURL +'User/SyncUser?email=' + email + '&imgurl=' + img + '&firstname=' + firstname + '&lastname=' + lastname + '&name=' + name)
                     .subscribe((response: any) => {
                         response = JSON.parse(response);
                         resolve(response);
@@ -68,16 +66,34 @@ export class LoginService
         );
     }
 
-    syncUserData(email, img, firstname, lastname, name): Promise<any>
+    getLoginId()
     {
-        return new Promise((resolve, reject) => {
-                this.http.get(this.serviceURL +'User/Login?email=' + email + '&imgurl=' + img + '&firstname=' + firstname + '&lastname=' + lastname + '&name=' + name)
-                    .subscribe((response: any) => {
-                        response = JSON.parse(response);
-                        resolve(response);
-                    }, reject);
-            }
-        );
+        var user = this.loggedUser;
+
+        if (user == null || user == undefined || user.userid == null || user.userid == '0' || user.userid == '' || user.userid == undefined)
+            this.googleUser.disconnect();
+        else
+            return this.loggedUser.userid;
+    }
+
+    getLoginToken() {
+        var user = this.loggedUser;
+
+        if (user == null || user == undefined || user.userid == null || user.userid == '0' || user.userid == '' || user.userid == undefined)
+            this.googleUser.disconnect();
+        else
+            return this.loggedUser.token;
+    }
+
+    getHeaders()
+    {
+        const httpOptions = {
+            headers: new HttpHeaders({
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.loggedUser.token
+            })
+        };
+        return httpOptions;
     }
 }
 
@@ -90,7 +106,6 @@ constructor(private authService: LoginService,
             private localStorageService: LocalStorageService, private router: Router) 
             {
 
-
             }
 
   canActivate(
@@ -100,25 +115,24 @@ constructor(private authService: LoginService,
 
     //console.log('login check')
     //console.log(this.router.url)
-    
-     if(this.fuseNavigationService.findNavigationItemByURL(state.url) == null)
-         {
-             if(this.router.url == "/users"  && state.url == "/usersform" )
-             {
 
-             }
-             else
-             {
-                this.router.navigateByUrl(this.router.url)
-                this.fuseConfig.setSettings({
-                    showProgress : false
-                });
-             }
-         }
+    if(this.fuseNavigationService.findNavigationItemByURL(state.url) == null)
+    {
+        if ((this.router.url == "/users" && (state.url == "/user")) || (this.router.url == "/jobs" && (state.url == "/prioritizejob")))
+        {
+
+        }
+        else
+        {
+            this.router.navigateByUrl(this.router.url)
+            this.fuseConfig.setSettings({
+                showProgress : false
+            });
+        }
+    }
         
      if( this.localStorageService.get("login_id") == null && this.localStorageService.get("login_id") == undefined )
      {
-
           this.fuseConfig.setSettings({
             layout: {
                 navigation: 'none',

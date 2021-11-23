@@ -1,66 +1,96 @@
 <!--<mat-progress-bar *ngIf="showLoadingBar" class="loading-bar" color="warn" mode="indeterminate"></mat-progress-bar>-->
 <mat-toolbar class="p-0 mat-elevation-z1">
-
-
-
     <div fxFlex fxFill fxLayout="row" fxLayoutAlign="start center">
-
         <div fxFlex="1 0 auto" fxLayout="row" fxLayoutAlign="start center">
-
             <button mat-button class="toggle-button-navbar mat-icon-button"
                     fuseNavbarVertical="toggleBar" fxHide.gt-md>
                 <mat-icon>menu</mat-icon>
             </button>
-
             <div class="toolbar-separator" fxHide.gt-md></div>
-
             <div fxLayout="row" fxLayoutAlign="start center" *ngIf="horizontalNav">
                 <div class="logo ml-16">
                     <img class="logo-icon" src="assets/images/logos/logo-mini.jpg">
                 </div>
             </div>
-
             <div class="px-8 px-mat-16">
                 <div class="logo ml-16">
                     <img class="" src="assets/images/logos/logo.jpg">
                 </div>
             </div>
+        </div>
 
+        <div class="" style="width: 45px;" *ngIf="false" fxFlex="0 1 auto" fxLayout="row" fxLayoutAlign="start center">
+            <!--<button mat-mini-fab *ngIf="notifications.length == 0" class="">
+                <div fxLayout="row" fxLayoutAlign="center center">
+                    <mat-icon matBadge="15" matBadgePosition="above after" matBadgeColor="accent">notifications</mat-icon>
+                    <div class="" *ngIf="isnotificationCountVisible" role="img" aria-hidden="true"
+                         style="width: 25px !important; color: black; margin-top: -22px !important; margin-left: -5px !important; background-color: orangered; border-radius: 25px;">
+                        {{notificationCount}}
+                    </div>
+                </div>
+            </button>-->
+            <button mat-mini-fab class="" [matMenuTriggerFor]="notificationList">
+                <div fxLayout="row" fxLayoutAlign="center center">
+                    <mat-icon matBadge="15" matBadgePosition="above after" matBadgeColor="accent">notifications</mat-icon>
+                    <div class="" *ngIf="isnotificationCountVisible" role="img" aria-hidden="true"
+                         style="width: 25px !important; color: black; margin-top: -22px !important; margin-left: -5px !important; background-color: orangered; border-radius: 25px;">
+                        {{notificationCount}}
+                    </div>
+                </div>
+            </button>
+
+            <mat-menu #notificationList="matMenu">
+                <mat-list style="display:contents">
+                    <mat-list-item *ngFor="let notification of notifications">
+                        <mat-icon *ngIf="!notification.isread" mat-list-icon style="margin-left:-10px; color:orangered">new_releases</mat-icon>
+                        <mat-icon *ngIf="notification.isread" mat-list-icon style="margin-left:-10px; color:green">check_circle_outline</mat-icon>
+                        <h4 mat-line style="font-size:small; margin-left:-10px; color: darkgray;">{{notification.createdon}}</h4>
+                        <h4 mat-line style="font-size:small; margin-left:-10px; color: darkgray;">{{notification.fromuser}}</h4>
+                        <p mat-line matTooltip={{notification.messagetext}} style="font-size:small; margin-left:-10px;">{{notification.messagetext}}</p>
+                    </mat-list-item>
+                    <!--<mat-divider></mat-divider>-->
+                    <button *ngIf="notifications.length > 0" mat-menu-item class="">
+                        <span>View More/Details</span>
+                    </button>
+                    <mat-list-item *ngIf="notifications.length == 0">
+                        <p mat-line style="margin-left:0px;">No message to view</p>
+                    </mat-list-item>
+                </mat-list>
+            </mat-menu>
+        </div>
+
+        <div class="" *ngIf="isValidUser" style="width: 45px;" fxFlex="0 1 auto" fxLayout="row" fxLayoutAlign="start center">
+            <button mat-mini-fab class="" matTooltip="Help Desk" (click)="helpdesk()">
+                <mat-icon>headset_mic</mat-icon>
+            </button>
+        </div>
+        <div class="" *ngIf="isValidUser" fxFlex="0 1 auto" fxLayout="row" fxLayoutAlign="start center">
+            <button mat-mini-fab class="" matTooltip="Staff Info" (click)="staffDirectory()">
+                <mat-icon>perm_contact_calendar</mat-icon>
+            </button>
         </div>
 
         <div class="" fxFlex="0 1 auto" fxLayout="row" fxLayoutAlign="start center">
-
-            <button mat-button [matMenuTriggerFor]="userMenu"
-                    class="user-button">
+            <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
                 <div fxLayout="row" fxLayoutAlign="center center">
                     <img class="avatar" src="{{loginUser.imgurl}}">
                     <span class="username mr-12" fxHide fxShow.gt-sm>{{ loginUser.name }}</span>
                     <mat-icon class="s-16" fxHide.xs>keyboard_arrow_down</mat-icon>
                 </div>
-                
             </button>
 
             <mat-menu #userMenu="matMenu">
-
-                <button mat-menu-item>
+                <button mat-menu-item matTooltip="{{loginUser.rolenames.join()}}">
                     <mat-icon>account_circle</mat-icon>
-                    <span>Role : {{ loginUser.rolename }}</span>
+                    <span>Role : {{loginUser.rolenames.join()}}</span>
                 </button>
-                <!--<button mat-menu-item class="">
-                    <mat-icon>mail</mat-icon>
-                    <span>Inbox</span>
-                </button>-->
-
                 <button mat-menu-item class="" (click)="submitLogout();">
                     <mat-icon>exit_to_app</mat-icon>
                     <span>Logout</span>
                 </button>
-
             </mat-menu>
-
-        </div>
+        </div>        
     </div>
     
 </mat-toolbar>
-    
     

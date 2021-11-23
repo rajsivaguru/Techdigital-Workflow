@@ -15,16 +15,14 @@ export class RecruitersService implements Resolve<any>
     onRecruiterJobChanged: BehaviorSubject<any> = new BehaviorSubject({});
     onSearchTextChanged: Subject<any> = new Subject();
     onFilterChanged: Subject<any> = new Subject();
-
     recruiterJobs : RecruitersJobs[];
-
     searchText: string = "";
     filterBy: string;
-    serviceURL : String;
+    serviceURL: String;
+    headerOptions: any;
 
     constructor(private http: HttpClient, private configSer : FuseConfigService, public loginService : LoginService)
     {
-
         this.serviceURL = configSer.ServiceURL;
     }
 
@@ -43,13 +41,13 @@ export class RecruitersService implements Resolve<any>
     resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<any> | Promise<any> | any
     {
         this.searchText = "";
+        this.headerOptions = this.loginService.getHeaders();
+        
         return new Promise((resolve, reject) => {
-
             Promise.all([
                 this.getRecruiterJobs()
             ]).then(
                 ([files]) => {
-
                     this.onSearchTextChanged.subscribe(searchText => {
                         this.searchText = searchText;
                         this.getRecruiterJobs();
@@ -61,44 +59,29 @@ export class RecruitersService implements Resolve<any>
                     });
 
                     resolve();
-
                 },
                 reject
             );
         });
     }
-
-    getRecruiterJobs(): Promise<any>
-    {
+    
+    getRecruiterJobs(): Promise<any> {
         return new Promise((resolve, reject) => {
+            this.http.get(this.serviceURL + 'Recruiter/GetRecruiterJobList', this.headerOptions)
+                .subscribe((response: any) => {
+                    if (response != null && response != undefined) {
+                        this.recruiterJobs = response.Output;
 
-                let userid  = '0';
-                if (this.loginService.loggedUser != undefined)
-                    userid = this.loginService.loggedUser.userid;
-                    
-               this.http.get(this.serviceURL+'TDW/GetRecruiterJobList?loginid='+userid)
-                    .subscribe((response: any) => {
-
-                        if ( response != null && response != undefined)
-                        {
-                        response = JSON.parse(response);
-                        
-
-                        this.recruiterJobs = response;
-                        //console.log(this.recruiterJobs);
-                        
-                        if ( this.searchText && this.searchText !== '' )
-                        {
+                        if (this.searchText && this.searchText !== '') {
                             this.recruiterJobs = FuseUtils.filterArrayByString(this.recruiterJobs, this.searchText);
                         }
 
-                        if (this.recruiterJobs.length > 0)
-                        {
+                        if (this.recruiterJobs.length > 0) {
                             this.recruiterJobs = this.recruiterJobs.map(contact => {
                                 let rectJob = new RecruitersJobs(contact);
-                                 rectJob.countdown = {
-                                    days   : 0,
-                                    hours  : 0,
+                                rectJob.countdown = {
+                                    days: 0,
+                                    hours: 0,
                                     minutes: 0,
                                     seconds: 0
                                 }
@@ -109,63 +92,42 @@ export class RecruitersService implements Resolve<any>
 
                         this.onRecruiterJobChanged.next(this.recruiterJobs);
                         resolve(this.recruiterJobs);
-
-
-                        }
-                        else
-                        {
-                            resolve([]);
-                        }
-                    }, reject);
-            }
-        );
-    }
-
-
-    startRecruiterJob(jobassignmentid)
-    {
-        let userid  = '0';
-        if (this.loginService.loggedUser != undefined)
-            userid = this.loginService.loggedUser.userid;
-
-        return new Promise((resolve, reject) => {
-            this.http.get(this.serviceURL+'TDW/StartRecruiterJobStatus?jobassignmentid=' + jobassignmentid + '&userid='+ userid)
-                .subscribe( (response : any )=> {
-
-                        if ( response != null && response != undefined && response != "")
-                        {
-                            response = JSON.parse(response);
-                            this.getRecruiterJobs();
-                            resolve(response);
-                        }
-                        else
-                            resolve('');
+                    }
+                    else {
+                        resolve([]);
+                    }
+                }, (exception: any) => {
+                    resolve(exception.error);
                 });
         });
     }
 
-    stopRecruiterJob(jaid, jobassignmentstatusid, submission, comment)
-    {
-        let userid  = '0';
-        if (this.loginService.loggedUser != undefined)
-            userid = this.loginService.loggedUser.userid;
-
+    startRecruiterJob(jobassignmentid) {
         return new Promise((resolve, reject) => {
-            this.http.get(this.serviceURL+'TDW/StopRecruiterJobStatus?jobassignmentid=' + jaid +'&jobassignmentstatusid='+ jobassignmentstatusid + '&submission='+ submission + '&comment='+ comment+ '&userid='+ userid)
-                .subscribe( (response : any )=> {
-                        if ( response != null && response != undefined && response != "")
-                        {
-                            response = JSON.parse(response);
-                            this.getRecruiterJobs();
-                            resolve(response);
-                        }
-                        else
-                            resolve('');
+            this.http.post(this.serviceURL + 'Recruiter/StartRecruiterJob?jobassignmentid=' + jobassignmentid, null, this.headerOptions)
+                .subscribe((response: any) => {
+                    response = response;
+
+                    this.getRecruiterJobs();
+                    resolve(response);
+                }, (exception: any) => {
+                    resolve(exception.error);
                 });
         });
     }
 
-    
-   
+    stopRecruiterJob(job: RecruitersJobs)
+    {
+        return new Promise((resolve, reject) => {
+            this.http.post(this.serviceURL + 'Recruiter/StopRecruiterJob', job, this.headerOptions)
+                .subscribe((response: any) => {
+                    response = response;
 
+                    this.getRecruiterJobs();
+                    resolve(response);
+                }, (exception: any) => {
+                    resolve(exception.error);
+                });
+        });
+    }
 }

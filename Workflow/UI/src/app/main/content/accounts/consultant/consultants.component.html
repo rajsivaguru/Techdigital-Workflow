@@ -1,0 +1,328 @@
+<div id="consultants" class="page-layout carded fullwidth">
+    <mat-progress-bar class="loading-bar" *ngIf="progressbar.isVisible" [color]="progressbar.color" [mode]="progressbar.mode" [value]="progressbar.value" [bufferValue]="progressbar.bufferValue"></mat-progress-bar>
+    <!-- HEADER -->
+    <div class="header mat-accent-bg p-16 p-sm-24" fxLayout="column" fxLayoutAlign="start start" fxLayout.gt-xs="row" fxLayoutAlign.gt-xs="space-between center">
+        
+        <!-- APP TITLE -->
+        <div fxLayout="column" fxLayoutAlign="center start">
+            <div class="logo" fxLayout="row" fxLayoutAlign="start center">
+                <mat-icon class="logo-icon mr-16" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'50ms',scale:'0.2'}}">people</mat-icon>
+                <span class="logo-text h1" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'100ms',x:'-25px'}}">Consultants</span>
+            </div>
+            <div class="h2 mt-4">
+                <button mat-mini-fab class="mat-red-100-bg" *fuseIfOnDom [@animate]="{value:'*', params:{delay:'300ms',scale:'.2'}}" matTooltip="Refresh" (click)="refresh()">
+                    <mat-icon class="mat-20" aria-label="Refresh">refresh</mat-icon>
+                </button>
+                <button mat-mini-fab class="mat-red-100-bg" id="add-user-button" (click)="showAddConsultantForm()" aria-label="add contact" *fuseIfOnDom [@animate]="{value:'*', params:{delay:'300ms',scale:'.2'}}" matTooltip="Add Consultant">
+                    <mat-icon class="mat-20">person_add</mat-icon>
+                </button>
+            </div>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="search-input-wrapper mt-16 m-sm-0" fxLayout="row" fxLayoutAlign="start center">
+            <label for="search" class="mr-8">
+                <mat-icon>search</mat-icon>
+            </label>
+            <mat-form-field mat-no-float class="m-0 font-weight-900" floatPlaceholder="never">
+                <input matInput #filter [formControl]="searchInput" id="search" placeholder="Search">
+            </mat-form-field>
+        </div>
+        <!-- / SEARCH -->
+    </div>
+    <!-- / HEADER -->
+
+    
+    <!-- CENTER -->
+    <div class="center p-0 pb-56 pr-sm-0">
+        <!-- CONTENT -->
+        <div id="container" class="content mat-white-bg mat-elevation-z4">
+            <div id="mat-table-innerGrid" style="overflow-y: scroll !important" [style.height.px]="matTableInner" (window:resize)="onResize($event)">
+                <mat-table class="iinvoices-table" #table [dataSource]="dataSource" matSort [@animateStagger]="{value:'50'}" fusePerfectScrollbar>
+
+                    <!-- Name -->
+                    <ng-container cdkColumnDef="ic_name">
+                        <mat-header-cell *cdkHeaderCellDef mat-sort-header>Name</mat-header-cell>
+                        <mat-cell *cdkCellDef="let consultant">
+                            <span class="text-truncate"> {{consultant.fullname}} </span>
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- Customer -->
+                    <ng-container cdkColumnDef="ic_customer">
+                        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Customer</mat-header-cell>
+                        <mat-cell *cdkCellDef="let consultant" fxHide fxShow.gt-md>
+                            <p class="text-truncate">{{consultant.customer}}</p>
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- End Client -->
+                    <ng-container cdkColumnDef="ic_endclient">
+                        <mat-header-cell *cdkHeaderCellDef mat-sort-header>End Client</mat-header-cell>
+                        <mat-cell *cdkCellDef="let consultant">
+                            <p class="text-truncate">{{consultant.endclient}} </p>
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- Start Date -->
+                    <ng-container cdkColumnDef="ic_startdate">
+                        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Start Date</mat-header-cell>
+                        <mat-cell *cdkCellDef="let consultant" fxHide fxShow.gt-md>
+                            <p class="text-truncate"> {{consultant.startdate | date : 'MM/dd/yyyy'}} </p>
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- Invoice Start Date -->
+                    <ng-container cdkColumnDef="ic_invoicestartdate">
+                        <mat-header-cell *cdkHeaderCellDef mat-sort-header>Invoice Start Date</mat-header-cell>
+                        <mat-cell *cdkCellDef="let consultant">
+                            <p class="text-truncate"> {{consultant.invoicestartdate | date : 'MM/dd/yyyy'}} </p>
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- End Date -->
+                    <ng-container cdkColumnDef="ic_enddate">
+                        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>End Date</mat-header-cell>
+                        <mat-cell *cdkCellDef="let consultant" fxHide fxShow.gt-md>
+                            <p class="text-truncate"> {{consultant.enddate | date : 'MM/dd/yyyy'}} </p>
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- Billing Frequency -->
+                    <ng-container cdkColumnDef="ic_billingfrequency">
+                        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Invoice Frequency</mat-header-cell>
+                        <mat-cell *cdkCellDef="let consultant" fxHide fxShow.gt-md>
+                            <p class="">{{consultant.frequency}}</p>
+                        </mat-cell>
+                    </ng-container>
+
+                    <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
+                    <mat-row *cdkRowDef="let consultant; columns: displayedColumns;" class="contact" (click)="editConsultant(consultant)" [@animate]="{value:'*',params:{y:'100%'}}"> </mat-row>
+                </mat-table>
+
+                <ng-container *ngIf="dataSource.filteredData.length == 0">
+                    <p style="color:red;" class="font-weight-900 text-center">No records found</p>
+                </ng-container>
+                <mat-paginator #paginator [length]="dataSource.filteredData.length" [pageIndex]="0" [pageSize]="50" [pageSizeOptions]="[10, 25, 50, 100]"> </mat-paginator>
+            </div>
+
+            <div id="card" *ngIf="showDetail">
+                <mat-card fxLayoutAlign="center center">
+                    <mat-card-content class="w-100-p card-content-custom-form">
+                        <!--Card Header-->
+                        <div fxLayout="row" fxLayoutAlign="start center" class="button-row card-header" style="margin-top:10px;">
+                            <section class="w-85-p mr-10">
+                                <label style="color:gray;">{{isNew ? 'Add Consultant' : consultant.fullname}} </label>
+                            </section>
+                        </div>
+                        <hr />
+
+                        <!-- Name -->
+                        <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                            <mat-form-field *ngIf="isNew" class="w-50-p mr-10">
+                                <input matInput #nameRef="ngModel" placeholder="First Name" [(ngModel)]="consultant.firstname" required>
+                                <mat-error>Firstname is required.</mat-error>
+                            </mat-form-field>
+                            <mat-form-field *ngIf="isNew" class="w-50-p mr-10">
+                                <input matInput #nameRef="ngModel" placeholder="Last Name" [(ngModel)]="consultant.lastname" required>
+                                <mat-error>Lastname is required.</mat-error>
+                            </mat-form-field>
+                            <mat-form-field *ngIf="!isNew" class="w-100-p mr-10">
+                                <input matInput placeholder="Name" [(ngModel)]="consultant.fullname" readonly>
+                            </mat-form-field>
+                        </div>
+
+                        <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                            <mat-form-field *ngIf="isNew" class="w-50-p mr-10">
+                                <input matInput placeholder="Middle Name" [(ngModel)]="consultant.middlename">
+                            </mat-form-field>
+                        </div>
+                        
+                        <!-- Email, Phone -->
+                        <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                            <mat-form-field class="w-50-p mr-10">
+                                <input matInput *ngIf="isNew" placeholder="Email" [formControl]="emailValidator" required>
+                                <mat-error *ngIf="emailValidator.invalid">{{getEmailErrorMessage('')}}</mat-error>
+                                <input matInput *ngIf="!isNew" placeholder="Email" [(ngModel)]="consultant.email" [readonly]="true">
+                            </mat-form-field>
+
+                            <mat-form-field class="w-50-p mr-10">
+                                <input matInput *ngIf="isNew" #nameRef="ngModel" placeholder="Phone #" [(ngModel)]="consultant.phone" minlength="10" maxlength="10" (keypress)="isNumber($event);" [readonly]="!isNew" required>
+                                <mat-error *ngIf="isNew" >Phone number is required and should be 10 digit.</mat-error>
+
+                                <input matInput *ngIf="!isNew" placeholder="Phone #*" [(ngModel)]="consultant.phone" readonly>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Customer, End Client -->
+                        <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                            <!--<mat-form-field class="w-50-p mr-10">
+                                <input matInput #nameRef="ngModel" placeholder="Customer" minlength="3" [(ngModel)]="consultant.customer" [readonly]="!isNew" required>
+                                <mat-error>Customer is required and should be minimum 3 characters.</mat-error>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-50-p mr-10">
+                                <input matInput placeholder="End Client" [(ngModel)]="consultant.endclient" [readonly]="!isNew">
+                            </mat-form-field>-->
+                            <mat-form-field class="w-50-p mr-10">
+                                <mat-select *ngIf="isNew" placeholder="Customer*" [(ngModel)]="consultant.customer">
+                                    <mat-option *ngFor="let customer of customers" [value]="customer.name">{{customer.name}}</mat-option>
+                                </mat-select>
+                                <input matInput *ngIf="!isNew" placeholder="Customer*" [(ngModel)]="consultant.customer" readonly>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-50-p mr-10">
+                                <mat-select *ngIf="isNew" placeholder="End Client" [(ngModel)]="consultant.endclient">
+                                    <mat-option *ngFor="let endclient of endclients" [value]="endclient.name">{{endclient.name}}</mat-option>
+                                </mat-select>
+                                <input matInput *ngIf="!isNew" placeholder="End Client" [(ngModel)]="consultant.endclient" readonly>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Employment Type, Billing Frequency -->
+                        <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                            <mat-form-field class="w-50-p mr-10">
+                                <mat-select *ngIf="isNew" placeholder="Employment Type*" [(ngModel)]="consultant.employmenttypeid" (selectionChange)="onEmploymentTypeChange($event);">
+                                    <mat-option *ngFor="let type of supportingDetail.employmenttypes" [value]="type.employmenttypeid">{{type.code}}</mat-option>
+                                </mat-select>
+                                <input matInput *ngIf="!isNew" placeholder="Employment Type*" [(ngModel)]="consultant.code" readonly>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-50-p mr-10">
+                                <mat-select *ngIf="isNew" placeholder="Invoice Frequency*" [(ngModel)]="consultant.billingfrequencyid">
+                                    <mat-option *ngFor="let frequency of supportingDetail.billingfrequencies" [value]="frequency.billingfrequencyid">{{frequency.frequency}}</mat-option>
+                                </mat-select>
+                                <input matInput *ngIf="!isNew" placeholder="Invoice Frequency*" [(ngModel)]="consultant.frequency" readonly>
+                            </mat-form-field>
+                        </div>
+                        
+                        <!-- Bill Pay To -->
+                        <div *ngIf="showBillTo" fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                            <mat-form-field class="w-50-p mr-10">
+                                <mat-select *ngIf="isNew" placeholder="Bill Pay To**" [(ngModel)]="consultant.billpayto">
+                                    <mat-option *ngFor="let vendor of vendors" [value]="vendor.name">{{vendor.name}}</mat-option>
+                                </mat-select>
+                                <input matInput *ngIf="!isNew" placeholder="Bill Pay To" [(ngModel)]="consultant.billpayto" readonly>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Start Date, Invoice Start Date -->
+                        <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                            <mat-form-field class="w-50-p mr-10">
+                                <input matInput [matDatepicker]="startDate" placeholder="Start Date" [(ngModel)]="consultant.startdate" readonly required>
+                                <mat-datepicker-toggle matSuffix *ngIf="isNew" [for]="startDate"></mat-datepicker-toggle>
+                                <mat-datepicker touchUi="true" #startDate disabled="false"></mat-datepicker>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-50-p mr-10">
+                                <input matInput [matDatepicker]="invoicestartDate" placeholder="Invoice Start Date" [(ngModel)]="consultant.invoicestartdate" readonly required>
+                                <mat-datepicker-toggle matSuffix *ngIf="isNew" [for]="invoicestartDate"></mat-datepicker-toggle>
+                                <mat-datepicker touchUi="true" #invoicestartDate disabled="false"></mat-datepicker>
+                                <mat-hint *ngIf="isNew">Date should be greater or same as Start Date</mat-hint>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- End Date -->
+                        <div *ngIf="!isNew" fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                            <mat-form-field class="w-50-p mr-10">
+                                <input matInput [matDatepicker]="endDate" [min]="minEndDate" placeholder="End Date" [(ngModel)]="consultant.enddate" readonly required>
+                                <mat-datepicker-toggle matSuffix [for]="endDate" [disabled]="!isNew && hasEnded"></mat-datepicker-toggle>
+                                <mat-datepicker touchUi="true" #endDate disabled="false"></mat-datepicker>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Bill Rate, Pay Rate -->
+                        <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                            <mat-form-field class="w-50-p mr-10">
+                                <input matInput type="number" placeholder="Bill Rate" [(ngModel)]="consultant.billrate" [readonly]="!isNew" required>
+                                <span matPrefix>$&nbsp;</span>
+                                <mat-error>Bill Rate is required and should be greater or equal to Pay Rate.</mat-error>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-50-p mr-10">
+                                <!--<input matInput type="number" #nameRef="ngModel" placeholder="Pay Rate**" [(ngModel)]="consultant.payrate" [readonly]="!isNew">-->
+                                <input matInput type="number" placeholder="Pay Rate**" [(ngModel)]="consultant.payrate" [readonly]="!isNew">
+                                <span matPrefix>$&nbsp;</span>
+                                <!--<mat-error>Pay Rate is required and should be lesser or equal to Bill Rate.</mat-error>-->
+                                <mat-hint *ngIf="isNew">Pay Rate is required and should be lesser or equal to Bill Rate for <b>1099/C2C</b> Employment Type .</mat-hint>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Commission Rate, Commission To -->
+                        <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                            <!--<mat-form-field class="w-50-p mr-10">
+                                <input matInput placeholder="Commission To" [(ngModel)]="consultant.commissionto" [readonly]="!isNew">
+                            </mat-form-field>-->
+
+                            <mat-form-field class="w-50-p mr-10">
+                                <mat-select *ngIf="isNew" placeholder="Commission To" [(ngModel)]="consultant.commissionto">
+                                    <mat-option *ngFor="let vendor of vendors" [value]="vendor.name">{{vendor.name}}</mat-option>
+                                </mat-select>
+                                <input matInput *ngIf="!isNew" placeholder="Commission To" [(ngModel)]="consultant.commissionto" readonly>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-50-p mr-10">
+                                <input matInput type="number" #nameRef="ngModel" placeholder="Commission Rate" [(ngModel)]="consultant.commissionrate" [readonly]="!isNew">
+                                <span matPrefix>$&nbsp;</span>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Communication Type -->
+                        <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                            <mat-form-field class="w-50-p mr-10">
+                                <mat-select *ngIf="isNew" placeholder="Invoice Communication Type*" [(ngModel)]="consultant.communicationid" (selectionChange)="onCommunicationChange($event);">
+                                    <mat-option *ngFor="let mode of supportingDetail.communicationmodes" [value]="mode.communicationid">{{mode.mode}}</mat-option>
+                                </mat-select>
+                                <input matInput *ngIf="!isNew" placeholder="Invoice Communication Type*" [(ngModel)]="consultant.mode" readonly>
+                            </mat-form-field>
+
+                            <mat-form-field *ngIf="showInvoiceEmail" class="w-50-p mr-10">
+                                <input matInput *ngIf="isNew" placeholder="Email for sending Invoice" [formControl]="emailInvoiceValidator" required>
+                                <mat-error *ngIf="emailInvoiceValidator.invalid">{{getEmailErrorMessage('Portal')}}</mat-error>
+                                <input matInput *ngIf="!isNew" placeholder="Email" [(ngModel)]="consultant.invoiceemail" [readonly]="true">
+                            </mat-form-field>
+
+                            <mat-form-field *ngIf="showInvoicePortal" class="w-50-p mr-10">
+                                <input matInput #nameRef="ngModel" placeholder="Portal (URL) for sending Invoice" [(ngModel)]="consultant.portalurl" [readonly]="!isNew" required>
+                                <mat-error>Portal URL is required.</mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Invoice Portal Details -->
+                        <div *ngIf="showInvoicePortal" fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                            <mat-form-field *ngIf="showInvoicePortal" class="w-50-p mr-10">
+                                <input matInput placeholder="Portal User " [(ngModel)]="consultant.portaluser" [readonly]="!isNew">
+                            </mat-form-field>
+
+                            <mat-form-field *ngIf="showInvoicePortal" class="w-50-p mr-10">
+                                <input matInput placeholder="Portal Password" [(ngModel)]="consultant.portalpwd" [readonly]="!isNew">
+                            </mat-form-field>
+                        </div>
+
+                        <div *ngIf="showInvoicePortal" fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                            <mat-form-field *ngIf="showInvoicePortal" class="w-50-p mr-10">
+                                <textarea matInput placeholder="Portal Comments" [(ngModel)]="consultant.portalnotes" [readonly]="!isNew"></textarea>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Notes -->
+                        <div *ngIf="!isModelValid" fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px; color:red">
+                            <p>* - Required fields and should be valid.</p>
+                            <p>** - Conditionally required fields and should be valid.</p>
+                        </div>
+                        <hr />
+
+                        <mat-card-actions class="pr-10" fxLayoutAlign="end center">
+                            <button mat-raised-button class="mx-8" color="" (click)="cancel();">Cancel</button>
+                            <button *ngIf="isNew" mat-raised-button class="mx-8" color="accent" (click)="addConsultant();">Save</button>
+                            <button *ngIf="!isNew && !hasEnded" mat-raised-button class="mx-8" color="accent" (click)="endClient();">Save</button>
+                        </mat-card-actions>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </div>
+        <!-- / CONTENT -->
+    </div>
+    <!-- / CENTER -->
+</div>
+ 

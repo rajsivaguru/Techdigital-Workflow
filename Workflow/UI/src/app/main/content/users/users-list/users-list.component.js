@@ -17,26 +17,27 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
-var Observable_1 = require("rxjs/Observable");
 var material_1 = require("@angular/material");
+var collections_1 = require("@angular/cdk/collections");
 var BehaviorSubject_1 = require("rxjs/BehaviorSubject");
+var Observable_1 = require("rxjs/Observable");
 require("rxjs/add/operator/startWith");
 require("rxjs/add/observable/merge");
 require("rxjs/add/operator/map");
 require("rxjs/add/operator/debounceTime");
 require("rxjs/add/operator/distinctUntilChanged");
 require("rxjs/add/observable/fromEvent");
-var collections_1 = require("@angular/cdk/collections");
 var animations_1 = require("../../../../core/animations");
 var fuseUtils_1 = require("../../../../core/fuseUtils");
 var UserListComponent = /** @class */ (function () {
-    function UserListComponent(contactsService, dialog, router, configSer, loginService) {
+    function UserListComponent(contactsService, dialog, router, configSer, loginService, utilities) {
         var _this = this;
         this.contactsService = contactsService;
         this.dialog = dialog;
         this.router = router;
         this.configSer = configSer;
         this.loginService = loginService;
+        this.utilities = utilities;
         this.displayedColumns = ['imgurl', 'name', 'email', 'rolename', 'workphone', 'mobile', 'homephone', 'location', 'status'];
         this.onContactsChangedSubscription =
             this.contactsService.onContactsChanged.subscribe(function (contacts) {
@@ -44,13 +45,9 @@ var UserListComponent = /** @class */ (function () {
                     _this.paginator.pageIndex = 0;
                 _this.contacts = contacts;
                 _this.checkboxes = {};
-                // contacts.map(contact => {
-                //     this.checkboxes[contact.userid] = false;
-                // });
             });
         this.onSelectedContactsChangedSubscription =
             this.contactsService.onSelectedContactsChanged.subscribe(function (selectedContacts) {
-                //console.log('selectec contact changed')
                 for (var userid in _this.checkboxes) {
                     _this.checkboxes[userid] = selectedContacts.includes(userid);
                 }
@@ -58,37 +55,25 @@ var UserListComponent = /** @class */ (function () {
             });
         this.onUserDataChangedSubscription =
             this.contactsService.onUserDataChanged.subscribe(function (user) {
-                //console.log('user data changed')
                 _this.user = user;
             });
     }
     UserListComponent.prototype.ngOnInit = function () {
-        // if( this.loginService.loggedUser == undefined)
-        // {
-        //     this.router.navigateByUrl('/login');
-        //     return;
-        // }
+        this.matTableInner = this.utilities.GetPageContentHeightNonAccordion();
         this.dataSource = new FilesDataSource(this.contactsService, this.paginator, this.sort);
-        //  Observable.fromEvent(this.filter.nativeElement, 'keyup')
-        //           .debounceTime(150)
-        //           .distinctUntilChanged()
-        //           .subscribe(() => {
-        //               if ( !this.dataSource )
-        //               {
-        //                   return;
-        //               }
-        //               this.dataSource.filter = this.filter.nativeElement.value;
-        //           });
     };
     UserListComponent.prototype.ngOnDestroy = function () {
         this.onContactsChangedSubscription.unsubscribe();
         this.onSelectedContactsChangedSubscription.unsubscribe();
         this.onUserDataChangedSubscription.unsubscribe();
     };
+    UserListComponent.prototype.onResize = function (event) {
+        this.matTableInner = this.utilities.GetPageContentHeightNonAccordion();
+    };
     UserListComponent.prototype.editContact = function (contact) {
         this.contactsService.action = 'edit';
         this.contactsService.editContacts = contact;
-        this.router.navigateByUrl('/usersform');
+        this.router.navigateByUrl('/user');
     };
     __decorate([
         core_1.ViewChild('dialogContent')

@@ -15,21 +15,22 @@ import { FuseConfigService } from './core/services/config.service';
 import { FuseNavigationService } from './core/components/navigation/navigation.service';
 
 import { LoginModule } from './main/content/login/login.module';
+import { CommonModule } from './main/content/common/common.module';
 import { UsersModule } from './main/content/users/users.module';
 import { JobsModule } from './main/content/jobs/jobs.module';
-
-
 import { RecruitersModule } from './main/content/recruiters/recruiters.module';
-
-
-
 import { ReportsModule } from './main/content/reports/reports.module';
-import { LoginComponent } from './main/content/login/login.component';
+import { VisaModule } from './main/content/visa/visa.module';
+import { SearchModule } from './main/content/search/search.module';
+import { NoteModule } from './main/content/note/note.module';
+import { EmailModule } from './main/content/email/email.module';
+import { AccountsModule } from './main/content/accounts/accounts.module';
+import { PunchTimeModule } from './main/content/punchtime/punchtime.module';
 
+import { LoginComponent } from './main/content/login/login.component';
 import { LoginService,AuthGuard } from './main/content/login/login.service';
 
 import { TranslateModule } from '@ngx-translate/core';
-
 import { LocalStorageModule } from 'angular-2-local-storage'
 
 const appRoutes: Routes = [
@@ -50,35 +51,35 @@ const appRoutes: Routes = [
 
 @NgModule({
     declarations: [
-        AppComponent
-        
+        AppComponent        
     ],
     imports     : [
         BrowserModule,
         HttpModule,
         HttpClientModule,
         BrowserAnimationsModule,
-        //RouterModule.forRoot(appRoutes, { useHash: true }),
-        RouterModule.forRoot(appRoutes, { useHash: true, onSameUrlNavigation : 'reload'}),
+        RouterModule.forRoot(appRoutes, { useHash: true }),
         TranslateModule.forRoot(),
-
         LocalStorageModule.withConfig({
             prefix : 'tdw_',
             storageType : 'localStorage'
-
-
         }),
-
+        
         SharedModule,
         MaterialModule,
         FuseMainModule,
+        CommonModule,
         LoginModule,
         UsersModule,
         JobsModule,
         RecruitersModule,
-        ReportsModule
-        
-        
+        ReportsModule,
+        VisaModule,
+        SearchModule,
+        NoteModule,
+        EmailModule,
+        AccountsModule,
+        PunchTimeModule
     ],
     providers   : [
         FuseNavigationService,
@@ -96,4 +97,3 @@ const appRoutes: Routes = [
 export class AppModule
 {
 }
-

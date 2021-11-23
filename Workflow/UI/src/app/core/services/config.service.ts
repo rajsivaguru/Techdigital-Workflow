@@ -15,7 +15,9 @@ export class FuseConfigService
     public ServiceURL = "";
     public GoogleClientID = ""; 
     public JobTimerDuration : number
-    public AlertTimerDuration : number
+    public AlertTimerDuration: number
+    public helpDeskURL: string;
+    public staffDirectoryURL: string;
     
     /**
      * @param router
@@ -26,26 +28,40 @@ export class FuseConfigService
         public platform: Platform
     )
     {
-
+        //////if (location.port == "" && location.origin.indexOf('Workflow-Dev') >= 0 )
+        //////{
+        //////    //this.ServiceURL = location.origin + '/StaffingService/api/'  // local
+        //////    this.ServiceURL = location.origin + '/WorkflowApi/api/'  // live
+        //////}
+        //////else
+        //////{
+        //////    this.ServiceURL = "https://www.apps.techdigitalcorp.com/WorkflowApi-Dev/api/"
+        //////    //this.ServiceURL = 'http://demo.csfinance.in/StaffingService/api/';
+        //////    //this.ServiceURL = location.origin + '0/api/'  // local
+        //////}
         
-        if(location.port == "")
-        {
-            //this.ServiceURL = location.origin + '/StaffingService/api/'  // local
-            this.ServiceURL = location.origin + '/WorkflowApi/api/'  // live
-        }
-        else
-        {
-            //this.ServiceURL = "https://www.apps.techdigitalcorp.com/WorkflowApi/api/"
-            //this.ServiceURL = 'http://demo.csfinance.in/StaffingService/api/';
-            this.ServiceURL = location.origin + '0/api/'  // demo
-        }
+        if (location.port.trim().length > 0 || (location.port == '' && location.pathname.toLowerCase().indexOf('workflow-dev') >= 0)) {
+            ////this.ServiceURL = 'https://www.apps.techdigitalcorp.com/WorkflowApi-Dev/api/'; /* for Dev URL */
+            ////this.ServiceURL = location.origin + '0/api/'; /* for localhost */
 
+            if (location.port.trim().length > 0)
+                this.ServiceURL = location.origin + '0/api/'; /* for localhost */
+            else
+            {
+                if (location.href.toLowerCase().indexOf('www') >= 0)
+                    this.ServiceURL = 'https://www.apps.techdigitalcorp.com/WorkflowApi-Dev/api/'; /* for Dev URL */
+                else
+                    this.ServiceURL = 'https://apps.techdigitalcorp.com/WorkflowApi-Dev/api/'; /* for Dev URL */
+            }
+        }
+        else {
+            if (location.href.toLowerCase().indexOf('www') >= 0)
+                this.ServiceURL = 'https://www.apps.techdigitalcorp.com/WorkflowApi/api/'; /* for Dev URL */
+            else
+                this.ServiceURL = 'https://apps.techdigitalcorp.com/WorkflowApi/api/';
+        }
         
-
-        //console.log(this.ServiceURL)
-
         this.isLoginAuthenticated = false;
-        // Set the default settings
         this.defaultSettings = {
             showProgress : false,
             layout          : {

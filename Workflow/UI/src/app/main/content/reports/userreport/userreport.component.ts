@@ -1,22 +1,26 @@
 import { Component, OnDestroy, OnInit, ElementRef, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { MatDatepickerInputEvent} from '@angular/material/datepicker';
+import { MatDatepickerInputEvent } from '@angular/material/datepicker';
 import { MatSelectChange, MatDialog, MatDialogRef, MatPaginator, MatSort, MatSnackBar } from '@angular/material';
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { FuseConfirmDialogComponent } from '../../../../core/components/confirm-dialog/confirm-dialog.component';
-import { AbstractControl, FormControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
+import { AbstractControl, FormControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DataSource } from '@angular/cdk/collections';
-import { fuseAnimations } from '../../../../core/animations';
+import { Router } from '@angular/router';
+import { DatePipe } from '@angular/common';
+import { Observable } from 'rxjs/Observable';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Subscription } from 'rxjs/Subscription';
-import { Router }   from '@angular/router';
-import { LoginService } from '../../login/login.service';
+
+import { FuseConfirmDialogComponent } from '../../../../core/components/confirm-dialog/confirm-dialog.component';
+import { FusePerfectScrollbarDirective } from '../../../../core/directives/fuse-perfect-scrollbar/fuse-perfect-scrollbar.directive';
+import { fuseAnimations } from '../../../../core/animations';
 import { FuseUtils } from '../../../../core/fuseUtils';
+import { ProgressBarConfig } from '../../../../app.model';
+import { LoginService } from '../../login/login.service';
 import { UserReportParam } from '../reports.model';
 import { ReportsService} from '../reports.service';
 import { UsersService } from '../../users/users.service';
-import { DatePipe } from '@angular/common';
-import { FusePerfectScrollbarDirective } from '../../../../core/directives/fuse-perfect-scrollbar/fuse-perfect-scrollbar.directive';
+import { SnackBarService } from '../../dialog/snackbar.service'
+import { Utilities } from '../../common/commonUtil';
 
 @Component({
     selector   : 'fuse-orderentry',
@@ -27,7 +31,7 @@ import { FusePerfectScrollbarDirective } from '../../../../core/directives/fuse-
 })
 export class UserReportComponent implements OnInit, OnDestroy
 {
-    @ViewChild('dialogContent') dialogContent: TemplateRef<any>;    
+    @ViewChild('dialogContent') dialogContent: TemplateRef<any>;
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild('filter') filter: ElementRef;
     @ViewChild(MatSort) sort: MatSort;
@@ -35,14 +39,9 @@ export class UserReportComponent implements OnInit, OnDestroy
     usersDataList = [];
     selectedUsers = [];
     settings = {};
-    reportOptions = [
-        { value: 'Pdf', viewValue: 'Pdf' },
-        { value: 'Excel', viewValue: 'Excel' }
-    ];
 
     users: any;
     dataSource: FilesDataSource | null;
-    //displayedColumns = [ 'ur_username', 'ur_jobcode', 'ur_title', 'ur_location', 'ur_clientname', 'ur_publisheddate', 'ur_assigneddate', 'ur_duration', 'ur_submission', 'ur_comment'];
     displayedColumns = [ 'ur_username', 'ur_job', 'ur_location', 'ur_clientname', 'ur_publisheddate', 'ur_assigneddate', 'ur_duration', 'ur_submission', 'ur_comment'];
     selectedContacts: any[];
     checkboxes: {};
@@ -50,6 +49,7 @@ export class UserReportComponent implements OnInit, OnDestroy
     dialogRef: any;
     confirmDialogRef: MatDialogRef<FuseConfirmDialogComponent>;
     datePipe = new DatePipe("en-US");
+    progressbar: ProgressBarConfig;
     isSearchExpanded : boolean
     isSearchEnable : boolean = false;
     lastDaysList  = [];
@@ -62,16 +62,17 @@ export class UserReportComponent implements OnInit, OnDestroy
     maxToDate = null;
     maxPublishedDate = null;
     matTableInner: number;
-    reduceHeight: number;
 
     constructor(
-        public reportService: ReportsService,
-        public snackBar: MatSnackBar,
+        private reportService: ReportsService,
+        private snackBar: MatSnackBar,
         private _sanitizer: DomSanitizer, 
-        public router : Router,
+        private router : Router,
         private formBuilder: FormBuilder,
         private loginService : LoginService,
-        private userService : UsersService
+        private userService: UsersService,
+        private snackComp: SnackBarService,
+        private utilities: Utilities
     )
     {        
         this.onUserReportChangedSubscription = this.reportService.onUserReportChanged.subscribe(jbs => {;
@@ -87,32 +88,17 @@ export class UserReportComponent implements OnInit, OnDestroy
 
     ngOnInit()
     {
-        this.reduceHeight = 290;
-        this.matTableInner = (window.innerHeight - this.reduceHeight);
-        this.userReport = this.createJobForm();
+        this.matTableInner = this.utilities.GetPageContentHeightWithAccordion();
+        this.progressbar = new ProgressBarConfig({});
+        this.userReport = this.createReportForm();
         this.dataSource = new FilesDataSource(this.reportService, this.paginator, this.sort);
-        this.reportService.getLastDays().then(response =>
-        {
-            if (response)
-            {
-                response.map(priori => {
-                    this.lastDaysList.push( {"id":priori["Value"], "itemName" : priori["Name"]})
-                });
-            }
-        });
-        
-        this.userService.getAssignedUser(1).then(response =>
-        {
-            if (response)
-            {
-                response.map(user => {
-                    this.usersDataList.push( { "roleName": user["rolename"], "id":user["userid"], "itemName" : user["name"]})
-                });
-            }
-        });
+
+        this.getDays();
+        this.getUsersForReport();
         
         this.settings = {
-            maxHeight : '250px',
+            height: '350px',
+            maxHeight : '350px',
             searchAutofocus : true,
             singleSelection: false, 
             text:"Users",
@@ -120,14 +106,19 @@ export class UserReportComponent implements OnInit, OnDestroy
             unSelectAllText:'UnSelect All',
             enableSearchFilter: true,
             enableCheckAll : true,
-            classes : 'custom_userrpt_list',
+            classes : 'custom_userreport_list',
             badgeShowLimit: 1
         };
     }
-    
+
+    ngOnDestroy()
+    {
+        this.onUserReportChangedSubscription.unsubscribe();
+    }
+
     onResize(event)
     {
-        this.matTableInner = (window.innerHeight - this.reduceHeight);
+        this.matTableInner = this.utilities.GetPageContentHeightWithAccordion();
     }
 
     onItemSelect(item:any ){
@@ -146,21 +137,6 @@ export class UserReportComponent implements OnInit, OnDestroy
         this.searchValidation();
     }
 
-    createJobForm()
-    {
-        return this.formBuilder.group({
-            userids         : [this.rptForm.userids],
-            jobcode         : [this.rptForm.jobcode],
-            title           : [this.rptForm.title],
-            location        : [this.rptForm.location],
-            publisheddate   : [this.rptForm.publisheddate],
-            assigneddate    : [this.rptForm.assigneddate],
-            fromdate        : [this.rptForm.fromdate],
-            todate          : [this.rptForm.todate],
-            lastdays        : [this.rptForm.lastdays]
-        });
-    }
-
     searchValidation()
     {
         this.rptForm = this.userReport.getRawValue();
@@ -172,7 +148,7 @@ export class UserReportComponent implements OnInit, OnDestroy
             this.rptForm.lastdays = -1;
 
         if( this.rptForm.userids.length >  0 || this.rptForm.jobcode != "" || this.rptForm.title != "" || this.rptForm.location != "" || this.rptForm.publisheddate != "" || this.rptForm.assigneddate != "" 
-            || this.rptForm.fromdate != "" || this.rptForm.todate != "" || this.rptForm.lastdays != -1 )
+            || (this.rptForm.fromdate != "" && this.rptForm.todate != "") || this.rptForm.lastdays != -1 )
         {
             this.isSearchEnable = true;
         }
@@ -196,163 +172,57 @@ export class UserReportComponent implements OnInit, OnDestroy
         });
 
         this.rptForm = this.userReport.getRawValue();
-        this.reportService.getUserReport(this.rptForm);
+        ////this.reportService.getUserReport(this.rptForm);
         this.isSearchExpanded = true;
         this.isSearchEnable = false;
     }
     
-    validateReportCriteria()
-    {
-        this.rptForm = this.userReport.getRawValue();
-
-        let userid = [];
-
-        if (this.userReport.getRawValue()["userids"] != undefined && this.userReport.getRawValue()["userids"] != "" && this.userReport.getRawValue()["userids"].length > 0) {
-            userid = this.userReport.getRawValue()["userids"].map(user => {
-                return (user["id"])
-            });
-        }
-
-        this.rptForm.userids = userid;
-
-        // if(this.rptForm.status == undefined)
-        //     this.rptForm.status = -2;
-
-        if (this.rptForm.lastdays == undefined)
-            this.rptForm.lastdays = -1;
-
-        if (this.rptForm.userids.length == 0 && this.rptForm.jobcode == "" && this.rptForm.title == "" && this.rptForm.location == "" && this.rptForm.publisheddate == "" && this.rptForm.assigneddate == ""
-            && this.rptForm.fromdate == "" && this.rptForm.todate == "" && this.rptForm.lastdays == -1) {
-            this.openDialog("Please filter by any Values!")
-            return false;
-        }
-
-        if (this.rptForm.publisheddate != "")
-            this.rptForm.publisheddate = this.datePipe.transform(this.rptForm.publisheddate, 'MM/dd/yyyy');
-
-        if (this.rptForm.fromdate != "")
-            this.rptForm.fromdate = this.datePipe.transform(this.rptForm.fromdate, 'MM/dd/yyyy');
-
-        if (this.rptForm.todate != "")
-            this.rptForm.todate = this.datePipe.transform(this.rptForm.todate, 'MM/dd/yyyy');
-
-        if (this.rptForm.fromdate != "" && this.rptForm.todate == "") {
-            this.openDialog("Please select the To date")
-            return false;
-        }
-
-        if (this.rptForm.fromdate == "" && this.rptForm.todate != "") {
-            this.openDialog("Please select the From date")
-            return false;
-        }
-        
-        return true;
-    }
-
-    loadReport(event)
+    loadReport()
     {   
         if (this.validateReportCriteria())
         {
             this.paginator.pageIndex = 0;
             this.isSearchExpanded = false;
-            this.reportService.getUserReport(this.rptForm);
+            this.progressbar.showProgress();
+
+            this.reportService.getUserReport(this.rptForm)
+                .then(response => {
+                    this.progressbar.hideProgress();
+                    this.snackComp.showSnackBarGet(response, '');
+                });
         }
     }
 
     loadDownloadableReport(fileType) {
         if (this.validateReportCriteria()) {
             this.rptForm.reporttype = fileType;
-            this.reportService.getUserReportPdf(this.rptForm);
+            this.reportService.getUserReportExport(this.rptForm);
         }
     }
 
-    ngOnDestroy()
-    {
-        this.onUserReportChangedSubscription.unsubscribe();
-    }
-    
     selectedFromDate(type: string, event: MatDatepickerInputEvent<Date>)
     {
-        this.minToDate = event.value; 
+        this.minToDate = event.value;         
+        this.userReport.patchValue({ lastdays: -1 });
         this.searchValidation();
-        this.userReport.patchValue(
-            {
-                lastdays     : -1
-            }
-        );
     }
     
     selectedToDate(type: string, event: MatDatepickerInputEvent<Date>)
     {
-        this.maxFromDate = event.value;
+        this.maxFromDate = event.value;        
+        this.userReport.patchValue({ lastdays: -1 });
         this.searchValidation();
-        this.userReport.patchValue(
-            {
-                lastdays     : -1
-            }
-        );
     }
 
     selectedNoOfDays(event)
     {
-        //console.log(event)
-        
         if(event.value != undefined)
         {
+            this.userReport.patchValue({ fromdate: '', todate: '' });
             this.searchValidation();
-            this.userReport.patchValue(
-            {
-                fromdate    : '',
-                todate      : ''
-            });
         }
     }
-    
-    selectedExport(event) {
-        if (event.value != undefined) {
-            //this.reportService.getUserReportPdf();
-        }
-    }
-    
-    searchJob = (keyword: any): Observable<any[]> =>
-    {
-        try
-        {
-            if (keyword)
-            {
-                return this.reportService.searchJob(keyword);
-            }
-            else 
-            {
-                return Observable.of([]);
-            }
-        }
-        catch(ex)
-        {
-            //console.log(ex)
-            return Observable.of([]);
-        }    
-    }
-
-    searchUser = (keyword: any): Observable<any[]> => {
-
-        try
-        {
-            if (keyword) {
-            
-                return this.reportService.searchUser(keyword);
-            } else 
-            {
-                return Observable.of([]);
-            }
-        }
-        catch(ex)
-        {
-            //console.log(ex)
-            return Observable.of([]);
-        }
-    }
-
+        
     autocompleListFormatterJob = (data: any) : SafeHtml => {
         //console.log(data)
             let html = `<span class="font-weight-900 font-size-12">${data.title} </span><span class="font-size-10">${data.location} </span>`;
@@ -379,13 +249,88 @@ export class UserReportComponent implements OnInit, OnDestroy
         //console.log(data)
     }
 
-    openDialog(message) : void
-    {
-        this.snackBar.open(message, '', {
-            duration: 2000,
-            verticalPosition : 'top',
-            extraClasses: ['mat-light-blue-100-bg']
+
+    private createReportForm() {
+        return this.formBuilder.group({
+            userids: [this.rptForm.userids],
+            jobcode: [this.rptForm.jobcode],
+            title: [this.rptForm.title],
+            location: [this.rptForm.location],
+            publisheddate: [this.rptForm.publisheddate],
+            assigneddate: [this.rptForm.assigneddate],
+            fromdate: [this.rptForm.fromdate],
+            todate: [this.rptForm.todate],
+            lastdays: [this.rptForm.lastdays]
         });
+    }
+
+    private getDays() {
+        this.lastDaysList = [];
+        this.reportService.getLastDays().then(response => {
+            if (response) {
+                response.map(day => {
+                    this.lastDaysList.push({ "id": day["Value"], "itemName": day["Name"] })
+                });
+            }
+        });
+    }
+
+    private getUsersForReport()
+    {
+        this.usersDataList = [];
+        this.reportService.getUserForReport(1, false).then(response => {
+            if (response) {
+                response.map(user => {
+                    this.usersDataList.push({ "roleName": user["rolename"], "id": user["userid"], "itemName": user["name"] })
+                });
+            }
+        });
+    }
+
+    private validateReportCriteria()
+    {
+        this.rptForm = this.userReport.getRawValue();
+
+        let userid = [];
+
+        if (this.userReport.getRawValue()["userids"] != undefined && this.userReport.getRawValue()["userids"] != "" && this.userReport.getRawValue()["userids"].length > 0) {
+            userid = this.userReport.getRawValue()["userids"].map(user => {
+                return (user["id"])
+            });
+        }
+
+        this.rptForm.userids = userid;
+        
+        if (this.rptForm.lastdays == undefined)
+            this.rptForm.lastdays = -1;
+
+        if (this.rptForm.userids.length == 0 && this.rptForm.jobcode == "" && this.rptForm.title == "" && this.rptForm.location == "" && this.rptForm.publisheddate == "" && this.rptForm.assigneddate == ""
+            && this.rptForm.fromdate == "" && this.rptForm.todate == "" && this.rptForm.lastdays == -1)
+        {
+            this.snackComp.showSimpleWarning("Please filter by any values!")
+            return false;
+        }
+
+        if (this.rptForm.publisheddate != "")
+            this.rptForm.publisheddate = this.datePipe.transform(this.rptForm.publisheddate, 'MM/dd/yyyy');
+
+        if (this.rptForm.fromdate != "")
+            this.rptForm.fromdate = this.datePipe.transform(this.rptForm.fromdate, 'MM/dd/yyyy');
+
+        if (this.rptForm.todate != "")
+            this.rptForm.todate = this.datePipe.transform(this.rptForm.todate, 'MM/dd/yyyy');
+
+        if (this.rptForm.fromdate != "" && this.rptForm.todate == "") {
+            this.snackComp.showSimpleWarning("Please select the 'To Date'");
+            return false;
+        }
+
+        if (this.rptForm.fromdate == "" && this.rptForm.todate != "") {
+            this.snackComp.showSimpleWarning("Please select the 'From Date'");
+            return false;
+        }
+
+        return true;
     }
 }
 

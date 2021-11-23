@@ -7,13 +7,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
+var http_1 = require("@angular/common/http");
 var dialog_component_1 = require("../dialog/dialog.component");
 var LoginService = /** @class */ (function () {
-    function LoginService(http, configSer, localStorageService, dialog) {
+    function LoginService(http, configSer, localStorageService, dialog, router) {
         this.http = http;
         this.configSer = configSer;
         this.localStorageService = localStorageService;
         this.dialog = dialog;
+        this.router = router;
         this.serviceURL = configSer.ServiceURL;
         //this.navigationModel = fuseNavigationService.navigationModel.model;
     }
@@ -33,25 +35,38 @@ var LoginService = /** @class */ (function () {
             }, reject);
         });
     };
-    LoginService.prototype.getUserData = function (email, img, name) {
+    LoginService.prototype.syncUserData = function (email, img, firstname, lastname, name) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            _this.http.get(_this.serviceURL + 'TDW/Login?email=' + email + '&img=' + img + '&name=' + name)
+            _this.http.get(_this.serviceURL + 'User/SyncUser?email=' + email + '&imgurl=' + img + '&firstname=' + firstname + '&lastname=' + lastname + '&name=' + name)
                 .subscribe(function (response) {
                 response = JSON.parse(response);
                 resolve(response);
             }, reject);
         });
     };
-    LoginService.prototype.syncUserData = function (email, img, firstname, lastname, name) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.http.get(_this.serviceURL + 'User/Login?email=' + email + '&imgurl=' + img + '&firstname=' + firstname + '&lastname=' + lastname + '&name=' + name)
-                .subscribe(function (response) {
-                response = JSON.parse(response);
-                resolve(response);
-            }, reject);
-        });
+    LoginService.prototype.getLoginId = function () {
+        var user = this.loggedUser;
+        if (user == null || user == undefined || user.userid == null || user.userid == '0' || user.userid == '' || user.userid == undefined)
+            this.googleUser.disconnect();
+        else
+            return this.loggedUser.userid;
+    };
+    LoginService.prototype.getLoginToken = function () {
+        var user = this.loggedUser;
+        if (user == null || user == undefined || user.userid == null || user.userid == '0' || user.userid == '' || user.userid == undefined)
+            this.googleUser.disconnect();
+        else
+            return this.loggedUser.token;
+    };
+    LoginService.prototype.getHeaders = function () {
+        var httpOptions = {
+            headers: new http_1.HttpHeaders({
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.loggedUser.token
+            })
+        };
+        return httpOptions;
     };
     LoginService = __decorate([
         core_1.Injectable()
@@ -71,7 +86,7 @@ var AuthGuard = /** @class */ (function () {
         //console.log('login check')
         //console.log(this.router.url)
         if (this.fuseNavigationService.findNavigationItemByURL(state.url) == null) {
-            if (this.router.url == "/users" && state.url == "/usersform") {
+            if ((this.router.url == "/users" && (state.url == "/user")) || (this.router.url == "/jobs" && (state.url == "/prioritizejob"))) {
             }
             else {
                 this.router.navigateByUrl(this.router.url);

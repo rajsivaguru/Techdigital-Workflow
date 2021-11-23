@@ -1,0 +1,246 @@
+﻿<!--Page for creating Prioritized Job (Admin) -->
+
+<div class="page-layout simple fullwidth  mat-white-50-bg" fusePerfectScrollbar>
+    <mat-progress-bar class="loading-bar" *ngIf="progressbar.isVisible" [color]="progressbar.color" [mode]="progressbar.mode" [value]="progressbar.value" [bufferValue]="progressbar.bufferValue"></mat-progress-bar>
+    <!-- HEADER -->
+    <div class="mat-accent-bg p-24 h-50" fxLayout="column" fxLayoutAlign="start start" fxLayout.gt-xs="row" fxLayoutAlign.gt-xs="space-between center">
+        <!-- APP TITLE -->
+        <div fxLayout="row" fxLayoutAlign="start center">
+            <div class="logo" fxLayout="row" fxLayoutAlign="start center">
+                <button class="mr-16" mat-icon-button [routerLink]="'/jobs'">
+                    <mat-icon>arrow_back</mat-icon>
+                </button>
+                <span class="logo-text h1">Prioritize Jobs</span>
+            </div>
+        </div>
+
+        <!--<div class="search-input-wrapper mt-16 m-sm-0" fxLayout="row" fxLayoutAlign="start center">
+            <button mat-mini-fab class="mat-elevation-z" matTooltip="Grid View" (click)="isGridView = true;">
+                <mat-icon>grid_on</mat-icon>
+            </button>
+            <button mat-mini-fab class="mat-elevation-z" matTooltip="Drag/Drop View" (click)="isGridView = false;">
+                <mat-icon>drag_indicator</mat-icon>
+            </button>
+        </div>-->
+    </div>
+    <!-- / HEADER -->
+
+    <!-- CONTENT -->
+    <div class="center p-0 pb-56 pr-sm-0">
+        <div class="content mat-white-bg mat-elevation-z4">
+            <section id="gridView" *ngIf="isGridView">
+                <div class="p-24 sub-header" fxLayout="column" fxLayoutAlign="start start" fxLayout.gt-xs="row" fxLayoutAlign.gt-xs="space-between center">
+                    <div fxLayout="row" fxLayoutAlign="start center">
+                        <div class="logo" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="logo-text h1 sub-header-span">Available Jobs ({{dataSource.data.length}} jobs)</span>
+                        </div>
+                    </div>
+
+                    <div class="search-input-wrapper mt-16 m-sm-0" fxLayout="row" fxLayoutAlign="start center">
+                        <button mat-mini-fab class="mx-20 mat-elevation-z" matTooltip="Add selected Job(s) to Priority Items" (click)="addToPriorityList()">
+                            <mat-icon>move_to_inbox</mat-icon>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="mat-table-inner" style="overflow-y: scroll !important; min-height:300px; height:inherit; max-height:500px;" (window:resize)="onResize($event)">
+                    <mat-table class="products-table" #table [dataSource]="dataSource" matSort [@animateStagger]="{value:'50'}" fusePerfectScrollbar>
+                        <!-- JobCode -->
+                        <ng-container cdkColumnDef="referenceid">
+                            <mat-header-cell *cdkHeaderCellDef mat-sort-header>Job Code</mat-header-cell>
+                            <mat-cell *cdkCellDef="let job">
+                                <span class=""> {{job.referenceid}} </span>
+                            </mat-cell>
+                        </ng-container>
+
+                        <!-- Title -->
+                        <ng-container cdkColumnDef="title">
+                            <mat-header-cell *cdkHeaderCellDef mat-sort-header>Title</mat-header-cell>
+                            <mat-cell *cdkCellDef="let job">
+                                <p class="">{{job.title}}</p>
+                            </mat-cell>
+                        </ng-container>
+
+                        <!-- Location -->
+                        <ng-container cdkColumnDef="location">
+                            <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Location</mat-header-cell>
+                            <mat-cell *cdkCellDef="let job" fxHide fxShow.gt-md>
+                                <p class="company text-truncate"> {{job.location}} </p>
+                            </mat-cell>
+                        </ng-container>
+
+                        <!-- Client -->
+                        <ng-container cdkColumnDef="clientname">
+                            <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Client</mat-header-cell>
+                            <mat-cell *cdkCellDef="let job" fxHide fxShow.gt-md>
+                                <p class="company text-truncate"> {{job.clientname}} </p>
+                            </mat-cell>
+                        </ng-container>
+
+                        <!-- Published Date -->
+                        <ng-container cdkColumnDef="publisheddate">
+                            <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Published Date</mat-header-cell>
+                            <mat-cell *cdkCellDef="let job" fxHide fxShow.gt-md>
+                                <p class="job-title text-truncate"> {{job.publisheddate}} </p>
+                            </mat-cell>
+                        </ng-container>
+
+                        <!-- Checkbox/Slider Toggle -->
+                        <ng-container cdkColumnDef="p_checkbox">
+                            <mat-header-cell *cdkHeaderCellDef></mat-header-cell>
+                            <mat-cell *cdkCellDef="let job">
+                                <!--<mat-checkbox [(ngModel)]="job.isprioritized || job.isselected" [disabled]="job.isprioritized" (change)="onSelectionChange(job, $event);" ></mat-checkbox>-->
+                                <!--<mat-checkbox [(ngModel)]="job.isprioritized || job.isselected" [disabled]="job.isprioritized"></mat-checkbox>-->
+                                <mat-slide-toggle class="mt-8" [color]="accent" *ngIf="!job.isprioritized" [(ngModel)]="job.isprioritized || job.isselected" [disabled]="job.isprioritized"></mat-slide-toggle>
+                            </mat-cell>
+                        </ng-container>
+
+                        <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
+                        <mat-row *cdkRowDef="let job; columns: displayedColumns;" [ngClass]="job.isprioritized ? 'bg-green' : ''" [@animate]="{value:'*',params:{y:'100%'}}"> </mat-row>
+                    </mat-table>
+                </div>
+
+                <div class="sub-footer" fxLayout="row" fxLayoutAlign="start center">
+                    <div fxLayout="row" fxLayoutAlign="start center">
+                        <div class="logo" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="logo-text h1 sub-header-span"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!--Job Priority List-->
+                <div class="p-24 sub-header" fxLayout="column" fxLayoutAlign="start start" fxLayout.gt-xs="row" fxLayoutAlign.gt-xs="space-between center">
+                    <div fxLayout="row" fxLayoutAlign="start center">
+                        <div class="logo" fxLayout="row" fxLayoutAlign="start center">
+                            <span class="logo-text h1 sub-header-span">Jobs to Prioritize</span>
+                        </div>
+                    </div>
+                    <div class="search-input-wrapper mt-16 m-sm-0" fxLayout="row" fxLayoutAlign="start center">
+                        <button mat-mini-fab class="mx-20 mat-elevation-z" [disabled]="!isSavable" matTooltip="Save Job Priority" (click)="savePriority()">
+                            <mat-icon class="mat-20">save</mat-icon>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="mat-table-inner" style="overflow-y: scroll !important; min-height:300px; height:inherit; max-height:500px;" (window:resize)="onResize($event)">
+                    <mat-table class="products-table" #table [dataSource]="dataSourcePriority" matSort [@animateStagger]="{value:'50'}" fusePerfectScrollbar>
+                        <!-- JobCode -->
+                        <ng-container cdkColumnDef="referenceid">
+                            <mat-header-cell *cdkHeaderCellDef>Job Code</mat-header-cell>
+                            <mat-cell *cdkCellDef="let job">
+                                <span class=""> {{job.referenceid}} </span>
+                            </mat-cell>
+                        </ng-container>
+
+                        <!-- Title -->
+                        <ng-container cdkColumnDef="title">
+                            <mat-header-cell *cdkHeaderCellDef>Title</mat-header-cell>
+                            <mat-cell *cdkCellDef="let job">
+                                <p class="">{{job.title}}</p>
+                            </mat-cell>
+                        </ng-container>
+
+                        <!-- Location -->
+                        <ng-container cdkColumnDef="location">
+                            <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Location</mat-header-cell>
+                            <mat-cell *cdkCellDef="let job" fxHide fxShow.gt-md>
+                                <p class="company text-truncate"> {{job.location}} </p>
+                            </mat-cell>
+                        </ng-container>
+
+                        <!-- Client -->
+                        <ng-container cdkColumnDef="clientname">
+                            <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Client</mat-header-cell>
+                            <mat-cell *cdkCellDef="let job" fxHide fxShow.gt-md>
+                                <p class="company text-truncate"> {{job.clientname}} </p>
+                            </mat-cell>
+                        </ng-container>
+
+                        <!-- Published Date -->
+                        <ng-container cdkColumnDef="publisheddate">
+                            <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md>Published Date</mat-header-cell>
+                            <mat-cell *cdkCellDef="let job" fxHide fxShow.gt-md>
+                                <p class="job-title text-truncate"> {{job.publisheddate}} </p>
+                            </mat-cell>
+                        </ng-container>
+
+                        <ng-container cdkColumnDef="p_buttons">
+                            <mat-header-cell *cdkHeaderCellDef></mat-header-cell>
+                            <mat-cell *cdkCellDef="let job">
+                                <button [disabled]="dataSourcePriority.data[0].jobid == job.jobid" matTooltip="Move up to increase the priority of job" class="mat-elevation-z" (click)="moveUp(job)" mat-mini-fab>
+                                    <mat-icon>arrow_upward</mat-icon>
+                                </button>
+                                <button [disabled]="dataSourcePriority.data[dataSourcePriority.data.length-1].jobid == job.jobid" matTooltip="Move down to decrease the priority of job" class="ml-10 mat-elevation-z" (click)="moveDown(job)" mat-mini-fab>
+                                    <mat-icon>arrow_downward</mat-icon>
+                                </button>
+                                <button matTooltip="Remove" class="ml-10 mat-elevation-z" (click)="removePriority(job)" mat-mini-fab>
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                                <!--<mat-slider [disabled] ="false" [max]="dataSourcePriority.data.length" [min]="1" [step]="1" [thumb-label]="true" [tick-interval]="1" (blur)="alert('blur');">{{value}}
+                        </mat-slider>-->
+                            </mat-cell>
+                        </ng-container>
+
+                        <mat-header-row *cdkHeaderRowDef="priorityColumns"></mat-header-row>
+                        <mat-row *cdkRowDef="let job; columns: priorityColumns;" class="contact" [@animate]="{value:'*',params:{y:'100%'}}"> </mat-row>
+                    </mat-table>
+                </div>
+            </section>
+
+            <!--<section id="ddView" *ngIf="!isGridView">-->
+            <section id="ddView" *ngIf="!isGridView">
+                <div>
+                    <div style="display:inline-block; margin: 10px 50px 20px 15px; width:40%">
+                        <mat-card class="" style="">
+                            <mat-card-header>
+                                <div class="logo" fxLayout="row" fxLayoutAlign="start center">
+                                    <span class="logo-text h1 sub-header-span">Available Jobs ({{allJobs.length}} jobs) </span>
+                                </div>
+                            </mat-card-header>
+                            <mat-card-content [style.height.px]="matTableInner" style="overflow-y:scroll;">
+                                <ul id="sortable1" class="connectedSortable">
+                                    <li class="ui-state-default" *ngFor="let job of allJobs" [ngClass]="job.isprioritized ? 'ui-state-disabled text-boxed-green' : ''" id="{{job.jobid}}">
+                                        <label style="font-size: 14px; vertical-align: super;"> {{job.referenceid}} - {{job.title}} - {{job.location}} - {{job.clientname}} - {{job.publisheddate}} </label>
+                                        <!--<button matTooltip="Remove" class="ml-10 mat-elevation-z" (click)="removePriority(job)" mat-mini-fab style="vertical-align:bottom;">
+                                <mat-icon>delete</mat-icon>
+                            </button>-->
+                                    </li>
+                                </ul>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
+
+                    <div style="display:inline-block; margin: 20px 15px 0px 50px; width:40%">
+                        <mat-card class="" style="">
+                            <mat-card-header>
+                                <div class="logo" fxLayout="row" fxLayoutAlign="start center">
+                                    <span class="logo-text h1 sub-header-span">Jobs to Prioritize</span>
+                                </div>
+                            </mat-card-header>
+                            <mat-card-content [style.height.px]="matTableInner" style="overflow-y:scroll;">
+                                <ul id="sortable2" class="connectedSortable" [ngClass]="prioritizedJobs.length == 0 ? 'ul-list': ''">
+                                    <li class="ui-state-default" *ngFor="let job of prioritizedJobs" id="{{job.jobid}}">
+                                        <label style="font-size: 14px; vertical-align: super;"> {{job.referenceid}} - {{job.title}} - {{job.location}} - {{job.clientname}} - {{job.publisheddate}} </label>
+                                        <button matTooltip="Remove" class="ml-10 mat-elevation-z" (click)="removePriority(job)" mat-mini-fab style="vertical-align:bottom;">
+                                            <mat-icon>delete</mat-icon>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </mat-card-content>
+                        </mat-card>
+                    </div>
+                </div>
+                <!--<ul id="sortable">
+                    <li class="ui-state-default" *ngFor="let job of prioritizedJobs" id="{{job.jobid}}">
+                        <label style="font-size: 14px; vertical-align: super;"> {{job.referenceid}} - {{job.title}} - {{job.location}} - {{job.clientname}} - {{job.publisheddate}} </label>
+                        <button matTooltip="Remove" class="ml-10 mat-elevation-z" (click)="removePriority(job)" mat-mini-fab style="vertical-align:bottom;">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </li>
+                </ul>-->
+            </section>
+        </div>
+
+        <!-- / CONTENT -->
+    </div>
+</div>

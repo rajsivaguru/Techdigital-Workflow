@@ -7,10 +7,19 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
+var http_1 = require("@angular/common/http");
 var BehaviorSubject_1 = require("rxjs/BehaviorSubject");
-var users_model_1 = require("./users.model");
-var fuseUtils_1 = require("../../../core/fuseUtils");
 var Subject_1 = require("rxjs/Subject");
+var fuseUtils_1 = require("../../../core/fuseUtils");
+var users_model_1 = require("./users.model");
+////const httpOptions = {
+////    headers: new HttpHeaders({
+////        //'Content-Type': 'application/x-www-form-urlencoded'//'application/json'
+////        'Content-Type': 'application/json'
+////    })
+////};
+var headers = new http_1.HttpHeaders();
+headers.set("Content-Type", "application/json");
 var UsersService = /** @class */ (function () {
     function UsersService(http, configSer, loginService) {
         this.http = http;
@@ -27,7 +36,7 @@ var UsersService = /** @class */ (function () {
     }
     UsersService.prototype.ngOnInit = function () {
         //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
-        //Add 'implements OnInit' to the class.
+        //Add 'implements OnInit' to the class.        
     };
     /**
      * The Contacts App Main Resolver
@@ -40,7 +49,7 @@ var UsersService = /** @class */ (function () {
         this.searchText = "";
         return new Promise(function (resolve, reject) {
             Promise.all([
-                _this.getContacts(-1),
+                _this.getContacts(-1)
             ]).then(function (_a) {
                 var files = _a[0];
                 _this.onSearchTextChanged.subscribe(function (searchText) {
@@ -63,11 +72,53 @@ var UsersService = /** @class */ (function () {
                 userid = _this.loginService.loggedUser.userid;
             _this.http.get(_this.serviceURL + 'User/GetUsersForAssignment?statusId=' + status + '&loginId=' + userid)
                 .subscribe(function (response) {
+                ////response = JSON.parse(response);
+                resolve(response.Output);
+            }, reject);
+        });
+    };
+    UsersService.prototype.getAbsentUser = function () {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var userid = '0';
+            if (_this.loginService.loggedUser != undefined)
+                userid = _this.loginService.loggedUser.userid;
+            ////this.serviceURL = "https://www.apps.techdigitalcorp.com/WorkflowApi-Dev/api/"
+            _this.http.get(_this.serviceURL + 'User/GetAbsentUsers?loginId=' + userid)
+                .subscribe(function (response) {
                 response = JSON.parse(response);
                 resolve(response);
             }, reject);
         });
     };
+    UsersService.prototype.saveAbsentUser = function (userIds) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var userid = '0';
+            if (_this.loginService.loggedUser != undefined)
+                userid = _this.loginService.loggedUser.userid;
+            _this.http.get(_this.serviceURL + 'User/SaveAbsentUsers?userIds=' + userIds + '&loginId=' + userid)
+                .subscribe(function (response) {
+                response = JSON.parse(response);
+                resolve(response);
+            }, reject);
+        });
+    };
+    /* With post - working */
+    ////saveAbsentUser(userIds): Promise<any> {
+    ////    return new Promise((resolve, reject) => {
+    ////        let userid = '0';
+    ////        var data = { name: 'name', name2: 'name2' };
+    ////        if (this.loginService.loggedUser != undefined)
+    ////            userid = this.loginService.loggedUser.userid;
+    ////        /* Making api call twice. */
+    ////        this.http.post(this.serviceURL + 'User/SaveAbsentUsersO', data, { headers: headers })
+    ////            .subscribe((response: any) => {
+    ////                response = JSON.parse(response);
+    ////                resolve(response);
+    ////            }, reject);
+    ////    });
+    ////}
     UsersService.prototype.getContacts = function (status) {
         var _this = this;
         return new Promise(function (resolve, reject) {
@@ -127,58 +178,6 @@ var UsersService = /** @class */ (function () {
             }, reject);
         });
     };
-    // getUserData(): Promise<any>
-    // {
-    //     return new Promise((resolve, reject) => {
-    //             // this.http.get('api/contacts-user/5725a6802d10e277a0f35724')
-    //             //     .subscribe((response: any) => {
-    //             //         this.user = response;
-    //             //         this.onUserDataChanged.next(this.user);
-    //             //         resolve(this.user);
-    //             //     }, reject);
-    //             this.onUserDataChanged.next(this.user);
-    //             resolve(this.user);
-    //         }
-    //     );
-    // }
-    /**
-     * Toggle selected contact by id
-     * @param id
-     */
-    // toggleSelectedContact(id)
-    // {
-    //     // First, check if we already have that todo as selected...
-    //     if ( this.selectedContacts.length > 0 )
-    //     {
-    //         const index = this.selectedContacts.indexOf(id);
-    //         if ( index !== -1 )
-    //         {
-    //             this.selectedContacts.splice(index, 1);
-    //             // Trigger the next event
-    //             this.onSelectedContactsChanged.next(this.selectedContacts);
-    //             // Return
-    //             return;
-    //         }
-    //     }
-    //     // If we don't have it, push as selected
-    //     this.selectedContacts.push(id);
-    //     // Trigger the next event
-    //     this.onSelectedContactsChanged.next(this.selectedContacts);
-    // }
-    /**
-     * Toggle select all
-     */
-    // toggleSelectAll()
-    // {
-    //     if ( this.selectedContacts.length > 0 )
-    //     {
-    //         this.deselectContacts();
-    //     }
-    //     else
-    //     {
-    //         this.selectContacts();
-    //     }
-    // }
     UsersService.prototype.selectContacts = function (filterParameter, filterValue) {
         var _this = this;
         this.selectedContacts = [];

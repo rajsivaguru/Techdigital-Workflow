@@ -1,0 +1,115 @@
+﻿<!--Read Only page for Prioritized Job -->
+
+<div class="page-layout carded fullwidth">
+    <mat-progress-bar class="loading-bar" *ngIf="progressbar.isVisible" [color]="progressbar.color" [mode]="progressbar.mode" [value]="progressbar.value" [bufferValue]="progressbar.bufferValue"></mat-progress-bar>
+    <!-- HEADER -->
+    <div class="header mat-accent-bg p-16 p-sm-24" fxLayout="column" fxLayoutAlign="start start" fxLayout.gt-xs="row" fxLayoutAlign.gt-xs="space-between center">
+        <!-- APP TITLE -->
+        <div fxLayout="row" fxLayoutAlign="start center">
+            <div class="logo" fxLayout="row" fxLayoutAlign="start center">
+                <mat-icon class="logo-icon mr-16" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'50ms',scale:'0.2'}}">format_list_numbered</mat-icon>
+                <span class="logo-text h1" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'100ms',x:'-25px'}}">Priority Jobs</span>
+            </div>
+        </div>
+    </div>
+    <!-- / HEADER -->
+
+    <!-- CENTER -->
+    <div class="center p-0 pb-56 pr-sm-0">
+        <!-- CONTENT -->
+        <div class="content mat-white-bg mat-elevation-z4">
+            <mat-list style="display:contents">
+                <mat-list-item *ngFor="let job of prioritizedJobs" style="padding: 12px 0px 70px 0px;">
+                    <mat-icon *ngIf="job.isinterested" mat-list-icon style="margin-left:-10px; color:green;">done</mat-icon>
+                    <p mat-line style="font-size:small;">{{job.referenceid}}</p>
+                    <p mat-line style="font-size:small;">{{job.title}}</p>
+                    <p mat-line style="font-size:small;">{{job.location}}</p>
+                    <p mat-line style="font-size:small;">{{job.clientname}}</p>
+                    <p mat-line *ngIf="job.isinterested" style="font-size:small; color:green;">Your interest on this job has been notified</p>
+                    <!--<a mat-raised-button color="accent" class="mx-8" (click)="interestedJob(job);">Interested</a>-->
+                    <a mat-raised-button *ngIf="!job.isinterested" color="accent" class="mx-8" (click)="interestedJob(job);">Interested</a>
+                </mat-list-item>
+            </mat-list>
+
+            <div id="mat-table-inner" style="overflow-y: scroll !important" [style.height.px]="matTableInner" (window:resize)="onResize($event)">
+                <mat-table class="jobs-prioritized-table" #table [dataSource]="dataSource" matSort [@animateStagger]="{value:'50'}" fusePerfectScrollbar>
+                    <!-- JobCode -->
+                    <ng-container cdkColumnDef="referenceid">
+                        <mat-header-cell *cdkHeaderCellDef mat-sort-header>Job Code</mat-header-cell>
+                        <mat-cell *cdkCellDef="let job">
+                            <span class=""> {{job.referenceid}} </span>
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- Title -->
+                    <ng-container cdkColumnDef="title">
+                        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Title</mat-header-cell>
+                        <mat-cell *cdkCellDef="let job" fxHide fxShow.gt-md>
+                            <p class="">{{job.title}}</p>
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- Location -->
+                    <ng-container cdkColumnDef="location">
+                        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Location</mat-header-cell>
+                        <mat-cell *cdkCellDef="let job" fxHide fxShow.gt-md>
+                            <p class="company text-truncate"> {{job.location}} </p>
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- Client -->
+                    <ng-container cdkColumnDef="clientname">
+                        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Client</mat-header-cell>
+                        <mat-cell *cdkCellDef="let job" fxHide fxShow.gt-md>
+                            <p class="company text-truncate" matTooltip="{{job.clientname}}"> {{job.clientname}} </p>
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- Published Date -->
+                    <ng-container cdkColumnDef="publisheddate">
+                        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Published Date</mat-header-cell>
+                        <mat-cell *cdkCellDef="let job" fxHide fxShow.gt-md>
+                            <p class="job-title text-truncate"> {{job.publisheddate}} </p>
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- User list -->
+                    <ng-container cdkColumnDef="jn_selectedUser">
+                        <mat-header-cell *cdkHeaderCellDef>Assigned To</mat-header-cell>
+                        <mat-cell *cdkCellDef="let job">
+                            <div fxLayout="row" fxLayoutAlign="start center" class="button-row">
+                                <mat-select name="selectUser" [ngModel]="job.assigneduser[0]">
+                                    <mat-option *ngFor="let user of job.assigneduser" [value]="user"> {{user.itemName}} </mat-option>
+                                </mat-select>
+                            </div>
+                        </mat-cell>
+                    </ng-container>
+
+                    <ng-container cdkColumnDef="jn_buttons">
+                        <mat-header-cell *cdkHeaderCellDef></mat-header-cell>
+                        <mat-cell *cdkCellDef="let job">
+                            <!--<button matTooltip="I'm interested" class="mx-5 mat-elevation-z" [visible]="!isRecruiter" (click)="interested(job)" mat-mini-fab>-->
+                            <button matTooltip="I'm interested" class="mx-5 mat-elevation-z" mat-mini-fab (click)="interestedJob(job)">
+                                <mat-icon class="mat-20" aria-label="Refresh">thumb_up</mat-icon>
+                            </button>
+                            <button *ngIf="job.isinterested" matTooltip="Your interest has been notified" class="mx-5 mat-elevation-z" mat-mini-fab>
+                                <!--<mat-icon class="mat-20" aria-label="Refresh" style="color:green;">thumb_up</mat-icon>-->
+                                <mat-icon class="mat-20" aria-label="Refresh" style="color:green;">done</mat-icon>
+                            </button>
+                        </mat-cell>
+                    </ng-container>
+
+                    <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
+                    <mat-row *cdkRowDef="let job; columns: displayedColumns;" class="contact" [@animate]="{value:'*',params:{y:'100%'}}"> </mat-row>
+                </mat-table>
+            </div>
+
+            <ng-container *ngIf="dataSource.data.length==0">
+                <p style="color:red;" class="font-weight-900 text-center">No records found</p>
+            </ng-container>
+            <mat-paginator #paginator [length]="dataSource.data.length" [pageIndex]="0" [pageSize]="50" [pageSizeOptions]="[10, 25, 50, 100]"> </mat-paginator>
+        </div>
+        <!-- / CONTENT -->
+    </div>
+    <!-- / CENTER -->
+</div>

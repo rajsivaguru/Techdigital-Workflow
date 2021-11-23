@@ -1,31 +1,25 @@
-
 import { Component, OnDestroy, OnInit, ElementRef, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
-import { UsersService } from '../users.service';
-import { Observable } from 'rxjs/Observable';
-import { UsersFormComponent } from '../users-form/users-form.component';
 import { MatDialog, MatDialogRef, MatPaginator, MatSort } from '@angular/material';
+import { FormGroup } from '@angular/forms';
+import { DataSource } from '@angular/cdk/collections';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-
+import { Observable } from 'rxjs/Observable';
+import { Subscription } from 'rxjs/Subscription';
 import 'rxjs/add/operator/startWith';
 import 'rxjs/add/observable/merge';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/distinctUntilChanged';
 import 'rxjs/add/observable/fromEvent';
-
 import { FuseConfirmDialogComponent } from '../../../../core/components/confirm-dialog/confirm-dialog.component';
-import { FormGroup } from '@angular/forms';
-import { DataSource } from '@angular/cdk/collections';
 import { fuseAnimations } from '../../../../core/animations';
-import { Subscription } from 'rxjs/Subscription';
 import { FuseConfigService } from '../../../../core/services/config.service';
 import { FuseUtils } from '../../../../core/fuseUtils';
-
 import { LoginService } from '../../login/login.service';
-
-
-
+import { UsersService } from '../users.service';
+import { UsersFormComponent } from '../users-form/users-form.component';
+import { Utilities } from '../../common/commonUtil';
 
 @Component({
     selector     : 'users-list',
@@ -34,10 +28,10 @@ import { LoginService } from '../../login/login.service';
     encapsulation: ViewEncapsulation.None,
     animations   : fuseAnimations
 })
+
 export class UserListComponent implements OnInit, OnDestroy
 {
     @ViewChild('dialogContent') dialogContent: TemplateRef<any>;
-
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild('filter') filter: ElementRef;
     @ViewChild(MatSort) sort: MatSort;
@@ -48,26 +42,22 @@ export class UserListComponent implements OnInit, OnDestroy
     displayedColumns = ['imgurl', 'name', 'email', 'rolename', 'workphone','mobile','homephone', 'location', 'status'];
     selectedContacts: any[];
     checkboxes: {};
-
     onContactsChangedSubscription: Subscription;
     onSelectedContactsChangedSubscription: Subscription;
     onUserDataChangedSubscription: Subscription;
-
     dialogRef: any;
-
     confirmDialogRef: MatDialogRef<FuseConfirmDialogComponent>;
+    matTableInner: number;
 
     constructor(
         private contactsService: UsersService,
         public dialog: MatDialog,
         private router : Router,
         private configSer : FuseConfigService,
-        private loginService : LoginService
+        private loginService: LoginService,
+        private utilities: Utilities
     )
     {
-
-        
-        
         this.onContactsChangedSubscription =
             this.contactsService.onContactsChanged.subscribe(contacts => {
 
@@ -77,16 +67,10 @@ export class UserListComponent implements OnInit, OnDestroy
                 this.contacts = contacts;
 
                 this.checkboxes = {};
-                // contacts.map(contact => {
-                //     this.checkboxes[contact.userid] = false;
-                // });
             });
 
         this.onSelectedContactsChangedSubscription =
             this.contactsService.onSelectedContactsChanged.subscribe(selectedContacts => {
-
-                //console.log('selectec contact changed')
-
                 for ( const userid in this.checkboxes )
                 {
                     this.checkboxes[userid] = selectedContacts.includes(userid);
@@ -96,33 +80,14 @@ export class UserListComponent implements OnInit, OnDestroy
 
         this.onUserDataChangedSubscription =
             this.contactsService.onUserDataChanged.subscribe(user => {
-
-                //console.log('user data changed')
                 this.user = user;
             });
-
     }
 
     ngOnInit()
     {
-        // if( this.loginService.loggedUser == undefined)
-        // {
-        //     this.router.navigateByUrl('/login');
-        //     return;
-        // }
-        
+        this.matTableInner = this.utilities.GetPageContentHeightNonAccordion();        
         this.dataSource = new FilesDataSource(this.contactsService, this.paginator, this.sort);
-
-        //  Observable.fromEvent(this.filter.nativeElement, 'keyup')
-        //           .debounceTime(150)
-        //           .distinctUntilChanged()
-        //           .subscribe(() => {
-        //               if ( !this.dataSource )
-        //               {
-        //                   return;
-        //               }
-        //               this.dataSource.filter = this.filter.nativeElement.value;
-        //           });
     }
 
     ngOnDestroy()
@@ -132,13 +97,15 @@ export class UserListComponent implements OnInit, OnDestroy
         this.onUserDataChangedSubscription.unsubscribe();
     }
 
+    onResize(event) {
+        this.matTableInner = this.utilities.GetPageContentHeightNonAccordion();
+    }
+
     editContact(contact)
     {
-
         this.contactsService.action =  'edit';
         this.contactsService.editContacts =  contact;
-        this.router.navigateByUrl('/usersform');
-        
+        this.router.navigateByUrl('/user');
     }
 
     /**
@@ -160,25 +127,6 @@ export class UserListComponent implements OnInit, OnDestroy
     //         this.confirmDialogRef = null;
     //     });
 
-    // }
-
-    // onSelectedChange(contactId)
-    // {
-    //     this.contactsService.toggleSelectedContact(contactId);
-    // }
-
-    // toggleStar(contactId)
-    // {
-    //     if ( this.user.starred.includes(contactId) )
-    //     {
-    //         this.user.starred.splice(this.user.starred.indexOf(contactId), 1);
-    //     }
-    //     else
-    //     {
-    //         this.user.starred.push(contactId);
-    //     }
-
-    //     this.contactsService.updateUserData(this.user);
     // }
 }
 

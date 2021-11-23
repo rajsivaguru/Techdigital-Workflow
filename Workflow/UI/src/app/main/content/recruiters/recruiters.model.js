@@ -22,23 +22,18 @@ var RecruitersJobs = /** @class */ (function () {
         this.starttime = job.starttime || '';
         this.endtime = job.endtime || '';
         this.submission = job.submission || 0;
+        this.notesadded = job.notesadded || 0;
+        this.qualificationadded = job.qualificationadded || 0;
         this.comment = job.comment || '';
         if (this.jobassignmentstatusid == 0 || this.isactive == 0) {
             this.expansionPanelId = false;
-            //this.submission = 0;
-            //this.comment =  '';
         }
         else if (this.jobassignmentstatusid != 0 && this.isactive == 1) {
             this.expansionPanelId = true;
-            //this.submission = job.submission || 0;
-            //this.comment = job.comment || '';
         }
         else {
             this.expansionPanelId = false;
-            //this.submission = 0;
-            //this.comment =  '';
         }
-        //this.expansionPanelId = true;
         this.createdby = job.createdby || '';
         this.createdon = job.createdon || '';
         this.countdown = {

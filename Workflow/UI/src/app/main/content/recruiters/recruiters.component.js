@@ -18,6 +18,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
 var animations_1 = require("../../../core/animations");
+var animations_2 = require("@angular/animations");
 var forms_1 = require("@angular/forms");
 var material_1 = require("@angular/material");
 var Observable_1 = require("rxjs/Observable");
@@ -27,60 +28,108 @@ var collections_1 = require("@angular/cdk/collections");
 var fuseUtils_1 = require("../../../core/fuseUtils");
 var moment = require("moment");
 require("rxjs/add/observable/interval");
+var InlineMessageComponent = /** @class */ (function () {
+    function InlineMessageComponent(viewContainerRef) {
+        this.viewContainerRef = viewContainerRef;
+    }
+    __decorate([
+        core_1.Input()
+    ], InlineMessageComponent.prototype, "job", void 0);
+    InlineMessageComponent = __decorate([
+        core_1.Component({
+            selector: 'app-inline-message',
+            template: 'Detail: {{ job.title }}',
+            styles: ["\n        :host {\n          display: block;\n          padding: 24px;\n          color: red;\n          background: rgba(0,0,0,0.1);\n        }\n      "]
+        })
+    ], InlineMessageComponent);
+    return InlineMessageComponent;
+}());
+exports.InlineMessageComponent = InlineMessageComponent;
 var RecruitersComponent = /** @class */ (function () {
-    //confirmDialogRef: MatDialogRef<FuseConfirmDialogComponent>;
-    function RecruitersComponent(recruiterService, jobsService, dialog, fuseConfig, snackBar, router, loginService) {
+    function RecruitersComponent(recruiterService, jobsService, dialog, fuseConfig, snackComp, utilities, router, loginService, visaService, resolver) {
         this.recruiterService = recruiterService;
         this.jobsService = jobsService;
         this.dialog = dialog;
         this.fuseConfig = fuseConfig;
-        this.snackBar = snackBar;
+        this.snackComp = snackComp;
+        this.utilities = utilities;
         this.router = router;
         this.loginService = loginService;
-        this.displayedColumns = ['r_referenceid', 'r_title', 'r_location', 'r_expirydate', 'r_priorityLevel', 'r_createdby', 'r_startbutton', 'r_stopbutton'];
+        this.visaService = visaService;
+        this.resolver = resolver;
+        this.displayedColumns = ['r_referenceid', 'r_title', 'r_location', 'r_expirydate', 'r_priorityLevel', 'r_createdby', 'r_startbutton'];
+        this.noOfJobs = [];
+        this.isExpansionDetailRow = function (i, row) {
+            //return row.hasOwnProperty('detailRow');
+            if (i % 2 == 0)
+                return false;
+            return true;
+        };
+        this.showDetail = false;
         this.searchInput = new forms_1.FormControl('');
         this.jobDuration = this.fuseConfig.JobTimerDuration;
         this.alertDuration = this.fuseConfig.AlertTimerDuration;
     }
     RecruitersComponent.prototype.ngOnInit = function () {
         var _this = this;
-        {
-            this.dataSource = new FilesDataSource(this.recruiterService, this.paginator, this.sort);
-            this.searchInput.valueChanges
-                .debounceTime(300)
-                .subscribe(function (searchText) {
-                _this.paginator.pageIndex = 0;
-                _this.recruiterService.onSearchTextChanged.next(searchText);
-            });
-        }
+        this.dataSource = new FilesDataSource(this.recruiterService, this.paginator, this.sort);
+        this.searchInput.valueChanges
+            .debounceTime(300)
+            .subscribe(function (searchText) {
+            _this.paginator.pageIndex = 0;
+            _this.recruiterService.onSearchTextChanged.next(searchText);
+        });
         if (this.jobDuration == undefined)
             this.jobDuration = 3600;
         if (this.alertDuration == undefined)
             this.alertDuration = 30;
+        this.rjobs = this.recruiterService.recruiterJobs;
+        this._getRunningJob();
     };
-    RecruitersComponent.prototype.validateSubmission = function (event) {
-        //console.log(event.value)
-        return false;
+    RecruitersComponent.prototype.ngOnDestroy = function () {
+    };
+    RecruitersComponent.prototype.onResize = function (event) {
+        this.matTableInner = this.utilities.GetPageContentHeightNonAccordion();
+    };
+    RecruitersComponent.prototype.goToScreening = function (recuriterJobs) {
+        var _this = this;
+        if (this.visaService.recruiterSelectedJob != undefined) {
+            if (this.visaService.recruiterSelectedJob.length > 0) {
+                //var exists = this.visaService.recruiterSelectedJob.find(x => x.jobid == recuriterJobs.jobid);
+                var exists = this.visaService.recruiterSelectedJob.find(function (x) { return x.userid == _this.loginService.loggedUser.userid; });
+                if (exists != undefined) {
+                    var index = this.visaService.recruiterSelectedJob.indexOf(exists);
+                    if (index >= 0)
+                        this.visaService.recruiterSelectedJob.splice(index, 1);
+                }
+                this._addToTemp(recuriterJobs);
+            }
+            else
+                this._addToTemp(recuriterJobs);
+            this.router.navigateByUrl('/visaquestion');
+        }
+        else {
+            this._addToTemp(recuriterJobs);
+            this.router.navigateByUrl('/visaquestion');
+        }
     };
     RecruitersComponent.prototype.startJobTimer = function (recuriterJobs) {
         var _this = this;
-        //console.log(recuriterJobs)
-        var noOfJobs = [];
-        this.recruiterService.recruiterJobs.map(function (job) {
-            if (job.jobassignmentstatusid > 0 && job.endtime == '')
-                noOfJobs.push(job.jobassignmentstatusid);
-        });
-        if (noOfJobs != undefined && noOfJobs.length >= 2) {
-            this.openDialog('Maximum of 2 jobs only can be started at a time.');
+        this.activeJob = recuriterJobs;
+        if (this.noOfJobs != undefined && this.noOfJobs.length >= 2) {
+            this.snackComp.showSimpleWarning(this.utilities.maxJobMessage);
         }
         else {
-            this.recruiterService.startRecruiterJob(recuriterJobs.jobassignmentid).then(function (respone) {
-                //this.jobStatus = respone
-                _this.openDialog('Your job has been Started.');
-                if (respone != null && respone != '' && respone != undefined) {
-                    recuriterJobs.jobassignmentstatusid = respone[0]["Id"];
+            this.recruiterService.startRecruiterJob(recuriterJobs.jobassignmentid).then(function (response) {
+                if (response["ResultStatus"] == "1") {
+                    recuriterJobs.jobassignmentstatusid = response["Output"];
+                    recuriterJobs.expansionPanelId = true;
+                    recuriterJobs.endtime = '';
+                    _this.noOfJobs.push(recuriterJobs.jobassignmentstatusid);
                     _this.jobTimerSubscribe(recuriterJobs);
+                    response["SuccessMessage"] = _this._getMessage(_this.utilities.jobStartMessage, recuriterJobs.referenceid, recuriterJobs.title);
                 }
+                _this.snackComp.showSnackBarPost(response, '');
             });
         }
     };
@@ -102,7 +151,6 @@ var RecruitersComponent = /** @class */ (function () {
                 };
             });
         recuriterJobs.jobTimer = recuriterJobs.countDown.subscribe(function (value) {
-            //console.log(value)
             recuriterJobs.countdown = value;
             if (recuriterJobs.countdown["seconds"] > _this.jobDuration) {
                 recuriterJobs.jobTimer.unsubscribe();
@@ -121,7 +169,6 @@ var RecruitersComponent = /** @class */ (function () {
                 return recuriterJobs.dialogDiff = recuriterJobs.dialogDiff + 5;
             });
             recuriterJobs.dialogTimer = recuriterJobs.dialogCountDown.subscribe(function (value) {
-                //console.log(value)
                 recuriterJobs.dialogCountDown = value;
                 if (recuriterJobs.dialogCountDown > _this.alertDuration) {
                     recuriterJobs.dialogTimer.unsubscribe();
@@ -132,7 +179,6 @@ var RecruitersComponent = /** @class */ (function () {
         });
         recuriterJobs.confirmDialogRef.componentInstance.jobCode = recuriterJobs.referenceid;
         recuriterJobs.confirmDialogRef.componentInstance.confirmMessage = 'Time Elapsed! Do you want to continue?';
-        //this.confirmDialogRef.componentInstance.data = recuriterJobs;
         recuriterJobs.confirmDialogRef.afterClosed().subscribe(function (result) {
             if (!result) {
                 recuriterJobs.comment = "stopped";
@@ -145,42 +191,71 @@ var RecruitersComponent = /** @class */ (function () {
             recuriterJobs.confirmDialogRef = null;
         });
     };
+    RecruitersComponent.prototype.showDetails = function (recuriterJobs) {
+        this.activeJob = recuriterJobs;
+        this.showDetail = true;
+    };
     RecruitersComponent.prototype.stopJobTimer = function (recuriterJobs) {
         var _this = this;
-        // this.jobsService.getJobStatus(recuriterJobs.jobassignmentid).then (respone => {
-        //     this.jobStatus = respone
-        //     //console.log(this.jobStatus )
-        // });
-        //comment.checkValidity()
-        //recuriterJobs.status = '0';
         if (recuriterJobs.comment == '') {
-            this.openDialog('Please fill the Comment.');
+            this.snackComp.showSimpleWarning('Please fill the Comment');
         }
         else {
-            this.recruiterService.stopRecruiterJob(recuriterJobs.jobassignmentid, recuriterJobs.jobassignmentstatusid, recuriterJobs.submission, recuriterJobs.comment).then(function (respone) {
-                _this.openDialog('Your job has been Stopped.');
-                recuriterJobs.dialogTimer.unsubscribe();
-                recuriterJobs.jobTimer.unsubscribe();
+            this.recruiterService.stopRecruiterJob(recuriterJobs).then(function (response) {
+                if (response["ResultStatus"] == "1") {
+                    _this.showDetail = false;
+                    var index = _this.noOfJobs.indexOf(recuriterJobs.jobassignmentstatusid);
+                    if (index >= 0)
+                        _this.noOfJobs.splice(index, 1);
+                    recuriterJobs.dialogTimer.unsubscribe();
+                    recuriterJobs.jobTimer.unsubscribe();
+                    response["SuccessMessage"] = _this._getMessage(_this.utilities.jobStopMessage, recuriterJobs.referenceid, recuriterJobs.title);
+                }
+                _this.snackComp.showSnackBarPost(response, '');
             });
         }
     };
-    RecruitersComponent.prototype.clearRecuriterStatus = function () {
+    RecruitersComponent.prototype._addToTemp = function (job) {
+        this.visaService.recruiterSelectedJob.push({ userid: this.loginService.loggedUser.userid, jobid: job.jobid, job: job });
     };
-    RecruitersComponent.prototype.saveRecuriterStatus = function (recuriterJobs) {
-        //console.log(recuriterJobs)
-    };
-    RecruitersComponent.prototype.ngOnDestroy = function () {
-        //this.onRecruiterJobChangedSubscription.unsubscribe();
-    };
-    RecruitersComponent.prototype.openDialog = function (message) {
-        // this.dialog.open(DialogComponent, {
-        //     width: '450px',
-        //     data: { message : message }
-        //     });
-        this.snackBar.open(message, '', {
-            duration: 3000,
-            verticalPosition: 'top'
+    RecruitersComponent.prototype._getRunningJob = function () {
+        var _this = this;
+        this.recruiterService.recruiterJobs.map(function (job) {
+            if ((job.jobassignmentstatusid > 0 && job.endtime == '') || (job.jobassignmentstatusid != 0 && job.isactive))
+                _this.noOfJobs.push(job.jobassignmentstatusid);
         });
+    };
+    RecruitersComponent.prototype._getMessage = function (message, code, title) {
+        message = message.replace('{0}', code);
+        message = message.replace('{1}', title);
+        return message;
+    };
+    /* Not Used */
+    RecruitersComponent.prototype.expandRow = function (index) {
+        if (this.expandedRow != null) {
+            // clear old message
+            this.containers[this.expandedRow].clear();
+        }
+        if (this.expandedRow === index) {
+            this.expandedRow = null;
+        }
+        else {
+            var rjob = this.rjobs[index];
+            //inlineComponent
+            ////let factory = this.resolver.resolveComponentFactory(InlineMessageComponent);
+            ////const container2 = this.containers;
+            //////container2.clear();
+            ////const comp = container2.createComponent(factory);
+            ////comp.instance.data = "jobs";
+            ////this.expandedRow = index;
+            var factory = this.resolver.resolveComponentFactory(InlineMessageComponent);
+            var container2 = this.containers;
+            var cont3 = this.inlineComponent;
+            //container2.clear();
+            var comp = container2.createComponent(factory);
+            //comp.instance.data = "jobs";
+            this.expandedRow = index;
+        }
     };
     __decorate([
         core_1.ViewChild('dialogContent')
@@ -197,13 +272,28 @@ var RecruitersComponent = /** @class */ (function () {
     __decorate([
         core_1.Input('eventDate')
     ], RecruitersComponent.prototype, "eventDate", void 0);
+    __decorate([
+        core_1.Input()
+    ], RecruitersComponent.prototype, "rjobs", void 0);
+    __decorate([
+        core_1.ViewChild('cdkrow', { read: core_1.ViewContainerRef })
+    ], RecruitersComponent.prototype, "containers", void 0);
+    __decorate([
+        core_1.ViewChild(InlineMessageComponent)
+    ], RecruitersComponent.prototype, "inlineComponent", void 0);
     RecruitersComponent = __decorate([
         core_1.Component({
             selector: 'fuse-recruiters',
             templateUrl: './recruiters.component.html',
             styleUrls: ['./recruiters.component.scss'],
             encapsulation: core_1.ViewEncapsulation.None,
-            animations: animations_1.fuseAnimations
+            animations: [animations_1.fuseAnimations, animations_2.trigger('detailExpand', [
+                    //state('collapsed', style({ height: '0px', minHeight: '0', visibility: 'hidden' })),
+                    animations_2.state('collapsed', animations_2.style({ height: '*', visibility: 'visible' })),
+                    animations_2.state('expanded', animations_2.style({ height: '*', visibility: 'visible' })),
+                    animations_2.transition('expanded <=> collapsed', animations_2.animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'))
+                ]),
+            ],
         })
     ], RecruitersComponent);
     return RecruitersComponent;
@@ -272,7 +362,6 @@ var FilesDataSource = /** @class */ (function (_super) {
         if (!this._sort.active || this._sort.direction === '') {
             return data;
         }
-        //displayedColumns = ['r_referenceid', 'r_title', 'r_location', 'r_expirydate', 'r_priorityLevel', 'r_createdby', 'r_startbutton', 'r_stopbutton'];
         return data.sort(function (a, b) {
             var propertyA = '';
             var propertyB = '';

@@ -24,6 +24,11 @@
   font-weight: 400 !important;
 }
 
+.bg-green
+{
+    background-color: green !important;
+}
+
 .text-boxed-green
 {
     background-color:green !important;
@@ -37,6 +42,22 @@
     font-size :14px !important;
     color : white !important;
 }
+
+.mt-8{
+    margin-top: 8px !important;
+}
+
+.ml-10{
+    margin-left: 10px !important;
+}
+
+.h-50{
+    height: 50px !important;
+}
+
+.bb-1-lightgray{
+    border-bottom: 1px solid lightgray !important;
+}
     .header {
 
         .search-input-wrapper {
@@ -49,6 +70,21 @@
             max-height: 120px !important;
         }
     }
+
+.sub-header{
+    height: 50px !important;
+    border-bottom: 1px solid lightgray !important;
+}
+
+.sub-header-span{
+    font-size: 18px !important;
+    color: #03a9f4 !important;
+}
+
+.sub-footer{
+    height: 10px !important;
+    border-bottom: 1px solid lightgray !important;
+}
 
     .top-bg {
         @include media-breakpoint-down(xs) {
@@ -92,6 +128,7 @@
         }
         .mat-column-jn_clientname {
             flex: 0 1 20%;
+            padding-right: 10px !important;
         }
         
         .mat-column-jn_publisheddate {
@@ -120,5 +157,33 @@
             display: flex !important;
         }
 
-       
+        
+        .mat-column-referenceid {
+            flex: 0 1 10%;
+        }
+
+        .mat-column-title {
+            flex: 0 1 30%;
+        }
+        .mat-column-location {
+            flex: 0 1 20%;
+        }
+        .mat-column-clientname {
+            flex: 0 1 20%;
+            padding-right: 10px !important;
+        }
+        
+        .mat-column-publisheddate {
+            flex: 0 1 20%;
+        }
+        .mat-column-p_buttons {
+            flex: 0 1 15%;
+            justify-content : center !important;
+            display: flex !important;
+        }
+        .mat-column-p_checkbox {
+            flex: 0 1 5%;
+            justify-content : center !important;
+            display: flex !important;
+        }
     }

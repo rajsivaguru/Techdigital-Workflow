@@ -4,22 +4,22 @@ var common_1 = require("@angular/common");
 var JobReport = /** @class */ (function () {
     function JobReport(reports) {
         var datePipe = new common_1.DatePipe("en-US");
-        this.ReferenceId = reports.ReferenceId || '';
-        this.Title = reports.Title || '';
-        this.Location = reports.Location || '';
-        this.ClientName = reports.ClientName || '';
-        this.PublishedDate = datePipe.transform(reports.PublishedDate, 'MM-dd-yyyy hh:mm aa') || '';
-        this.IsActive = reports.IsActive || '';
-        this.UserCount = reports.UserCount || 0;
-        this.Users = reports.Users || '';
-        this.Duration = reports.Duration || 0;
-        this.Submission = reports.Submission || 0;
+        this.referenceid = reports.referenceid || '';
+        this.title = reports.title || '';
+        this.location = reports.location || '';
+        this.clientname = reports.clientname || '';
+        this.publisheddate = datePipe.transform(reports.publisheddate, 'MM-dd-yyyy hh:mm aa') || '';
+        this.isactive = reports.isactive || '';
+        this.usercount = reports.usercount || 0;
+        this.users = reports.users || '';
+        this.duration = reports.duration || 0;
+        this.submission = reports.submission || 0;
     }
     return JobReport;
 }());
 exports.JobReport = JobReport;
-var JobReportForm = /** @class */ (function () {
-    function JobReportForm(reports) {
+var JobReportParam = /** @class */ (function () {
+    function JobReportParam(reports) {
         this.jobcode = reports.jobcode || '';
         this.title = reports.title || '';
         this.location = reports.location || '';
@@ -27,11 +27,11 @@ var JobReportForm = /** @class */ (function () {
         this.status = reports.status || -2;
         this.fromDate = reports.fromDate || '';
         this.toDate = reports.toDate || '';
-        this.lastDatys = reports.lastDatys || -1;
+        this.lastDays = reports.lastDays || -1;
     }
-    return JobReportForm;
+    return JobReportParam;
 }());
-exports.JobReportForm = JobReportForm;
+exports.JobReportParam = JobReportParam;
 var UserReport = /** @class */ (function () {
     function UserReport(reports) {
         var datePipe = new common_1.DatePipe("en-US");
@@ -67,3 +67,65 @@ var UserReportParam = /** @class */ (function () {
     return UserReportParam;
 }());
 exports.UserReportParam = UserReportParam;
+var ClientReportParam = /** @class */ (function () {
+    function ClientReportParam(report) {
+        this.clientIds = report.clientIds || [];
+        this.jobcode = report.jobcode || '';
+        this.title = report.title || '';
+        this.publishedDate = report.publishedDate || '';
+        this.lastDays = report.lastDays || -1;
+        this.reporttype = report.reporttype || '';
+        this.loginid = report.loginid || -1;
+    }
+    return ClientReportParam;
+}());
+exports.ClientReportParam = ClientReportParam;
+var ClientReport = /** @class */ (function () {
+    function ClientReport(reports) {
+        var datePipe = new common_1.DatePipe("en-US");
+        this.jobcode = reports.jobcode || '';
+        this.title = reports.title || '';
+        this.location = reports.location || '';
+        this.clientname = reports.clientname || '';
+        this.publisheddate = datePipe.transform(reports.publisheddate, 'MM-dd-yyyy hh:mm aa') || '';
+        this.jobstatus = reports.jobstatus || false;
+        this.assignmentcount = reports.assignmentcount || 0;
+        this.submissions = reports.submissions || 0;
+    }
+    return ClientReport;
+}());
+exports.ClientReport = ClientReport;
+var ProfileSearchReportParam = /** @class */ (function () {
+    function ProfileSearchReportParam(report) {
+        this.userIds = report.clientIds || [];
+        this.title = report.title || '';
+        this.location = report.location || '';
+        this.searcheddate = report.searcheddate || '';
+        this.lastDays = report.lastDays || -1;
+        this.reporttype = report.reporttype || '';
+        this.loginid = report.loginid || -1;
+    }
+    return ProfileSearchReportParam;
+}());
+exports.ProfileSearchReportParam = ProfileSearchReportParam;
+var ProfileSearchReport = /** @class */ (function () {
+    function ProfileSearchReport(report) {
+        var datePipe = new common_1.DatePipe("en-US");
+        this.recordid = report.recordid || 0;
+        this.username = report.username || '';
+        this.jobcode = report.jobcode || '';
+        this.title = report.title || '';
+        this.location = report.location || '';
+        this.searcheddate = datePipe.transform(report.searcheddate, 'MM-dd-yyyy hh:mm aa') || '';
+        this.searchengine = report.searchengine || '';
+        this.skill1 = report.skill1 || '';
+        this.skill2 = report.skill2 || '';
+        this.skill3 = report.skill3 || '';
+        this.headline = report.headline || '';
+        this.searchurl = report.searchurl || '';
+        this.isjobseeker = report.isjobseeker || false;
+        this.isoverride = report.isoverride || false;
+    }
+    return ProfileSearchReport;
+}());
+exports.ProfileSearchReport = ProfileSearchReport;

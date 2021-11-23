@@ -1,13 +1,22 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot, Router } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
-import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Contact, Role } from './users.model';
-import { FuseUtils } from '../../../core/fuseUtils';
 import { Subject } from 'rxjs/Subject';
+import { FuseUtils } from '../../../core/fuseUtils';
 import { FuseConfigService } from '../../../core/services/config.service';
+import { Contact, Role } from './users.model';
 import { LoginService } from '../login/login.service';
+
+////const httpOptions = {
+////    headers: new HttpHeaders({
+////        //'Content-Type': 'application/x-www-form-urlencoded'//'application/json'
+////        'Content-Type': 'application/json'
+////    })
+////};
+let headers = new HttpHeaders();
+headers.set("Content-Type", "application/json");
 
 @Injectable()
 export class UsersService implements Resolve<any>
@@ -20,28 +29,22 @@ export class UsersService implements Resolve<any>
 
     action : any;
     editContacts: Contact;
-
     roles : Role[];
-
     contacts: Contact[];
     user: any;
     selectedContacts: string[] = [];
-
     searchText: string = "";
     filterBy: string;
-
     serviceURL : String;
-
+    
     constructor(private http: HttpClient, private configSer : FuseConfigService, public loginService : LoginService)
     {
-
         this.serviceURL = configSer.ServiceURL;
     }
 
     ngOnInit() {
         //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
-        //Add 'implements OnInit' to the class.
-        
+        //Add 'implements OnInit' to the class.        
     }
 
     /**
@@ -56,9 +59,7 @@ export class UsersService implements Resolve<any>
         return new Promise((resolve, reject) => {
 
             Promise.all([
-                this.getContacts(-1),
-                //this.getUserData(),
-                //this.getRoleData()
+                this.getContacts(-1)
             ]).then(
                 ([files]) => {
 
@@ -80,7 +81,7 @@ export class UsersService implements Resolve<any>
         });
     }
 
-   getAssignedUser(status): Promise<any>
+    getAssignedUser(status): Promise<any>
     {
         return new Promise((resolve, reject) => {
                 let userid  = '0';
@@ -89,12 +90,63 @@ export class UsersService implements Resolve<any>
                 
                 this.http.get(this.serviceURL+'User/GetUsersForAssignment?statusId=' + status + '&loginId='+userid)
                     .subscribe((response: any) => {
+                        ////response = JSON.parse(response);
+                        resolve(response.Output);
+                    }, reject);
+            }
+        );
+    }
+
+    getAbsentUser(): Promise<any>
+    {
+        return new Promise((resolve, reject) => {
+                let userid  = '0';
+                if (this.loginService.loggedUser != undefined)
+                    userid = this.loginService.loggedUser.userid;
+                ////this.serviceURL = "https://www.apps.techdigitalcorp.com/WorkflowApi-Dev/api/"
+                this.http.get(this.serviceURL+'User/GetAbsentUsers?loginId='+userid)
+                    .subscribe((response: any) => {
                         response = JSON.parse(response);
                         resolve(response);
                     }, reject);
             }
         );
     }
+
+    saveAbsentUser(userIds): Promise<any>
+    {
+        return new Promise((resolve, reject) => {
+            let userid  = '0';
+
+            if (this.loginService.loggedUser != undefined)
+                userid = this.loginService.loggedUser.userid;
+
+            this.http.get(this.serviceURL + 'User/SaveAbsentUsers?userIds=' + userIds + '&loginId=' + userid)
+                .subscribe((response: any) => {
+                    response = JSON.parse(response);
+                    resolve(response);
+                }, reject);
+        });
+    }
+
+    /* With post - working */
+    ////saveAbsentUser(userIds): Promise<any> {
+    ////    return new Promise((resolve, reject) => {
+    ////        let userid = '0';
+    ////        var data = { name: 'name', name2: 'name2' };
+
+    ////        if (this.loginService.loggedUser != undefined)
+    ////            userid = this.loginService.loggedUser.userid;
+
+    ////        /* Making api call twice. */
+    ////        this.http.post(this.serviceURL + 'User/SaveAbsentUsersO', data, { headers: headers })
+    ////            .subscribe((response: any) => {
+    ////                response = JSON.parse(response);
+    ////                resolve(response);
+    ////            }, reject);
+    ////    });
+    ////}
+
     getContacts(status): Promise<any>
     {
         return new Promise((resolve, reject) => {
@@ -164,9 +216,7 @@ export class UsersService implements Resolve<any>
             }
         );
     }
-
     
-
     getRoleData(): Promise<any>
     {
         return new Promise((resolve, reject) => {
@@ -181,67 +231,7 @@ export class UsersService implements Resolve<any>
             }
         );
     }
-
-    // getUserData(): Promise<any>
-    // {
-    //     return new Promise((resolve, reject) => {
-    //             // this.http.get('api/contacts-user/5725a6802d10e277a0f35724')
-    //             //     .subscribe((response: any) => {
-    //             //         this.user = response;
-    //             //         this.onUserDataChanged.next(this.user);
-    //             //         resolve(this.user);
-    //             //     }, reject);
-    //             this.onUserDataChanged.next(this.user);
-    //             resolve(this.user);
-    //         }
-    //     );
-    // }
-
-    /**
-     * Toggle selected contact by id
-     * @param id
-     */
-    // toggleSelectedContact(id)
-    // {
-    //     // First, check if we already have that todo as selected...
-    //     if ( this.selectedContacts.length > 0 )
-    //     {
-    //         const index = this.selectedContacts.indexOf(id);
-
-    //         if ( index !== -1 )
-    //         {
-    //             this.selectedContacts.splice(index, 1);
-
-    //             // Trigger the next event
-    //             this.onSelectedContactsChanged.next(this.selectedContacts);
-
-    //             // Return
-    //             return;
-    //         }
-    //     }
-
-    //     // If we don't have it, push as selected
-    //     this.selectedContacts.push(id);
-
-    //     // Trigger the next event
-    //     this.onSelectedContactsChanged.next(this.selectedContacts);
-    // }
-
-    /**
-     * Toggle select all
-     */
-    // toggleSelectAll()
-    // {
-    //     if ( this.selectedContacts.length > 0 )
-    //     {
-    //         this.deselectContacts();
-    //     }
-    //     else
-    //     {
-    //         this.selectContacts();
-    //     }
-    // }
-
+    
     selectContacts(filterParameter?, filterValue?)
     {
         this.selectedContacts = [];
@@ -284,48 +274,5 @@ export class UsersService implements Resolve<any>
                     resolve(response);
                 });
         });
-    }
-
-    // updateUserData(userData)
-    // {
-    //     return new Promise((resolve, reject) => {
-    //         //this.http.post('api/contacts-user/' + this.user.userid, {...userData})
-    //         this.http.get(this.serviceURL+'TDW/SaveUser?sUserModel=' + JSON.stringify(userData))
-    //             .subscribe(response => {
-    //                 //this.getUserData();
-    //                 this.getContacts(-1);
-    //                 resolve(response);
-    //             });
-    //     });
-    // }
-
-    // deselectContacts()
-    // {
-    //     this.selectedContacts = [];
-
-    //     // Trigger the next event
-    //     this.onSelectedContactsChanged.next(this.selectedContacts);
-    // }
-
-    // deleteContact(contact)
-    // {
-    //     const contactIndex = this.contacts.indexOf(contact);
-    //     this.contacts.splice(contactIndex, 1);
-    //     this.onContactsChanged.next(this.contacts);
-    // }
-
-    // deleteSelectedContacts()
-    // {
-    //     for ( const contactId of this.selectedContacts )
-    //     {
-    //         const contact = this.contacts.find(_contact => {
-    //             return _contact.userid === contactId;
-    //         });
-    //         const contactIndex = this.contacts.indexOf(contact);
-    //         this.contacts.splice(contactIndex, 1);
-    //     }
-    //     this.onContactsChanged.next(this.contacts);
-    //     this.deselectContacts();
-    // }
-
+    }    
 }

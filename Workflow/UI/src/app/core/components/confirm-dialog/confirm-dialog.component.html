@@ -1,10 +1,11 @@
-<h1 mat-dialog-title>Confirm</h1>
+<!--<h1 mat-dialog-title>Confirm</h1>-->
+<div class="confirmdialog-Title"><span>{{title}}</span></div>
 <div mat-dialog-content class="py-24">
-    <span class="mat-title">{{jobCode}} - </span>{{confirmMessage}}
-
+    <!--<span class="mat-title">{{jobCode}} - </span>{{confirmMessage}}-->
+    <span class="mat-title"></span>{{confirmMessage}}
 </div>
-<div mat-dialog-actions fxLayout="row"  fxLayoutAlign="end center" >
-    
-    <button mat-raised-button color="primary" (click)="dialogRef.close(false)" tabindex="2">No</button>
-    <button mat-raised-button color="accent" (click)="dialogRef.close(true)" tabindex="-1">Yes</button>
+<div mat-dialog-actions fxLayout="row"  fxLayoutAlign="end center">
+    <button mat-raised-button color="primary" (click)="dialogRef.close(false)" tabindex="2" *ngIf="showCancelButton">Cancel</button>
+    <!--<button mat-raised-button color="accent" (click)="dialogRef.close(true)" tabindex="-1">Continue</button>-->
+    <button mat-raised-button color="accent" (click)="dialogRef.close(true)" tabindex="-1">{{actionButtonText}}</button>
 </div>

@@ -22,85 +22,85 @@
     color : white !important;
 }
 
-    .products-table {
-        flex: 1 1 auto;
-        border-bottom: 1px solid rgba(0, 0, 0, .12);
+.jobReport-table {
+    flex: 1 1 auto;
+    border-bottom: 1px solid rgba(0, 0, 0, .12);
 
-       .mat-header-row {
+    .mat-header-row {
             
-        }
-        
-        .mat-row:hover
-        {
-            background-color: #F2F4F4 !important;
-        }
-
-        .mat-header-cell
-        {
-            font-weight: bold !important;
-            font-size : 15px !important;
-            justify-content : center !important;
-            padding-right: 10px;
-            padding-left: 5px;
-        }
-
-        .product {
-            position: relative;
-            cursor: pointer;
-            height: 84px;
-        }
-
-        .mat-cell {
-            padding-right: 10px;
-            padding-left: 5px;
-        }
-
-       .mat-column-r_ReferenceId {
-            flex: 0 1 10%;
-        }
-        .mat-column-r_Title {
-            flex: 0 1 25%;
-        }
-        .mat-column-r_Location {
-            flex: 0 1 14%;
-            font-size:small;
-        }
-        .mat-column-r_ClientName {
-            flex: 0 1 9%;
-            font-size:small;
-        }
-        .mat-column-r_PublishedDate {
-            flex: 0 1 12%;
-            font-size:small;
-        }        
-        .mat-column-r_IsActive {
-            flex: 0 1 5%;
-            font-size:small;
-        }
-        .mat-column-r_UserCount {
-            flex: 0 1 8%;
-            justify-content : center !important;
-            display: flex !important;
-        }
-        .mat-column-r_Duration
-        {
-            flex: 0 1 9%;
-            justify-content : center !important;
-            display: flex !important;
-            font-size:small;
-        }
-        .mat-column-r_Submission
-        {
-            flex: 0 1 5%;
-            justify-content : center !important;
-            display: flex !important;
-            font-size:small;
-        }
-        .mat-column-r_Users {
-            flex: 0 1 15%;
-        }
-        
-        .mat-column-jl_buttons {
-            flex: 0 1 40px;
-        }       
     }
+        
+    .mat-row:hover
+    {
+        background-color: #F2F4F4 !important;
+    }
+
+    .mat-header-cell
+    {
+        font-weight: bold !important;
+        font-size : 15px !important;
+        justify-content : center !important;
+        padding-right: 10px;
+        padding-left: 5px;
+    }
+
+    .product {
+        position: relative;
+        cursor: pointer;
+        height: 84px;
+    }
+
+    .mat-cell {
+        padding-right: 10px;
+        padding-left: 5px;
+    }
+
+    .mat-column-r_ReferenceId {
+        flex: 0 1 10%;
+    }
+    .mat-column-r_Title {
+        flex: 0 1 23%;
+    }
+    .mat-column-r_Location {
+        flex: 0 1 14%;
+        font-size:small;
+    }
+    .mat-column-r_ClientName {
+        flex: 0 1 11%;
+        font-size:small;
+    }
+    .mat-column-r_PublishedDate {
+        flex: 0 1 10%;
+        font-size:small;
+    }
+    .mat-column-r_IsActive {
+        flex: 0 1 6%;
+        font-size:small;
+    }
+    .mat-column-r_UserCount {
+        flex: 0 1 3%;
+        justify-content : center !important;
+        display: flex !important;
+    }
+    .mat-column-r_Duration
+    {
+        flex: 0 1 9%;
+        justify-content : center !important;
+        display: flex !important;
+        font-size:small;
+    }
+    .mat-column-r_Submission
+    {
+        flex: 0 1 5%;
+        justify-content : center !important;
+        display: flex !important;
+        font-size:small;
+    }
+    .mat-column-r_Users {
+        flex: 0 1 15%;
+    }
+        
+    .mat-column-jl_buttons {
+        flex: 0 1 40px;
+    }       
+}

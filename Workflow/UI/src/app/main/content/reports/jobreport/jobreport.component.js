@@ -16,26 +16,27 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var collections_1 = require("@angular/cdk/collections");
 var core_1 = require("@angular/core");
-var Observable_1 = require("rxjs/Observable");
+var common_1 = require("@angular/common");
 var material_1 = require("@angular/material");
 var BehaviorSubject_1 = require("rxjs/BehaviorSubject");
-var collections_1 = require("@angular/cdk/collections");
+var Observable_1 = require("rxjs/Observable");
+var fuse_perfect_scrollbar_directive_1 = require("../../../../core/directives/fuse-perfect-scrollbar/fuse-perfect-scrollbar.directive");
 var animations_1 = require("../../../../core/animations");
+var app_model_1 = require("../../../../app.model");
 var fuseUtils_1 = require("../../../../core/fuseUtils");
 var reports_model_1 = require("../reports.model");
-var common_1 = require("@angular/common");
-var fuse_perfect_scrollbar_directive_1 = require("../../../../core/directives/fuse-perfect-scrollbar/fuse-perfect-scrollbar.directive");
 var JobReportComponent = /** @class */ (function () {
-    function JobReportComponent(reportService, snackBar, _sanitizer, router, formBuilder, loginService) {
+    function JobReportComponent(reportService, _sanitizer, router, formBuilder, loginService, snackComp, utilities) {
         var _this = this;
         this.reportService = reportService;
-        this.snackBar = snackBar;
         this._sanitizer = _sanitizer;
         this.router = router;
         this.formBuilder = formBuilder;
         this.loginService = loginService;
-        //displayedColumns = [ 'r_ReferenceId', 'r_Title', 'r_Location', 'r_PublishedDate', 'r_IsActive', 'r_UserCount', 'r_Users', 'r_Duration', 'r_Submission'];
+        this.snackComp = snackComp;
+        this.utilities = utilities;
         this.displayedColumns = ['r_ReferenceId', 'r_Title', 'r_Location', 'r_ClientName', 'r_PublishedDate', 'r_IsActive', 'r_UserCount', 'r_Users', 'r_Duration', 'r_Submission'];
         this.datePipe = new common_1.DatePipe("en-US");
         this.isSearchEnable = false;
@@ -46,32 +47,6 @@ var JobReportComponent = /** @class */ (function () {
         this.maxFromDate = null;
         this.maxToDate = null;
         this.maxPublishedDate = null;
-        this.searchJob = function (keyword) {
-            try {
-                if (keyword) {
-                    return _this.reportService.searchJob(keyword);
-                }
-                else {
-                    return Observable_1.Observable.of([]);
-                }
-            }
-            catch (ex) {
-                return Observable_1.Observable.of([]);
-            }
-        };
-        this.searchUser = function (keyword) {
-            try {
-                if (keyword) {
-                    return _this.reportService.searchUser(keyword);
-                }
-                else {
-                    return Observable_1.Observable.of([]);
-                }
-            }
-            catch (ex) {
-                return Observable_1.Observable.of([]);
-            }
-        };
         this.autocompleListFormatterJob = function (data) {
             var html = "<span class=\"font-weight-900 font-size-12\">" + data.title + " </span><span class=\"font-size-10\">" + data.location + " </span>";
             return _this._sanitizer.bypassSecurityTrustHtml(html);
@@ -86,52 +61,36 @@ var JobReportComponent = /** @class */ (function () {
         this.autocompleListSelectedUser = function (data) {
             return (data["name"]);
         };
-        this.onContactsChangedSubscription = this.reportService.onContactsChanged.subscribe(function (jbs) {
+        this.onJobReportChangedSubscription = this.reportService.onJobReportChanged.subscribe(function (jbs) {
             _this.jobs = jbs;
         });
-        this.rptForm = new reports_model_1.JobReportForm({});
+        this.rptForm = new reports_model_1.JobReportParam({});
         this.maxFromDate = new Date(this.todayDate.getFullYear(), this.todayDate.getMonth(), this.todayDate.getDate());
         this.maxToDate = new Date(this.todayDate.getFullYear(), this.todayDate.getMonth(), this.todayDate.getDate());
         this.maxPublishedDate = new Date(this.todayDate.getFullYear(), this.todayDate.getMonth(), this.todayDate.getDate());
         this.isSearchExpanded = true;
     }
     JobReportComponent.prototype.ngOnInit = function () {
-        var _this = this;
-        this.reduceHeight = 290;
-        this.matTableInner = (window.innerHeight - this.reduceHeight);
-        this.jobReport = this.createJobForm();
+        this.matTableInner = this.utilities.GetPageContentHeightWithAccordion();
+        this.progressbar = new app_model_1.ProgressBarConfig({});
+        this.jobReport = this.createReportForm();
         this.dataSource = new FilesDataSource(this.reportService, this.paginator, this.sort);
-        this.reportService.getLastDays().then(function (response) {
-            if (response) {
-                response.map(function (priori) {
-                    _this.lastDaysList.push({ "id": priori["Value"], "itemName": priori["Name"] });
-                });
-            }
-        });
+        this.getDays();
+    };
+    JobReportComponent.prototype.ngOnDestroy = function () {
+        this.onJobReportChangedSubscription.unsubscribe();
     };
     JobReportComponent.prototype.onResize = function (event) {
-        this.matTableInner = (window.innerHeight - this.reduceHeight);
-    };
-    JobReportComponent.prototype.createJobForm = function () {
-        return this.formBuilder.group({
-            jobcode: [this.rptForm.jobcode],
-            title: [this.rptForm.title],
-            location: [this.rptForm.location],
-            publishedDate: [this.rptForm.publishedDate],
-            status: [this.rptForm.status],
-            fromDate: [this.rptForm.fromDate],
-            toDate: [this.rptForm.toDate],
-            lastDatys: [this.rptForm.lastDatys]
-        });
+        this.matTableInner = this.utilities.GetPageContentHeightWithAccordion();
     };
     JobReportComponent.prototype.searchValidation = function () {
         this.rptForm = this.jobReport.getRawValue();
         if (this.rptForm.status == undefined)
             this.rptForm.status = -2;
-        if (this.rptForm.lastDatys == undefined)
-            this.rptForm.lastDatys = -1;
+        if (this.rptForm.lastDays == undefined)
+            this.rptForm.lastDays = -1;
         if (this.rptForm.jobcode != "" || this.rptForm.title != "" || this.rptForm.location != "" || this.rptForm.publishedDate != ""
-            || this.rptForm.fromDate != "" || this.rptForm.toDate != "" || this.rptForm.status != -2 || this.rptForm.lastDatys != -1) {
+            || (this.rptForm.fromDate != "" && this.rptForm.toDate != "") || this.rptForm.status != -2 || this.rptForm.lastDays != -1) {
             this.isSearchEnable = true;
         }
         else
@@ -146,23 +105,79 @@ var JobReportComponent = /** @class */ (function () {
             status: -2,
             fromDate: '',
             toDate: '',
-            lastDatys: -1
+            lastDays: -1
         });
         this.rptForm = this.jobReport.getRawValue();
-        this.reportService.getJobs(this.rptForm);
         this.isSearchExpanded = true;
         this.isSearchEnable = false;
     };
     JobReportComponent.prototype.loadReport = function () {
+        var _this = this;
+        if (this.validateReportCriteria()) {
+            this.paginator.pageIndex = 0;
+            this.isSearchExpanded = false;
+            this.progressbar.showProgress();
+            this.reportService.getJobReport(this.rptForm)
+                .then(function (response) {
+                _this.progressbar.hideProgress();
+                _this.snackComp.showSnackBarGet(response, '');
+            });
+        }
+    };
+    JobReportComponent.prototype.loadDownloadableReport = function (fileType) {
+        if (this.validateReportCriteria()) {
+            this.rptForm.reporttype = fileType;
+            this.reportService.getJobReportExport(this.rptForm);
+        }
+    };
+    JobReportComponent.prototype.selectedFromDate = function (type, event) {
+        this.minToDate = event.value;
+        this.jobReport.patchValue({ lastDays: -1 });
+        this.searchValidation();
+    };
+    JobReportComponent.prototype.selectedToDate = function (type, event) {
+        this.maxFromDate = event.value;
+        this.jobReport.patchValue({ lastDays: -1 });
+        this.searchValidation();
+    };
+    JobReportComponent.prototype.selectedNoOfDays = function (event) {
+        if (event.value != undefined) {
+            this.jobReport.patchValue({ fromDate: '', toDate: '' });
+            this.searchValidation();
+        }
+    };
+    JobReportComponent.prototype.createReportForm = function () {
+        return this.formBuilder.group({
+            jobcode: [this.rptForm.jobcode],
+            title: [this.rptForm.title],
+            location: [this.rptForm.location],
+            publishedDate: [this.rptForm.publishedDate],
+            status: [this.rptForm.status],
+            fromDate: [this.rptForm.fromDate],
+            toDate: [this.rptForm.toDate],
+            lastDays: [this.rptForm.lastDays]
+        });
+    };
+    JobReportComponent.prototype.getDays = function () {
+        var _this = this;
+        this.lastDaysList = [];
+        this.reportService.getLastDays().then(function (response) {
+            if (response) {
+                response.map(function (day) {
+                    _this.lastDaysList.push({ "id": day["Value"], "itemName": day["Name"] });
+                });
+            }
+        });
+    };
+    JobReportComponent.prototype.validateReportCriteria = function () {
         this.rptForm = this.jobReport.getRawValue();
+        if (this.rptForm.lastDays == undefined)
+            this.rptForm.lastDays = -1;
         if (this.rptForm.status == undefined)
-            this.rptForm.status = -2;
-        if (this.rptForm.lastDatys == undefined)
-            this.rptForm.lastDatys = -1;
-        if (this.rptForm.jobcode == "" && this.rptForm.title == "" && this.rptForm.location == "" && this.rptForm.publishedDate == ""
-            && this.rptForm.fromDate == "" && this.rptForm.toDate == "" && this.rptForm.status == -2 && this.rptForm.lastDatys == -1) {
-            this.openDialog("Please filter by any Values!");
-            return;
+            this.rptForm.status = -1;
+        if (this.rptForm.jobcode == "" && this.rptForm.title == "" && this.rptForm.location == "" && this.rptForm.publishedDate == "" && this.rptForm.fromDate == "" && this.rptForm.toDate == "" && this.rptForm.lastDays == -1 && this.rptForm.status == -2) {
+            this.snackComp.showSimpleWarning(this.utilities.reportSearchMissingFields);
+            return false;
         }
         if (this.rptForm.publishedDate != "")
             this.rptForm.publishedDate = this.datePipe.transform(this.rptForm.publishedDate, 'MM/dd/yyyy');
@@ -170,50 +185,7 @@ var JobReportComponent = /** @class */ (function () {
             this.rptForm.fromDate = this.datePipe.transform(this.rptForm.fromDate, 'MM/dd/yyyy');
         if (this.rptForm.toDate != "")
             this.rptForm.toDate = this.datePipe.transform(this.rptForm.toDate, 'MM/dd/yyyy');
-        if (this.rptForm.fromDate != "" && this.rptForm.toDate == "") {
-            this.openDialog("Please select the To date");
-            return;
-        }
-        if (this.rptForm.fromDate == "" && this.rptForm.toDate != "") {
-            this.openDialog("Please select the From date");
-            return;
-        }
-        this.paginator.pageIndex = 0;
-        this.isSearchExpanded = false;
-        this.reportService.getJobs(this.rptForm);
-    };
-    JobReportComponent.prototype.ngOnDestroy = function () {
-        this.onContactsChangedSubscription.unsubscribe();
-    };
-    JobReportComponent.prototype.selectedFromDate = function (type, event) {
-        this.minToDate = event.value;
-        this.searchValidation();
-        this.jobReport.patchValue({
-            lastDatys: -1
-        });
-    };
-    JobReportComponent.prototype.selectedToDate = function (type, event) {
-        this.maxFromDate = event.value;
-        this.searchValidation();
-        this.jobReport.patchValue({
-            lastDatys: -1
-        });
-    };
-    JobReportComponent.prototype.selectedNoOfDays = function (event) {
-        if (event.value != undefined) {
-            this.searchValidation();
-            this.jobReport.patchValue({
-                fromDate: '',
-                toDate: ''
-            });
-        }
-    };
-    JobReportComponent.prototype.openDialog = function (message) {
-        this.snackBar.open(message, '', {
-            duration: 2000,
-            verticalPosition: 'top',
-            extraClasses: ['mat-light-blue-100-bg']
-        });
+        return true;
     };
     __decorate([
         core_1.ViewChild('dialogContent')
@@ -229,7 +201,7 @@ var JobReportComponent = /** @class */ (function () {
     ], JobReportComponent.prototype, "sort", void 0);
     JobReportComponent = __decorate([
         core_1.Component({
-            selector: 'fuse-orderentry',
+            selector: 'job-report',
             templateUrl: './jobreport.component.html',
             styleUrls: ['./jobreport.component.scss'],
             encapsulation: core_1.ViewEncapsulation.None,
@@ -276,7 +248,7 @@ var FilesDataSource = /** @class */ (function (_super) {
     FilesDataSource.prototype.connect = function () {
         var _this = this;
         var displayDataChanges = [
-            this.reportService.onContactsChanged,
+            this.reportService.onJobReportChanged,
             this._paginator.page,
             this._filterChange,
             this._sort.sortChange

@@ -1,0 +1,56 @@
+<h1 mat-dialog-title>{{data.title}}</h1>
+<div mat-dialog-content class="h-80-p">
+    <mat-card class="dialog-card">
+        <mat-card-content>
+            <table class="card-table">
+                <tr style="min-height:30px;">
+                    <td class="card-table-td1">Name : </td>
+                    <td class="card-table-td2">{{data.item.username}}</td>
+                </tr>
+                <tr style="min-height:30px;">
+                    <td class="card-table-td1">Job Title : </td>
+                    <td class="card-table-td2">{{data.item.title}}</td>
+                </tr>
+                <tr style="min-height:30px;">
+                    <td class="card-table-td1">Job Location : </td>
+                    <td class="card-table-td2">{{data.item.location}}</td>
+                </tr>
+                <tr style="min-height:30px;">
+                    <td class="card-table-td1">Job Seeker : </td>
+                    <td class="card-table-td2"><span *ngIf="data.item.isjobseeker">Yes</span><span *ngIf="!data.item.isjobseeker">No</span></td>
+                </tr>
+                <tr style="min-height:30px;">
+                    <td class="card-table-td1">Headline : </td>
+                    <td class="card-table-td2">{{data.item.headline}}</td>
+                </tr>
+                <tr style="min-height:30px;">
+                    <td class="card-table-td1">Skill 1 : </td>
+                    <td class="card-table-td2">{{data.item.skill1}}</td>
+                </tr>
+                <tr style="min-height:30px;">
+                    <td class="card-table-td1">Skill 2 : </td>
+                    <td>{{data.item.skill2}}</td>
+                </tr>
+                <tr style="min-height:30px;">
+                    <td class="card-table-td1">Skill 3 : </td>
+                    <td class="card-table-td2">{{data.item.skill3}}</td>
+                </tr>
+                <tr style="min-height:30px;">
+                    <td class="card-table-td1">Search URL : </td>
+                    <td class="card-table-td2">{{data.item.searchurl}}</td>
+                </tr>
+                <tr style="min-height:30px;">
+                    <td class="card-table-td1">Search Engine : </td>
+                    <td class="card-table-td2">{{data.item.searchengine}}</td>
+                </tr>
+                <tr style="min-height:30px;">
+                    <td class="card-table-td1">Searched On : </td>
+                    <td class="card-table-td2">{{data.item.searcheddate}}</td>
+                </tr>
+            </table>
+        </mat-card-content>
+    </mat-card>
+</div>
+<div mat-dialog-actions fxLayout="row"  fxLayoutAlign="end center" >
+    <button mat-raised-button [mat-dialog-close] tabindex="-1">Close</button>
+</div>

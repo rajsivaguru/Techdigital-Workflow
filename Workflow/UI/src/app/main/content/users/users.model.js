@@ -11,6 +11,7 @@ var Contact = /** @class */ (function () {
         this.roleid = contact.roleid || '';
         this.oldRoleId = contact.roleid || '';
         this.rolename = contact.rolename || '';
+        this.rolenames = contact.rolenames || [];
         this.workphone = contact.workphone || '';
         this.mobile = contact.mobile || '';
         this.homephone = contact.homephone || '';
@@ -22,6 +23,7 @@ var Contact = /** @class */ (function () {
         this.createdon = contact.createdon || '';
         this.modifiedby = contact.modifiedby || '';
         this.modifiedon = contact.modifiedon || '';
+        this.token = contact.token || '';
     }
     return Contact;
 }());

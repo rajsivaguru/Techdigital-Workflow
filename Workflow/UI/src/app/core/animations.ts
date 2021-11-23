@@ -115,6 +115,19 @@ export const fuseAnimations = [
         transition('* => void', animate('300ms'))
     ]),
 
+    trigger('slideInTop500', [
+        state('void', style({
+            transform: 'translateY(-100%)',
+            display: 'none'
+        })),
+        state('*', style({
+            transform: 'translateY(0)',
+            display: 'flex'
+        })),
+        transition('void => *', animate('500ms')),
+        transition('* => void', animate('300ms'))
+    ]),
+
     trigger('slideInBottom', [
         state('void',
             style({

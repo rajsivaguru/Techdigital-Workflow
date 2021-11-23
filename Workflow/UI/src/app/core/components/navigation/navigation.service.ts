@@ -15,8 +15,7 @@ export class FuseNavigationService
     constructor()
     {
             this.navigationModel = new NavigationModel();
-            this.onNavigationModelChange.next(this.navigationModel.model);
-        
+            this.onNavigationModelChange.next(this.navigationModel.model);        
     }
 
     removeMenu(id : any)
@@ -48,6 +47,32 @@ export class FuseNavigationService
             }
         }
     }
+
+    removeChildMenu(id: string, childid: string)
+    {
+        if (this.navigationModel.model.length <= 0)
+        {
+            return this.navigationModel.model;
+        }
+
+        for (const navItem of this.navigationModel.model) {
+            if (navItem.id === id)
+            {
+                let parentIndex = this.navigationModel.model.indexOf(navItem);
+
+                for (const navChildItem of this.navigationModel.model[parentIndex].children) {
+                    if (navChildItem.id === childid)
+                    {
+                        let childIndex = this.navigationModel.model[parentIndex].children.indexOf(navChildItem);
+                        this.navigationModel.model[parentIndex].children.splice(childIndex, 1);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
     /**
      * Get navigation model
      *
@@ -199,8 +224,11 @@ export class FuseNavigationService
                 }
             }
             else if( navItem.type == "collapse")
-            {
-                return this.findNavigationItemByURL(url, navItem.children);
+            {                
+                var item = this.findNavigationItemByURL(url, navItem.children);
+
+                if (item != null)
+                    return item;
             }
         }
         return null;

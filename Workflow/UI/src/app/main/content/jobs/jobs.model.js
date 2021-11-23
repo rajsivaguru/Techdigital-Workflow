@@ -25,22 +25,25 @@ var JobsList = /** @class */ (function () {
         this.jobid = job.jobid || 0;
         this.title = job.title || '';
         this.location = job.location || '';
+        this.formattedtitle = job.formattedtitle || '';
+        this.formattedtitle2 = job.formattedtitle2 || '';
         this.duration = job.duration || '';
         this.description = job.description || '';
-        this.clientname = job.clientname || '';
-        this.oldclientname = job.clientname || '';
         //this.publisheddate = job.publisheddate || '';
         this.publisheddate = datePipe.transform(job.publisheddate, 'MM/dd/yyyy hh:mm aa') || '';
         this.referenceid = job.referenceid || '';
+        this.clientname = job.clientname || '';
+        this.oldclientname = job.clientname || '';
         this.userlist = job.userlist || 0;
-        this.priorityLevel = job.priorityLevel || '2';
-        this.oldPriorityLevel = job.priorityLevel || '2';
-        //console.log(JSON.parse(job.selectedUser));
+        this.priorityLevel = job.priorityLevel;
+        this.oldPriorityLevel = job.priorityLevel;
         this.selectedUser = JSON.parse(job.selectedUser) || [];
         this.oldSelectedUser = JSON.parse(job.selectedUser) || [];
         this.isactive = job.isactive || "Active";
         this.isSaveEnable = false;
         this.isSaveEnableSelectedUser = false;
+        this.isDirty = false;
+        this.isValid = false;
         this.createdby = job.createdby || '';
         this.createdon = datePipe.transform(job.createdon, 'MM/dd/yyyy hh:mm aa') || '';
         this.modifiedby = job.modifiedby || '';
@@ -57,7 +60,6 @@ var Jobs = /** @class */ (function () {
         this.referenceid = job.referenceid || '';
         this.title = job.title || '';
         this.location = job.location || '';
-        //this.publisheddate = job.publisheddate || '';
         this.publisheddate = datePipe.transform(job.publisheddate, 'MM/dd/yyyy hh:mm aa') || '';
         this.userid = job.userid || 0;
         this.userlist = job.userlist || 0;
@@ -66,7 +68,6 @@ var Jobs = /** @class */ (function () {
         this.priority = job.priority || '';
         this.status = job.status || '';
         this.description = job.description || '';
-        //this.expirydate = job.expirydate || '';
         this.expirydate = datePipe.transform(job.expirydate, 'MM/dd/yyyy hh:mm aa') || '';
         this.isactive = job.isactive || "Active";
         this.createdby = job.createdby || '';
@@ -88,3 +89,31 @@ var JobAssignment = /** @class */ (function () {
     return JobAssignment;
 }());
 exports.JobAssignment = JobAssignment;
+var Client = /** @class */ (function () {
+    function Client(client) {
+        this.id = client.id || 0;
+        this.clientname = client.clientname || '';
+        this.shortname = client.shortname || '';
+    }
+    return Client;
+}());
+exports.Client = Client;
+var PriorityJob = /** @class */ (function () {
+    function PriorityJob(job) {
+        var datePipe = new common_1.DatePipe("en-US");
+        this.jobid = job.jobid || 0;
+        this.title = job.title || '';
+        this.location = job.location || '';
+        this.publisheddate = datePipe.transform(job.publisheddate, 'MM/dd/yyyy hh:mm aa') || '';
+        this.prioritizeddate = datePipe.transform(job.prioritizeddate, 'MM/dd/yyyy hh:mm aa') || '';
+        this.referenceid = job.referenceid || '';
+        this.clientname = job.clientname || '';
+        this.assigneduser = job.assigneduser != undefined ? JSON.parse(job.assigneduser) || [] : [];
+        this.isprioritized = false;
+        this.isinterested = job.isinterested || false;
+        this.isselected = false;
+        this.isremoved = false;
+    }
+    return PriorityJob;
+}());
+exports.PriorityJob = PriorityJob;

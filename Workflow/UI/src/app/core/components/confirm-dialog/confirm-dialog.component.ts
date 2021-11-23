@@ -8,11 +8,13 @@ import { MatDialogRef } from '@angular/material';
 })
 export class FuseConfirmDialogComponent implements OnInit
 {
+    public title: string;
     public confirmMessage: string;
     public jobCode : string;
-    public data : any;
-
-
+    public data: any;
+    public showCancelButton: boolean = true;
+    public actionButtonText: string = 'Continue';
+    
     constructor(public dialogRef: MatDialogRef<FuseConfirmDialogComponent>)
     {
     }
@@ -20,5 +22,4 @@ export class FuseConfirmDialogComponent implements OnInit
     ngOnInit()
     {
     }
-
 }

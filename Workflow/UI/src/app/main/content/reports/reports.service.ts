@@ -3,26 +3,34 @@ import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from '@angular/r
 import { DataSource } from '@angular/cdk/collections';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Http, Response } from '@angular/http';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { JobReport, JobReportForm, UserReport, UserReportParam } from './reports.model';
+import { JobReport, JobReportParam, UserReport, UserReportParam, ClientReportParam, ClientReport, ProfileSearchReportParam, ProfileSearchReport } from './reports.model';
 import { FuseUtils } from '../../../core/fuseUtils';
 import { Subject } from 'rxjs/Subject';
 import { FuseConfigService } from '../../../core/services/config.service';
 import { LoginService } from '../login/login.service';
 
+let headers = new HttpHeaders();
+headers.set("Content-Type", "application/json");
+
 @Injectable()
 export class ReportsService {  
-    onContactsChanged: BehaviorSubject<any> = new BehaviorSubject({});
+    onJobReportChanged: BehaviorSubject<any> = new BehaviorSubject({});
     onUserReportChanged: BehaviorSubject<any> = new BehaviorSubject({});
+    onClientReportChanged: BehaviorSubject<any> = new BehaviorSubject({});
+    onProfileSearchReportChanged: BehaviorSubject<any> = new BehaviorSubject({});
     onSearchTextChanged: Subject<any> = new Subject();
     onFilterChanged: Subject<any> = new Subject();
     jobReports : JobReport[];
-    userReports : UserReport[];
+    userReports: UserReport[];
+    clientReports: ClientReport[];
+    profileSearchReports: ProfileSearchReport[];
     searchText: string;
     filterBy: string;
-    serviceURL : String;
+    serviceURL: String;
+    loggedUserId: string;
     
     constructor(private http: HttpClient, private httpObser: Http, private configSer : FuseConfigService, public loginService : LoginService)
     {
@@ -30,8 +38,6 @@ export class ReportsService {
     }
 
     ngOnInit() {
-        //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
-        //Add 'implements OnInit' to the class.
     }
 
     /**
@@ -42,38 +48,38 @@ export class ReportsService {
      */
     resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<any> | Promise<any> | any
     {
-            // this.searchText = "";
-            this.jobReports = [];
-            this.userReports = [];
+        this.loggedUserId = this.loginService.getLoginId();
+        this.jobReports = [];
+        this.userReports = [];
+        this.clientReports = [];
+        this.profileSearchReports = [];
+
+        ////let item = new ProfileSearchReport({ username: 'Test', title: 'Job Title', location: "Job Location", searchengine: "Google", searcheddate: "03:28:2019 10:28 " });
+        ////this.profileSearchReports.push(item);
     }
 
-    getJobs(rptForm : JobReportForm): Promise<any>
+    getLoginId() {
+        return this.loggedUserId;
+    }
+
+    getJobReport(jobRptParam: JobReportParam): Promise<any>
     {
         return new Promise((resolve, reject) => {
-            let tempUrl = 'TDW/GetJobReport?jobcode='+ rptForm.jobcode +'&title='+ rptForm.title +'&location='+ rptForm.location +'&publisheddate='+ rptForm.publishedDate +'&isactive='+ rptForm.status +'&fromdate='+ rptForm.fromDate +'&todate='+ rptForm.toDate +'&lastdays='+ rptForm.lastDatys +'';
-            this.http.get(this.serviceURL + tempUrl).subscribe((response: any) => {
+            this.http.get(this.serviceURL + 'Report/GetJobReport?source=' + JSON.stringify(jobRptParam)).subscribe((response: any) => {
                 if ( response != null && response != undefined)
-                {
-                    response = JSON.parse(response);
-                    this.jobReports = response;
-
-                    if (this.jobReports.length > 0)
-                    {
-                        this.jobReports = this.jobReports.map(rpt => {
-                            return new JobReport(rpt);
-                        });    
-                    }
-
-                    this.onContactsChanged.next(this.jobReports);
-                    resolve(this.jobReports);
-                }
+                    this.jobReports = response.Output;
                 else
-                {
                     this.jobReports = [];
-                    this.onContactsChanged.next(this.jobReports);
-                    resolve(this.jobReports);
-                }
+
+                this.onJobReportChanged.next(this.jobReports);
+                resolve(this.jobReports);
             }, reject);
+        });
+    }
+
+    getJobReportExport(parameters: JobReportParam): Promise<any> {
+        return new Promise((resolve, reject) => {
+            window.open(this.serviceURL + 'Report/GetJobReportFile?sourceParam=' + JSON.stringify(parameters), "_blank");
         });
     }
 
@@ -86,43 +92,72 @@ export class ReportsService {
             if (this.loginService.loggedUser != undefined)
                 userid = this.loginService.loggedUser.userid;
     
-            let tempUrl = 'Report/GetUserReport?userRptParam=' + JSON.stringify(userRptParam) + '&loginid=' + userid
+            let tempUrl = 'Report/GetUserReport?source=' + JSON.stringify(userRptParam) + '&loginid=' + userid
             
             this.http.get(this.serviceURL + tempUrl)
                 .subscribe((response: any) => {
                     if ( response != null && response != undefined)
-                    {
-                      response = JSON.parse(response);
-                      this.userReports = response;
-      
-                      if (this.userReports.length > 0)
-                      {
-                          this.userReports = this.userReports.map(rpt => {
-                              return new UserReport(rpt);
-                          });
-                      }
-      
-                      this.onUserReportChanged.next(this.userReports);
-                      resolve(this.userReports);
-                    }
+                        this.userReports = response.Output;
                     else
-                    {
                         this.userReports = [];
-                        this.onUserReportChanged.next(this.userReports);
-                        resolve(this.userReports);
-                    }
+
+                    this.onUserReportChanged.next(this.userReports);
+                    resolve(this.userReports);
                 }, reject);
             }
         );
     }
-
-
-    getUserReportPdf(userRptParam: UserReportParam): Promise<any> {
+    
+    getUserReportExport(userRptParam: UserReportParam): Promise<any> {
         return new Promise((resolve, reject) => {            
-            window.open(this.serviceURL + 'Report/GetUserReportFile?userRptParam=' + JSON.stringify(userRptParam), "_blank");            
+            window.open(this.serviceURL + 'Report/GetUserReportFile?sourceParam=' + JSON.stringify(userRptParam), "_blank");            
         });
     }
     
+    getClientReport(parameters: ClientReportParam): Promise<any>
+    {
+        return new Promise((resolve, reject) => {
+            this.http.get(this.serviceURL + 'Report/GetClientReport?source=' + JSON.stringify(parameters))
+                .subscribe((response: any) => {
+                if (response != null && response != undefined) 
+                    this.clientReports = response.Output;
+                else
+                    this.clientReports = [];
+
+                this.onClientReportChanged.next(this.clientReports);
+                resolve(response);
+            }, reject);
+        });
+    }
+
+    getClientReportExport(parameters: ClientReportParam): Promise<any> {
+        return new Promise((resolve, reject) => {
+            window.open(this.serviceURL + 'Report/GetClientReportFile?sourceParam=' + JSON.stringify(parameters), "_blank");
+        });
+    }
+
+    getProfileSearchReport(parameters: ProfileSearchReportParam): Promise<any> {
+        return new Promise((resolve, reject) => {
+            this.http.get(this.serviceURL + 'Report/GetProfileSearchReport?source=' + JSON.stringify(parameters))
+                .subscribe((response: any) => {
+                    if (response != null && response != undefined)
+                        this.profileSearchReports = response.Output;
+                    else
+                        this.profileSearchReports = [];
+
+                    this.onProfileSearchReportChanged.next(this.profileSearchReports);
+                    resolve(response);
+                }, reject);
+        });
+    }
+
+    getProfileSearchReportExport(parameters: ProfileSearchReportParam): Promise<any> {
+        return new Promise((resolve, reject) => {
+            window.open(this.serviceURL + 'Report/GetProfileSearchReportFile?sourceParam=' + JSON.stringify(parameters), "_blank");
+        });
+    }
+
+
     getLastDays(): Promise<any>
     {
         return new Promise((resolve, reject) => {
@@ -133,33 +168,17 @@ export class ReportsService {
                 }, reject);
             }
         );
-    }
+    }    
 
-   searchJob = (keyword: any): Observable<any[]> => {
-        try
-        {
-            //console.log('calling..')
-            return this.httpObser.get(this.serviceURL+'TDW/SearchJob?keyword=' + keyword)
-                .map(res => {
-                let json = res.json();
-                //console.log(json)
-                return JSON.parse(json);
-            })
-             
-        }
-        catch(ex)
-        {
-            return Observable.of([]);
-        }    
-    }
-    
-    searchUser (keyword) : any
-    {
-        return this.httpObser.get(this.serviceURL+'TDW/SearchUser?keyword=' + keyword)
-            .map(res => {
-            let json = res.json();
-            //console.log(json)
-            return JSON.parse(json);
-        })
+    getUserForReport(status, isAllUser: boolean): Promise<any> {
+        return new Promise((resolve, reject) => {
+            let userid = this.loggedUserId;
+
+            this.http.get(this.serviceURL + 'Report/GetUsersForReport?statusId=' + status + '&isAllUser=' + isAllUser + '&loginId=' + userid)
+                .subscribe((response: any) => {
+                    response = JSON.parse(response);
+                    resolve(response);
+                }, reject);
+        });
     }
 }

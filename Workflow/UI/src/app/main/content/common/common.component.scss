@@ -1,0 +1,76 @@
+@import "src/app/core/scss/fuse";
+
+.custom_dropdown_tdw
+{
+    .dropdown-list
+    {
+        display: block !important
+    }
+}
+
+.mat-input-placeholder
+{
+  font-weight: 400 !important;
+}
+
+    .header {
+        .search-input-wrapper {
+            max-width: 480px;
+        }
+
+        @include media-breakpoint-down(xs) {
+            height: 120px !important;
+            min-height: 120px !important;
+            max-height: 120px !important;
+        }
+    }
+
+    .top-bg {
+        @include media-breakpoint-down(xs) {
+            height: 120px;
+        }
+    }
+
+.customervendor-table {
+    flex: 1 1 auto;
+    border-bottom: 1px solid rgba(0, 0, 0, .12);
+
+    .mat-header-row {
+            
+    }
+
+    .mat-header-cell
+    {
+        font-weight: bold !important;
+        /*font-size : 15px !important;*/
+    }
+        
+    .mat-row:hover
+    {
+        background-color: #F2F4F4 !important;
+    }
+
+    .mat-cell {
+    }
+
+    .mat-column-cv_name {
+        flex: 0 1 80%;
+    }
+        
+    .mat-column-cv_type {
+        flex: 0 1 20%;
+    }
+
+    .text-boxed
+    {
+        border-radius: 50%;
+    }
+        
+    .mat-column-cv_buttons {
+        flex: 0 1 7%;
+        justify-content : center !important;
+        display: flex !important;
+        align-items: center !important;
+        height: 40px !important;
+    }
+}

@@ -1,6 +1,6 @@
 @import "src/app/core/scss/fuse";
 
-.custom_userrpt_list
+.custom_userreport_list
 {
   .c-btn
   {  
@@ -51,10 +51,19 @@
     margin-right: 10px !important;
 }
 
-.list-area
+.custom_userreport_list
 {
-    .lazyContainer{
-        height: 250px !important;
+    .list-area
+    {
+        height: 300px !important;
+
+        div:nth-child(2){
+            height: 36px !important;
+        }
+
+        .lazyContainer{
+            height: 200px !important;
+        }
     }
 }
 
@@ -119,11 +128,11 @@
         font-size:small;
     }
     .mat-column-ur_clientname {
-        flex: 0 1 9%;
+        flex: 0 1 11%;
         font-size:small;
     }        
     .mat-column-ur_publisheddate, .mat-column-ur_assigneddate {
-        flex: 0 1 12%;
+        flex: 0 1 11%;
         font-size:small;
     }
     .mat-column-ur_fromdate, .mat-column-ur_todate {

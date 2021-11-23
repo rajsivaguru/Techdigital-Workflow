@@ -1,0 +1,145 @@
+﻿<div id="noteform" class="page-layout carded fullwidth">
+    <!-- HEADER -->
+    <div class="header mat-accent-bg p-16 p-sm-24" fxLayout="column" fxLayoutAlign="start start" fxLayout.gt-xs="row" fxLayoutAlign.gt-xs="space-between center">
+        <!-- APP TITLE -->
+        <div fxLayout="row" fxLayoutAlign="start center">
+            <div class="logo" fxLayout="row" fxLayoutAlign="start center">
+                <mat-icon class="logo-icon mr-16" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'50ms',scale:'0.2'}}">assignment</mat-icon>
+                <span class="logo-text h1" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'100ms',x:'-25px'}}">Notes</span>
+            </div>
+        </div>
+    </div>
+    <!-- / HEADER -->
+
+    <!-- CENTER -->
+    <div class="center p-0 pb-56 pr-sm-0">
+        <mat-card *ngIf="!canPreview" fxLayoutAlign="center center">
+            <mat-card-content class="w-100-p card-content-custom-form">
+                <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;" *ngFor="let question of questionList">
+                    <mat-form-field class="w-45-p mr-10" *ngIf="question.questiontype=='Text'">
+                        <input matInput placeholder="{{question.question}}" [(ngModel)]="question.response">
+                    </mat-form-field>
+
+                    <mat-form-field class="w-45-p mr-10" *ngIf="question.questiontype=='Long Text'">
+                        <textarea matInput placeholder="{{question.question}}" matTooltip="{{question.question}}" [(ngModel)]="question.response"></textarea>
+                    </mat-form-field>
+
+                    <section *ngIf="question.questiontype=='Checkbox'">
+                        <mat-checkbox class="mr-20" labelPosition="before" [(ngModel)]="question.response">{{question.question}}</mat-checkbox>
+                    </section>
+
+                    <section *ngIf="question.questiontype=='Radio'">
+                        <label>{{question.question}} </label>
+                        <mat-radio-group [(ngModel)]="question.response">
+                            <mat-radio-button class="mr-10 ml-5" *ngFor="let option of question.options" [value]="option.option">{{option.option}}</mat-radio-button>
+                        </mat-radio-group>
+                    </section>
+
+                    <mat-form-field class="w-45-p mr-10" *ngIf="question.questiontype=='Dropdown'">
+                        <mat-select placeholder="{{question.question}}" [(ngModel)]="question.response">
+                            <mat-option *ngFor="let option of question.options" matTooltip="{{option.option}}" [value]="option.option">{{option.option}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field class="w-45-p mr-10" *ngIf="question.questiontype=='Multiple'">
+                        <mat-select placeholder="{{question.question}}" [(ngModel)]="question.response" multiple>
+                            <mat-option *ngFor="let option of question.options" matTooltip="{{option.option}}" [value]="option.option">{{option.option}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <!--<mat-form-field class="w-45-p mr-10" *ngIf="question.questiontype=='Multiple-Search'">
+                        <mat-select placeholder="{{question.question}}" [(ngModel)]="question.response" multiple>
+                            <mat-option *ngFor="let option of question.options" matTooltip="{{option.option}}" [value]="option.option">{{option.option}}</mat-option>
+                        </mat-select><br />
+                        <input matInput disabled placeholder="{{question.question}}" [(ngModel)]="question.response">
+                        <button matTooltip="Assign Users" style="cursor:pointer;" class="mr-20 mat-elevation-z" (click)="openModal(question, question.options, [])">
+                            <mat-icon class="mat-24">playlist_add_check</mat-icon>
+                        </button>
+                    </mat-form-field>-->
+
+                    <section class="w-85-p mr-10" *ngIf="question.questiontype=='Multiple-Search'">
+                        <!--<input matInput disabled placeholder="{{question.question}}" [(ngModel)]="question.response">-->
+                        <label style="color:gray;">{{question.question}} </label>
+                        <button matTooltip="Select Options" style="cursor:pointer;" class="mr-20 mat-elevation-z" (click)="openModal(question, question.options, question.selectedoptions)">
+                            <div class="mat-select-arrow-wrapper multi-arrow"><div class="mat-select-arrow"></div></div>
+                        </button><br />
+                                                
+                        <mat-form-field class="w-55-p mr-10">
+                            <input matInput disabled [(ngModel)]="question.response" matTooltip="{{question.response}}">
+                        </mat-form-field>
+                    </section>
+
+                    <mat-form-field class="w-45-p mr-10" *ngIf="question.questiontype=='Date'">
+                        <!--<input matInput [min]="maxFromDate" [matDatepicker]="dp" disabled placeholder="{{question.question}}" [(ngModel)]="question.response" (dateChange)="dateChanged(question);">-->
+                        <input matInput [min]="maxFromDate" [matDatepicker]="dp" disabled placeholder="{{question.question}}" [(ngModel)]="question.response">
+                        <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                        <mat-datepicker touchUi="true" #dp disabled="false"></mat-datepicker>
+                    </mat-form-field>
+
+                    <section *ngIf="question.questiontype=='Rating'">
+                        <label>{{question.question}} </label>
+                        <button class="" mat-icon-button (click)="rating(question, i)" *ngFor="let i of question.maxrate" style="width:30px !important">
+                            <mat-icon style="color:#FCD603;" *ngIf="i <= question.response">star</mat-icon>
+                            <mat-icon *ngIf="i > question.response">star_border</mat-icon>
+                        </button>
+                        <label>({{question.response || 0}})</label>
+                    </section>
+                </div>
+
+                <hr />
+
+                <!--<div fxLayout="row" fxLayoutAlign="end center" class="button-row">
+                    <button mat-raised-button class="mx-8" color="" (click)="clearForm()">Clear</button>
+                    <button mat-raised-button class="mx-8" color="accent" (click)="canPreview = true;">Preview</button>
+                </div>-->
+                <mat-card-actions class="pr-10" fxLayoutAlign="end center">
+                    <button mat-raised-button class="mx-8" color="" (click)="clearForm()">Clear</button>
+                    <button mat-raised-button class="mx-8" color="accent" (click)="canPreview = true;">Preview</button>
+                </mat-card-actions>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card *ngIf="canPreview" fxLayoutAlign="center center">
+            <mat-card-content class="w-100-p card-content-custom-form">
+                <div fxLayout="row" fxLayoutAlign="start center" class="button-row screeningSummary">
+                    <span>Note Summary</span>
+                </div>
+
+                <div id="divForm" style="padding-left:10px !important;">
+                    <div fxLayout="row" fxLayoutAlign="start center" style="margin-top:10px;" *ngFor="let question of questionList">
+                        <section *ngIf="question.questiontype !='Checkbox' && question.questiontype !='Rating' && question.questiontype !='Date'">
+                            <label>{{question.question}}</label> <br />
+                            <label class="response">{{question.response}}</label>
+                        </section>
+                        <section *ngIf="question.questiontype =='Checkbox'">
+                            <label>{{question.question}}</label> <br />
+                            <label class="response" *ngIf="question.response == true">Yes</label>
+                            <label  class="response" *ngIf="question.response == false">No</label>
+                        </section>
+                        <section *ngIf="question.questiontype =='Rating'">
+                            <label>{{question.question}}</label> <br />
+                            <label class="response">{{question.response || 0}} / {{question.maxrate.length}}</label>
+                        </section>
+                        <section *ngIf="question.questiontype =='Date'">
+                            <label>{{question.question}}</label> <br />
+                            <label class="response">{{datePipe.transform(question.response, 'MM/dd/yyyy')}}</label>
+                        </section>
+                    </div>
+                </div>
+
+                <hr />
+
+                <mat-card-actions class="pr-10" fxLayoutAlign="end center">
+                    <button mat-raised-button class="mx-8" color="" (click)="canPreview = false">Close</button>
+                    <button mat-raised-button class="mx-8" color="accent" (click)="copyToClipboard()">Copy to Clipboard</button>
+                </mat-card-actions>
+            </mat-card-content>
+
+            <!--<div fxLayout="row" fxLayoutAlign="end center" class="button-row">
+                <button mat-raised-button class="mx-8" color="" (click)="canPreview = false">Close</button>
+                <button mat-raised-button class="mx-8" color="accent" (click)="copyToClipboard()">Copy to Clipboard</button>
+            </div>-->
+        </mat-card>
+            <!-- / CONTENT -->
+</div>
+</div>

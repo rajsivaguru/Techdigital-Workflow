@@ -1,10 +1,8 @@
 import { Component, OnInit,ViewEncapsulation,AfterViewInit, Input, Output, Inject } from '@angular/core';
-import { fuseAnimations } from '../../../core/animations';
-import { FormControl, FormGroup } from '@angular/forms';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Router } from "@angular/router";
-
-
+import { fuseAnimations } from '../../../core/animations';
 
 @Component({
   selector: 'dialog-component',
@@ -17,7 +15,6 @@ export class DialogComponent {
         @Inject(MAT_DIALOG_DATA) public data: any) { }
 
   onNoClick(): void {
-    //console.log('closed')
     this.dialogRef.close();
   }
 }
@@ -34,10 +31,10 @@ export class DialogDataComponent
     constructor(
       public dialogRef: MatDialogRef<DialogDataComponent>,
       @Inject(MAT_DIALOG_DATA) public data: any
-      )
+    )
     {
-      this.dropdownSettings =  { 
-            groupBy :"roleName",
+      this.dropdownSettings =  {
+            groupBy: data.groupByField,
             maxHeight : '350px',
             searchAutofocus : true,
             singleSelection: false, 
@@ -56,4 +53,68 @@ export class DialogDataComponent
         this.dialogRef.close();
     }
 }
+
+
+@Component({
+    selector: 'profilesearchreport-dialog',
+    styleUrls: ['./dialog.component.scss'],
+    templateUrl: 'dialog-profilesearchreportdetail.component.html'
+})
+
+export class DialogProfileSeachReportDetailComponent {
+    dropdownSettings = {};
+    constructor(
+        public dialogRef: MatDialogRef<DialogDataComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: any
+    ) {
+        this.dropdownSettings = {
+            groupBy: data.groupByField,
+            maxHeight: '350px',
+            searchAutofocus: true,
+            singleSelection: false,
+            text: "",
+            selectAllText: 'Select All',
+            unSelectAllText: 'UnSelect All',
+            enableSearchFilter: true,
+            enableCheckAll: false,
+            classes: 'custom_dropdown_tdw',
+            badgeShowLimit: 2
+        };
+    }
+
+    onNoClick(): void {
+        this.dialogRef.close();
+    }
+}
+
+
+////@Component({
+////    selector: 'externalconsultant-dialog',
+////    ////templateUrl: '../visa/question/consultant.component.html',
+////    templateUrl: 'dialog-user.component.html'
+////})
+
+////export class DialogConsultantComponent implements OnInit
+////{
+////    firstFormGroup: FormGroup;
+////    secondFormGroup: FormGroup;
+
+////    constructor(
+////        private formBuilder: FormBuilder,
+////        public dialogRef: MatDialogRef<DialogConsultantComponent>,
+////        @Inject(MAT_DIALOG_DATA) public data: any) { }
+
+////    ngOnInit() {
+////        this.firstFormGroup = this.formBuilder.group({
+////            firstCtrl: ['']
+////        });
+////        this.secondFormGroup = this.formBuilder.group({
+////            secondCtrl: ['']
+////        });
+////    }
+
+////    onNoClick(): void {
+////        this.dialogRef.close();
+////    }
+////}
 

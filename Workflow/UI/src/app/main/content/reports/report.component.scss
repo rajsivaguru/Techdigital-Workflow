@@ -1,0 +1,95 @@
+﻿@import "src/app/core/scss/fuse";
+
+.mat-expansion-panel-header_rpt1
+{
+    padding : 0 24px !important;
+}
+
+.mat-expansion-panel-body
+{
+    padding : 0 24px;
+}
+
+.filter-by{
+    .div{
+        margin-right: 10px !important;
+    }
+}
+.filterby-users{
+
+    margin-right: 10px !important;
+}
+
+.list-area
+{
+    .lazyContainer{
+        height: 250px !important;
+    }
+}
+
+.clientReport-table {
+    flex: 1 1 auto;
+    border-bottom: 1px solid rgba(0, 0, 0, .12);
+
+    #mat-table-inner{
+        overflow-y: scroll !important;
+        height: 400px !important;
+    }
+        
+    .mat-header-row {
+            
+    }
+        
+    .mat-row:hover
+    {
+        background-color: #F2F4F4 !important;
+    }
+        
+    .mat-row-total
+    {
+        background-color: lightgray !important;
+        font-weight: bold;
+    }
+
+    .mat-header-cell
+    {
+        font-weight: bold !important;
+        font-size : 15px !important;
+        justify-content : center !important;
+        padding-right: 10px;
+        padding-left: 5px;
+    }
+    
+    .mat-cell {
+        padding-right: 10px;
+        padding-left: 5px;
+    }
+
+    .mat-column-r_clientname {
+        flex: 0 1 18%;
+    }
+    .mat-column-r_jobcode {
+        flex: 0 1 9%;
+    }
+    .mat-column-r_title {
+        flex: 0 1 25%;
+    }
+    .mat-column-r_location {
+        flex: 0 1 14%;
+        font-size:small;
+    }
+    .mat-column-r_publisheddate, .mat-column-ur_assigneddate {
+        flex: 0 1 15%;
+        font-size:small;
+    }
+    .mat-column-r_jobstatus {
+        flex: 0 1 5%;
+    }
+    .mat-column-r_assignments, .mat-column-r_submissions
+    {
+        flex: 0 1 5%;
+        justify-content : center !important;
+        display: flex !important;
+        font-size:small;
+    }
+}

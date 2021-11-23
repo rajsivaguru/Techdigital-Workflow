@@ -1,0 +1,421 @@
+﻿<div id="clients" class="page-layout carded fullwidth">
+    <mat-progress-bar class="loading-bar" *ngIf="progressbar.isVisible" [color]="progressbar.color" [mode]="progressbar.mode" [value]="progressbar.value" [bufferValue]="progressbar.bufferValue"></mat-progress-bar>
+    <!-- HEADER -->
+    <div class="header mat-accent-bg p-16 p-sm-24" fxLayout="column" fxLayoutAlign="start start" fxLayout.gt-xs="row" fxLayoutAlign.gt-xs="space-between center">
+        <!-- APP TITLE -->
+        <div fxLayout="column" fxLayoutAlign="center start">
+            <div class="logo" fxLayout="row" fxLayoutAlign="start center">
+                <mat-icon class="logo-icon mr-16" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'50ms',scale:'0.2'}}">assignment</mat-icon>
+                <span class="logo-text h1" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'100ms',x:'-25px'}}">Screening</span>
+            </div>
+            <div class="h2 mt-4" *ngIf="isAdminUser">
+                <button mat-mini-fab class="mat-red-100-bg" *fuseIfOnDom [@animate]="{value:'*', params:{delay:'300ms',scale:'.2'}}" matTooltip="Refresh" (click)="refresh()">
+                    <mat-icon class="mat-20" aria-label="Refresh">refresh</mat-icon>
+                </button>
+            </div>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="search-input-wrapper mt-16 m-sm-0" fxLayout="row" fxLayoutAlign="start center" *ngIf="isAdminUser">
+            <label for="search" class="mr-8">
+                <mat-icon>search</mat-icon>
+            </label>
+            <mat-form-field mat-no-float class="m-0 font-weight-900" floatPlaceholder="never">
+                <input matInput #filter [formControl]="searchInput" id="search" placeholder="Search">
+            </mat-form-field>
+        </div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="center p-0 pb-56 pr-sm-0">
+        <mat-tab-group [selectedIndex]="selectedTabIndex" (selectedTabChange)="selectedTabChange($event)">
+            <!-- Tab 1: Questions -->
+            <mat-tab label="Questions" [disabled]="!isVisible">
+                <!-- Question Form -->
+                <div name="question" *ngIf="isVisible">
+                    <mat-expansion-panel class="py-16" [expanded]=isFormExpanded (opened)="isFormExpanded=true" (closed)="isFormExpanded=false">
+                        <mat-expansion-panel-header class="mat-expansion-panel-header">
+                            <mat-panel-title class="font-weight-900 font-size-20"> Add/Edit Question </mat-panel-title>
+                            <mat-panel-description></mat-panel-description>
+                        </mat-expansion-panel-header>
+
+                        <div fxLayout="row" fxLayoutAlign="start center" class="button-row">
+                            <mat-form-field class="w-10-p mr-20">
+                                <input matInput placeholder="Number*" [(ngModel)]="questionForm.questionnumber" maxlength="10" [disabled]="isDisabled" (keyup)="validateForm()">
+                                <mat-hint align="end">{{questionForm.questionnumber?.length || 0}}/10</mat-hint>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-30-p mr-20">
+                                <input matInput placeholder="Question*" [(ngModel)]="questionForm.question" maxlength="1000" matTooltip="{{questionForm.question}}" [disabled]="isDisabled" (keyup)="validateForm()">
+                                <mat-hint align="end">{{questionForm.question?.length || 0}}/1000</mat-hint>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-25-p mr-20">
+                                <input matInput placeholder="Hint" [(ngModel)]="questionForm.hint" maxlength="250" (keyup)="validateForm()">
+                                <mat-hint align="end">{{questionForm.hint?.length || 0}}/250</mat-hint>
+                            </mat-form-field>
+
+                            <mat-form-field class="mr-20" style="width:10%">
+                                <mat-select placeholder="Type*" [(ngModel)]="questionForm.questiontype" [disabled]="isDisabled" (selectionChange)="onQuestionTypeChange($event)">
+                                    <mat-option value="Text">Text</mat-option>
+                                    <mat-option value="Long Text">Long Text</mat-option>
+                                    <mat-option value="Dropdown">Dropdown</mat-option>
+                                    <mat-option value="Checkbox">Checkbox</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <!--<mat-checkbox [(ngModel)]="questionForm.isparent" labelPosition="before" (change)="onParentCheckChange()">Parent Question?</mat-checkbox>-->
+                            <mat-checkbox [(ngModel)]="questionForm.isparent" (change)="onParentCheckChange()">Parent Question?</mat-checkbox>
+                        </div>
+
+                        <div class="button-row" fxLayout="row" fxLayoutAlign="start center" *ngIf="isResponseDivVisible" style="font-weight:bold;">Response</div>
+
+                        <div class="button-row" fxLayout="row" fxLayoutAlign="start center" *ngIf="isResponseDivVisible">
+                            <mat-checkbox [(ngModel)]="questionForm.ismandatory" class="mr-20" [labelPosition]="before" (change)="onMandatoryCheckChange()">Response Needed?</mat-checkbox>
+
+                            <div style="width:350px !important;" *ngIf="showAddResponse">
+                                <div style="display:flex">
+                                    <button mat-mini-fab color="accent" *ngIf="showAddResponse" (click)="listboxHeight=175;" matTooltip="Increase Height">+</button> &nbsp;
+                                    <button mat-mini-fab color="accent" *ngIf="showAddResponse" (click)="listboxHeight=75;" matTooltip="Decrease Height">-</button>
+                                </div>
+                                <mat-list class="w-25-p mr-20 matlist-custom" [style.height.px]="listboxHeight" style="width:320px !important;" *ngIf="showAddResponse">
+                                    <mat-list-item *ngFor="let option of questionOptions">
+                                        <h3 matLine>{{option.option}}</h3>
+                                        <p matLine>{{option.questionnumber}} - {{option.question}}</p>
+                                        <button mat-mini-fab color="primary" (click)="removeResponse(option)" matTooltip="Remove Response">X</button>
+                                    </mat-list-item>
+                                </mat-list>
+                            </div>
+
+                            <mat-checkbox class="w-10-p mr-20" [labelPosition]="before" [(ngModel)]="showNAOption" *ngIf="showNACheckbox" (change)="showNAOptionCheckChange()"> Show N/A? </mat-checkbox>
+
+                            <mat-form-field class="w-15-p mr-20" *ngIf="showResponseField">
+                                <input matInput [(ngModel)]="questionForm.option" placeholder="Response">
+                            </mat-form-field>
+                            <mat-form-field class="w-15-p mr-20" *ngIf="showNACheckbox">
+                                <mat-select [(ngModel)]="questionForm.option" placeholder="Response">
+                                    <mat-option value="Checked">Checked</mat-option>
+                                    <mat-option value="UnChecked">UnChecked</mat-option>
+                                    <mat-option value="NA" *ngIf="showNAOption">N/A</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-15-p mr-20">
+                                <mat-select placeholder="Response Action" [(ngModel)]="selectedResponseId" (selectionChange)="onResponseActionChange($event)">
+                                    <mat-option>None</mat-option>
+                                    <mat-option *ngFor="let responseAction of responseActions" [disabled]="questionForm.questionid == responseAction.questionid" [value]="responseAction.questionid" matTooltip="{{responseAction.question}}"> {{responseAction.questionnumber}} - {{responseAction.question}} </mat-option>
+                                </mat-select>
+                                <mat-hint>Only Non-Parent Question(s) will be shown.</mat-hint>
+                            </mat-form-field>
+
+                            <a mat-raised-button color="accent" class="mx-8" *ngIf="showAddResponse" (click)="addResponse();">+ Add Response</a>
+                        </div>
+
+                        <div fxLayout="row" fxLayoutAlign="end center" class="button-row" *ngIf="isAdminUser">
+                            <a mat-raised-button color="primary" class="mx-8" (click)="clearQuestion()">Clear</a>
+                            <button mat-raised-button class="mx-8" color="accent" [disabled]="!isSavable" (click)="saveQuestion();">Save</button>
+                        </div>
+                    </mat-expansion-panel>
+                </div>
+                
+                <!-- Question Grid -->
+                <div class="content mat-white-bg mat-elevation-z4">
+                    <div id="mat-table-inner" style="overflow-y: scroll !important" [style.height.px]="matTableInner" (window:resize)="onResize($event)">
+                        <mat-table class="question-table" #table [dataSource]="dataSource" matSort [@animateStagger]="{value:'50'}" fusePerfectScrollbar>
+                            <ng-container cdkColumnDef="sq_qnumber">
+                                <mat-header-cell *cdkHeaderCellDef mat-sort-header>Question Number</mat-header-cell>
+                                <mat-cell *cdkCellDef="let question">
+                                    <p class=""> {{question.questionnumber}} </p>
+                                </mat-cell>
+                            </ng-container>
+
+                            <ng-container cdkColumnDef="sq_question">
+                                <mat-header-cell *cdkHeaderCellDef mat-sort-header>Question</mat-header-cell>
+                                <mat-cell *cdkCellDef="let question">
+                                    <p class="">{{question.question}}</p>
+                                </mat-cell>
+                            </ng-container>
+
+                            <ng-container cdkColumnDef="sq_qtype">
+                                <mat-header-cell *cdkHeaderCellDef mat-sort-header>Question Type</mat-header-cell>
+                                <mat-cell *cdkCellDef="let question">
+                                    <p class="">{{question.questiontype}}</p>
+                                </mat-cell>
+                            </ng-container>
+                            
+                            <ng-container cdkColumnDef="sq_button">
+                                <mat-header-cell *cdkHeaderCellDef></mat-header-cell>
+                                <mat-cell *cdkCellDef="let question">
+                                    <button matTooltip="Delete" class="mat-elevation-z" (click)="deleteQuestion(question)" mat-mini-fab>
+                                        <mat-icon>delete</mat-icon>
+                                    </button>
+                                </mat-cell>
+                            </ng-container>
+
+                            <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
+                            <!--<mat-row *cdkRowDef="let question; columns: displayedColumns;" class="question" (click)="selectedQuestion(question);" [@animate]="{value:'*',params:{y:'100%'}}"> </mat-row>-->
+                            <mat-row *cdkRowDef="let question; columns: displayedColumns;" class="question" (click)="selectedQuestion(question);" [@animate]="{value:'*',params:{y:'100%'}}"> </mat-row>
+                        </mat-table>
+                    </div>
+
+                    <ng-container *ngIf="dataSource.filteredData.length==0">
+                        <p style="color:red;" class="font-weight-900 text-center">No records found</p>
+                    </ng-container>
+
+                    <mat-paginator #paginator [length]="dataSource.filteredData.length" [pageIndex]="0" [pageSize]="50" [pageSizeOptions]="[10, 25, 50, 100]"> </mat-paginator>
+                </div>
+            </mat-tab>
+
+            <!-- Tab 2: Screening -->
+            <mat-tab label="Screening">
+                <div class="content mat-white-bg mat-elevation-z4">
+                    <!--<div id="mat-table-inner" style="overflow-y: scroll !important" [style.height.px]="matTableInner" (window:resize)="onResize($event)">
+                        <mat-table class="consultant-table" #table [dataSource]="consultantData" matSort [@animateStagger]="{value:'50'}" fusePerfectScrollbar>
+                            <ng-container cdkColumnDef="vc_name">
+                                <mat-header-cell *cdkHeaderCellDef mat-sort-header>Name</mat-header-cell>
+                                <mat-cell *cdkCellDef="let consultant">
+                                    <p class=""> {{consultant.name}} </p>
+                                </mat-cell>
+                            </ng-container>
+
+                            <ng-container cdkColumnDef="vc_email">
+                                <mat-header-cell *cdkHeaderCellDef mat-sort-header>Email</mat-header-cell>
+                                <mat-cell *cdkCellDef="let consultant">
+                                    <p class=""> {{consultant.email}} </p>
+                                </mat-cell>
+                            </ng-container>
+
+                            <ng-container cdkColumnDef="vc_workstatus">
+                                <mat-header-cell *cdkHeaderCellDef mat-sort-header>Work Authorization</mat-header-cell>
+                                <mat-cell *cdkCellDef="let consultant">
+                                    <p class=""> {{consultant.workauthorization}} </p>
+                                </mat-cell>
+                            </ng-container>
+
+                            <ng-container cdkColumnDef="vc_currentLocation">
+                                <mat-header-cell *cdkHeaderCellDef mat-sort-header fxHide fxShow.gt-md>Current Location</mat-header-cell>
+                                <mat-cell *cdkCellDef="let consultant" fxHide fxShow.gt-md>
+                                    <p class=""> {{consultant.currentlocation}} </p>
+                                </mat-cell>
+                            </ng-container>
+
+                            <ng-container cdkColumnDef="vc_totalExp">
+                                <mat-header-cell *cdkHeaderCellDef mat-sort-header fxHide fxShow.gt-md>Total Experience</mat-header-cell>
+                                <mat-cell *cdkCellDef="let consultant" fxHide fxShow.gt-md>
+                                    <p class=""> {{consultant.totalexperience}} </p>
+                                </mat-cell>
+                            </ng-container>
+
+                            <ng-container cdkColumnDef="vc_button">
+                                <mat-header-cell *cdkHeaderCellDef></mat-header-cell>
+                                <mat-cell *cdkCellDef="let consultant">
+                                    <button matTooltip="View Details" class="mat-elevation-z" (click)="showDetails(consultant)" mat-mini-fab>
+                                        <mat-icon>visibility</mat-icon>
+                                    </button>
+                                    <button matTooltip="Delete" class="mat-elevation-z" (click)="deleteConsultant(consultant)" mat-mini-fab>
+                                        <mat-icon>delete</mat-icon>
+                                    </button>
+                                </mat-cell>
+                            </ng-container>
+
+                            <mat-header-row *cdkHeaderRowDef="displayedConsultantColumns"></mat-header-row>
+                            <mat-row *cdkRowDef="let consultant; columns: displayedConsultantColumns;" class="consultant" [@animate]="{value:'*',params:{y:'100%'}}"> </mat-row>
+                        </mat-table>
+                    </div>
+
+                    <ng-container *ngIf="dataSource.filteredData.length==0">
+                        <p style="color:red;" class="font-weight-900 text-center">No records found</p>
+                    </ng-container>
+
+                    <mat-paginator #paginator [length]="dataSource.filteredData.length" [pageIndex]="0" [pageSize]="50" [pageSizeOptions]="[10, 25, 50, 100]"> </mat-paginator>-->
+
+                    <!--Pre-Screening Step 1-->
+                    <mat-card *ngIf="!isScreeningStarted">
+                        <mat-card-content>
+                            <!--<div class="button-row" style="text-align:center; height:180px;" *ngIf="!isScreeningStarted">-->
+                            <div class="button-row" style="text-align:center;">
+                                <h3 style="height:60px; margin:50px;" *ngIf="!hasScreenQuestion">
+                                    You do not have any question(s) to start screening.  Go to 'Questions' tab and create question(s).
+                                </h3>
+
+                                <div fxLayout="row" fxLayoutAlign="start center" *ngIf="hasScreenQuestion">
+                                    <mat-form-field class="w-20-p mr-20">
+                                        <input matInput placeholder="First Name*" maxlength="50" [(ngModel)]="screenedProcess.firstname" (keyup)="onPreScreenQuestion()">
+                                        <button mat-button *ngIf="screenedProcess.firstname" matSuffix mat-icon-button aria-label="Clear" (click)="screenedProcess.firstname='';onPreScreenQuestion();">
+                                            <mat-icon>close</mat-icon>
+                                        </button>
+                                        <mat-hint align="end">{{screenedProcess.firstname?.length || 0}}/50</mat-hint>
+                                    </mat-form-field>
+                                    <mat-form-field class="w-20-p mr-20">
+                                        <input matInput placeholder="Last Name*" maxlength="50" [(ngModel)]="screenedProcess.lastname" (keyup)="onPreScreenQuestion()">
+                                        <button mat-button *ngIf="screenedProcess.lastname" matSuffix mat-icon-button aria-label="Clear" (click)="screenedProcess.lastname='';onPreScreenQuestion();">
+                                            <mat-icon>close</mat-icon>
+                                        </button>
+                                        <mat-hint align="end">{{screenedProcess.lastname?.length || 0}}/50</mat-hint>
+                                    </mat-form-field>
+                                    <mat-form-field class="w-20-p mr-20">
+                                        <input matInput placeholder="Current Location*" maxlength="25" [(ngModel)]="screenedProcess.currentlocation" (keyup)="onPreScreenQuestion()">
+                                        <button mat-button *ngIf="screenedProcess.currentlocation" matSuffix mat-icon-button aria-label="Clear" (click)="screenedProcess.currentlocation='';onPreScreenQuestion();">
+                                            <mat-icon>close</mat-icon>
+                                        </button>
+                                        <mat-hint align="end">{{screenedProcess.currentlocation?.length || 0}}/25</mat-hint>
+                                    </mat-form-field>
+                                    <mat-form-field class="w-20-p mr-20">
+                                        <input matInput placeholder="Email*" maxlength="100" [(ngModel)]="screenedProcess.email" (keyup)="onPreScreenQuestion()">
+                                        <button mat-button *ngIf="screenedProcess.email" matSuffix mat-icon-button aria-label="Clear" (click)="screenedProcess.email='';onPreScreenQuestion();">
+                                            <mat-icon>close</mat-icon>
+                                        </button>
+                                        <mat-hint align="end">{{screenedProcess.email?.length || 0}}/100</mat-hint>
+                                    </mat-form-field>
+                                    <mat-form-field class="w-10-p mr-20">
+                                        <input matInput placeholder="Phone*" maxlength="10" [(ngModel)]="screenedProcess.phone" (keyup)="onPreScreenQuestion()">
+                                        <button mat-button *ngIf="screenedProcess.phone" matSuffix mat-icon-button aria-label="Clear" (click)="screenedProcess.phone='';onPreScreenQuestion();">
+                                            <mat-icon>close</mat-icon>
+                                        </button>
+                                    </mat-form-field>
+                                </div>
+
+                                <div fxLayout="row" fxLayoutAlign="start center" *ngIf="hasScreenQuestion">
+                                    <mat-form-field class="mr-40 mr-20" *ngIf="isAdminUser">
+                                        <mat-select placeholder="Job*"  (selectionChange)="onJobChange($event)">
+                                            <!--<mat-select placeholder="Job*" *ngIf="isAdminUser" (selectionChange)="onQuestionTypeChange($event)">-->
+                                            <!--<mat-option *ngFor="let job of jobList" [value]="job" matTooltip="{{job.title}}">{{job.referenceid}} - {{job.title}}</mat-option>-->
+                                            <mat-option *ngFor="let job of jobList" [value]="job" matTooltip="{{job.title}}">{{job.referenceid}} - {{job.title}}</mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                    <mat-form-field class="w-40-p mr-20">
+                                        <input matInput placeholder="Job" disabled value="{{screenedProcess.jobcode}} - {{screenedProcess.jobtitle}}, {{screenedProcess.joblocation}}">
+                                    </mat-form-field>
+                                </div>
+
+                                <button mat-raised-button class="mx-8" style="height:60px; margin:50px;" color="accent" [disabled]="!isPreScreenButtonEnabled" *ngIf="showResume" (click)="resumeScreening();">Resume Screening</button>
+                                <button mat-raised-button class="mx-8" style="height:60px; margin:50px;" color="accent" [disabled]="!isPreScreenButtonEnabled" *ngIf="hasScreenQuestion" (click)="startScreening();">Start Screening</button>
+                                </div>
+                        </mat-card-content>
+                    </mat-card>
+
+                    <!-- Screening Step 2 -->
+                    <mat-card *ngIf="isScreeningStarted && !canSummarize">
+                        <mat-card-content>
+                            <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;" *ngFor="let question of screeningQuestions">
+                                <span class="w-1-p mandatory" style="height:15px;" *ngIf="question.ismandatory">*</span>
+                                <mat-form-field class="w-35-p mr-10" *ngIf="question.questiontype=='Text'">
+                                    <!--<input matInput placeholder="{{question.questionnumber}} - {{question.question}}" [(ngModel)]="question.options[0].option" *ngIf="question.questiontype=='Text'">-->
+                                    <input matInput placeholder="{{question.questionnumber}} - {{question.question}}" [(ngModel)]="question.option" (keyup)="onResponse(question);">                                    
+                                    <mat-hint class="label-hint">{{question.hint}}</mat-hint>
+                                </mat-form-field>
+                                
+                                <mat-form-field class="w-35-p mr-10" *ngIf="question.questiontype=='Long Text'">
+                                    <textarea matInput placeholder="{{question.questionnumber}} - {{question.question}}" matTooltip="{{question.question}}" [(ngModel)]="question.option" (keyup)="onResponse(question);"></textarea>
+                                    <mat-hint class="label-hint">{{question.hint}}</mat-hint>
+                                </mat-form-field>
+
+                                <mat-form-field class="w-35-p mr-10" *ngIf="question.questiontype=='Dropdown'">
+                                    <mat-select placeholder="{{question.questionnumber}} - {{question.question}}" (selectionChange)="onResponseChange(question, $event);">
+                                        <mat-option *ngFor="let option of question.options" matTooltip="{{option.option}}" [value]="option.option">{{option.option}}</mat-option>
+                                    </mat-select>
+                                    <mat-hint class="label-hint">{{question.hint}}</mat-hint>
+                                </mat-form-field>
+
+                                <section *ngIf="question.questiontype=='Checkbox'">
+                                    <mat-checkbox class="mr-20" labelPosition="before" [(ngModel)]="question.option" (change)="onResponseCheckChange(question, $event, false);">{{question.questionnumber}} - {{question.question}}:</mat-checkbox>
+                                    <mat-checkbox class="mr-20" [labelPosition]="after" *ngIf="question.showNA" [(ngModel)]="question.optionna" (change)="onResponseCheckChange(question, $event, true);">Not Applicable</mat-checkbox>
+                                    <mat-hint class="label-hint">{{question.hint}}</mat-hint>
+                                </section>                                
+                            </div>
+                            <br/>
+
+                            <div fxLayout="row" fxLayoutAlign="start center" class="button-row" *ngIf="isNextQuestionVisible">
+                                <button mat-raised-button class="mx-8" color="accent" [disabled]="!isNextQuestionEnabled" (click)="nextQuestion()">Next Question</button>
+                            </div>
+                            <br />
+                            <hr />
+
+                            <div fxLayout="row" fxLayoutAlign="start center" class="button-row" *ngIf="isEndScreeningVisible">
+                                <mat-form-field class="w-35-p mr-10" *ngIf="screeningQuestions.length > 0">
+                                    <textarea matInput placeholder="Provide reason to end screening" [(ngModel)]="screenedProcess.endreason" (keyup)="onEndScreenComment();"></textarea>
+                                </mat-form-field>
+                                <button mat-raised-button class="mx-8" color="accent" [disabled]="!isEndScreeningEnabled" (click)="saveScreening(true)">Terminate</button>
+                            </div> <br/><hr />
+
+                            <div fxLayout="row" fxLayoutAlign="end center" class="button-row" *ngIf="isCompleteScreeningVisible">
+                                <button mat-raised-button class="mx-8" color="" (click)="cancelScreening(true)">Cancel</button>
+                                <button mat-raised-button class="mx-8" color="accent" [disabled]="!isCompleteScreeningEnabled" *ngIf="isCompleteScreeningVisible" (click)="saveScreening(false)">Complete</button>
+                            </div>
+                        </mat-card-content>
+                    </mat-card>
+
+                    <!--Summary Step 3-->
+                    <mat-card >
+                        <mat-card-content *ngIf="canSummarize">
+                            <!--<mat-card-content *ngIf="canSummarize">-->
+                            <div fxLayout="row" fxLayoutAlign="start center" class="button-row screeningSummary">
+                                <span>Screening Summary</span>
+                            </div>
+
+                            <div id="divSummary" style="margin-top:10px;display:block !important; padding-left:10px !important;">
+                                <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                                    <section>
+                                        <label>First Name:</label>
+                                        <label>{{screenedProcess.firstname}}</label>
+                                    </section>
+                                </div>
+                                <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">                                    
+                                    <section>
+                                        <label>Last Name:</label>
+                                        <label>{{screenedProcess.lastname}}</label>
+                                    </section>
+                                </div>
+                                <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                                    <section>
+                                        <label>Current Location:</label>
+                                        <label>{{screenedProcess.currentlocation}}</label>
+                                    </section>
+                                </div>
+                                <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                                    <section>
+                                        <label>Email:</label>
+                                        <label>{{screenedProcess.email}}</label>
+                                    </section>
+                                </div>
+                                <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                                    <section>
+                                        <label>Phone:</label>
+                                        <label>{{screenedProcess.phone}}</label>
+                                    </section>
+                                </div>
+                                <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                                    <section>
+                                        <label>Job:</label>
+                                        <label>{{screenedProcess.jobcode}} - {{screenedProcess.jobtitle}}, {{screenedProcess.joblocation}}</label>
+                                    </section>
+                                </div>
+
+                                <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;" *ngFor="let question of screeningQuestions">
+                                    <section *ngIf="question.questiontype!='Checkbox'">
+                                        <label>{{question.questionnumber}} - {{question.question}}:</label>
+                                        <label>{{question.option}}</label>
+                                    </section>
+                                    <section *ngIf="question.questiontype=='Checkbox'">
+                                        <label>{{question.questionnumber}} - {{question.question}}:</label>
+                                        <label *ngIf="question.optionna">N/A</label>
+                                        <label *ngIf="question.option">Yes</label>
+                                        <label *ngIf="!question.option && !question.optionna">No</label>
+                                    </section>
+                                </div><br />
+                            </div>
+
+                            <br />
+                            <div fxLayout="row" fxLayoutAlign="end center" class="button-row">
+                                <button mat-raised-button class="mx-8" color="" (click)="closeScreening()">Close</button>
+                                <button mat-raised-button class="mx-8" color="accent" (click)="copyToClipboard()">Copy to Clipboard</button>
+                            </div>
+                        </mat-card-content>
+                    </mat-card>
+                </div>
+            </mat-tab>
+        </mat-tab-group>
+        
+    </div>
+    <!-- / CENTER -->
+</div>

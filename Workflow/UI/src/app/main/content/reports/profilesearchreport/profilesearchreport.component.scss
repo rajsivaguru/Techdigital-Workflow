@@ -1,0 +1,154 @@
+@import "src/app/core/scss/fuse";
+
+.custom_profilesearchreport_list
+{
+  .c-btn
+  {  
+      border-top : none !important;
+      border-left : none !important;
+      border-right: none !important;
+      padding :3px !important;
+      box-shadow:0px 0px 0px #ffffff !important;
+  }
+  
+  .c-btn span
+  {
+      color : rgba(0, 0, 0, 0.54);
+      font-size : 16px;
+  }
+}
+
+.mat-expansion-panel-header_rpt1
+{
+    padding : 0 24px !important;
+}
+
+.mat-expansion-panel-body
+{
+    padding : 0 24px;
+}
+.text-boxed-green
+{
+    background-color:green !important;
+    font-size :14px !important;
+    color : white !important;
+}
+
+.text-boxed-red
+{
+    background-color:red !important;
+    font-size :14px !important;
+    color : white !important;
+}
+
+.filter-by{
+    .div{
+        margin-right: 10px !important;
+    }
+}
+.filterby-users{
+
+    margin-right: 10px !important;
+}
+
+.custom_profilesearchreport_list
+{
+    .list-area
+    {
+        height: 300px !important;
+
+        div:nth-child(2){
+            height: 36px !important;
+        }
+
+        .lazyContainer{
+            height: 200px !important;
+        }
+    }
+}
+
+.profileSearchReport-table {
+    flex: 1 1 auto;
+    border-bottom: 1px solid rgba(0, 0, 0, .12);
+
+    #mat-table-inner{
+        overflow-y: scroll !important;
+        height: 400px !important;
+    }
+        
+    .mat-header-row {
+            
+    }
+        
+    .mat-row:hover
+    {
+        background-color: #F2F4F4 !important;
+    }
+        
+    .mat-row-total
+    {
+        background-color: lightgray !important;
+        font-weight: bold;
+    }
+
+    .mat-header-cell
+    {
+        font-weight: bold !important;
+        font-size : 15px !important;
+        justify-content : center !important;
+        padding-right: 10px;
+        padding-left: 5px;
+    }
+
+    .product {
+        position: relative;
+        cursor: pointer;
+        height: 84px;
+    }
+
+    .mat-cell {
+        padding-right: 10px;
+        padding-left: 5px;
+    }
+
+    .mat-column-r_username {
+        flex: 0 1 25%;
+    }
+
+    .mat-column-r_title {
+        flex: 0 1 30%;
+    }
+
+    .mat-column-r_location {
+        flex: 0 1 20%;
+        font-size:small;
+    }
+
+    .mat-column-r_searchengine {
+        flex: 0 1 10%;
+        font-size:small;
+    }
+
+    .mat-column-r_publisheddate, .mat-column-r_assigneddate, .mat-column-r_searcheddate {
+        flex: 0 1 12%;
+        font-size:small;
+    }
+    .mat-column-r_fromdate, .mat-column-r_todate {
+        flex: 0 1 20%;
+    }
+    .mat-column-r_buttons_1 {
+        flex: 0 1 8%;
+        text-align: center;
+        text-align: -webkit-center;
+    }
+
+    .mat-column-r_buttons_2 {
+        flex: 0 1 12%;
+        text-align: center;
+        text-align: -webkit-center;
+    }
+        
+    .active-icon {
+        border-radius: 50%;
+    }       
+}

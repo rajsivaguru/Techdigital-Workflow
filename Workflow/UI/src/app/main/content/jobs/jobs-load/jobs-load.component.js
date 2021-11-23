@@ -17,49 +17,42 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
-var Observable_1 = require("rxjs/Observable");
 var forms_1 = require("@angular/forms");
 var material_1 = require("@angular/material");
-var BehaviorSubject_1 = require("rxjs/BehaviorSubject");
-var confirm_dialog_component_1 = require("../../../../core/components/confirm-dialog/confirm-dialog.component");
 var collections_1 = require("@angular/cdk/collections");
-var animations_1 = require("../../../../core/animations");
-var jobs_model_1 = require("../jobs.model");
-var dialog_component_1 = require("../../dialog/dialog.component");
+var Observable_1 = require("rxjs/Observable");
+var BehaviorSubject_1 = require("rxjs/BehaviorSubject");
 var fuseUtils_1 = require("../../../../core/fuseUtils");
 var fuse_perfect_scrollbar_directive_1 = require("../../../../core/directives/fuse-perfect-scrollbar/fuse-perfect-scrollbar.directive");
+var animations_1 = require("../../../../core/animations");
+var app_model_1 = require("../../../../app.model");
+var jobs_model_1 = require("../jobs.model");
+var dialog_component_1 = require("../../dialog/dialog.component");
 var JobsLoadComponent = /** @class */ (function () {
-    function JobsLoadComponent(jobsService, dialog, snackBar, router, loginService, userService) {
+    function JobsLoadComponent(jobsService, dialog, router, loginService, userService, snackComp, utilities) {
         var _this = this;
         this.jobsService = jobsService;
         this.dialog = dialog;
-        this.snackBar = snackBar;
         this.router = router;
         this.loginService = loginService;
         this.userService = userService;
+        this.snackComp = snackComp;
+        this.utilities = utilities;
         this.displayedColumns = ['jn_referenceid', 'jn_title', 'jn_location', 'jn_clientname', 'jn_publisheddate', 'jn_priorityid', 'jn_userlist', 'jn_selectedUser', 'jn_buttons'];
         this.usersList = [];
         this.priorityList = [];
         this.clientList = [];
+        this.savableJobs = Array();
+        this.savableJobAssignments = Array();
         this.dropdownSettings = {};
-        this.dropdownPrioritySettings = {};
-        this.myControl = new forms_1.FormControl();
+        this.isAllJobsValid = false;
         this.searchInput = new forms_1.FormControl('');
         this.onNewJobsChangedSubscription =
             this.jobsService.newJobsChanged.subscribe(function (contacts) {
                 _this.newJobs = contacts;
-                _this.checkboxes = {};
-                // contacts.map(contact => {
-                //     this.checkboxes[contact.id] = false;
-                // });
             });
         this.onSelectedNewJobsChangedSubscription =
             this.jobsService.onSelectedNewJobsChanged.subscribe(function (selectedContacts) {
-                // for ( const id in this.checkboxes )
-                // {
-                //     this.checkboxes[id] = selectedContacts.includes(id);
-                // }
-                // this.selectedContacts = selectedContacts;
             });
         this.onUserDataChangedSubscription =
             this.jobsService.onUserDataChanged.subscribe(function (user) {
@@ -68,6 +61,9 @@ var JobsLoadComponent = /** @class */ (function () {
     }
     JobsLoadComponent.prototype.ngOnInit = function () {
         var _this = this;
+        this.matTableInner = this.utilities.GetPageContentHeightNonAccordion();
+        this.progressbarConfig = new app_model_1.ProgressBarConfig({});
+        this.loggedUserId = this.jobsService.getLoginId();
         this.dataSource = new FilesDataSource(this.jobsService, this.paginator, this.sort);
         this.jobsService.onSelectedNewJobsChanged
             .subscribe(function (selectedNewJobs) {
@@ -79,23 +75,10 @@ var JobsLoadComponent = /** @class */ (function () {
             _this.paginator.pageIndex = 0;
             _this.jobsService.onSearchNewJobsTextChanged.next(searchText);
         });
-        this.userService.getAssignedUser(1).then(function (response) {
-            if (response) {
-                response.map(function (user) {
-                    _this.usersList.push({ "roleName": user["rolename"], "id": user["userid"], "itemName": user["name"] });
-                });
-                //console.log(this.usersList);
-            }
-        });
-        this.jobsService.getPriority().then(function (response) {
-            if (response) {
-                response.map(function (priori) {
-                    _this.priorityList.push({ "id": priori["priorityid"], "itemName": priori["name"] });
-                });
-            }
-        });
-        // bind the clients
-        this.bindClients();
+        this.getAssignmentUserList();
+        if (this.priorityList.length == 0)
+            this.getPriorityList();
+        this.getClientList();
         this.dropdownSettings = {
             singleSelection: false,
             text: "Recruiters",
@@ -105,208 +88,264 @@ var JobsLoadComponent = /** @class */ (function () {
             badgeShowLimit: 2
         };
     };
-    JobsLoadComponent.prototype.bindClients = function () {
-        var _this = this;
-        this.clientList = [];
-        this.jobsService.getClients().then(function (response) {
-            if (response) {
-                response.map(function (client) {
-                    _this.clientList.push({ "clientname": client["clientname"] });
-                });
-                _this.filteredOptions = _this.myControl.valueChanges.startWith(null)
-                    .map(function (val) { return val ? _this.filterClient(val) : _this.clientList.slice(); });
-            }
-        });
-    };
-    JobsLoadComponent.prototype.filterClient = function (val) {
-        return this.clientList.filter(function (option) { return option.clientname.toLowerCase().indexOf(val.toLowerCase()) === 0; });
-    };
-    JobsLoadComponent.prototype.clientNameTyped = function (evet, editJobs) {
-        editJobs.clientname = evet.target.value;
-        if (editJobs.clientname == editJobs.oldclientname)
-            editJobs.isSaveEnable = false;
-        else
-            editJobs.isSaveEnable = true;
-    };
-    JobsLoadComponent.prototype.clientSelected = function (evet, editJobs) {
-        var _this = this;
-        editJobs.clientname = evet.option.value;
-        if (editJobs.clientname == editJobs.oldclientname)
-            editJobs.isSaveEnable = false;
-        else
-            editJobs.isSaveEnable = true;
-        this.filteredOptions = this.myControl.valueChanges
-            .startWith(null)
-            .map(function (val) { return val ? _this.filterClient(val) : _this.clientList.slice(); });
-    };
-    JobsLoadComponent.prototype.changePriorityLevel = function (event, editJobs) {
-        editJobs.priorityLevel = event.value;
-        if (editJobs.priorityLevel == editJobs.oldPriorityLevel)
-            editJobs.isSaveEnable = false;
-        else
-            editJobs.isSaveEnable = true;
-    };
-    JobsLoadComponent.prototype.saveItemSelect = function (editJobs) {
-        var _this = this;
-        if (editJobs.clientname == "" || editJobs.clientname == undefined) {
-            this.openDialog("Please enter the Client.");
-            return;
-        }
-        var userid = editJobs.selectedUser.map(function (user) {
-            return (user["id"]);
-        });
-        {
-            this.jobAssign = new jobs_model_1.JobAssignment({});
-            this.jobAssign.userids = userid;
-            this.jobAssign.clientname = editJobs.clientname;
-            this.jobAssign.jobid = editJobs.jobid;
-            this.jobAssign.priorityid = editJobs.priorityLevel;
-            this.jobsService.saveJobUser(this.jobAssign)
-                .then(function (response) {
-                editJobs.isSaveEnable = false;
-                editJobs.isSaveEnableSelectedUser = false;
-                if (response) {
-                    _this.bindClients();
-                    if (response["Result"] == "1") {
-                        _this.openDialog(response["Message"]);
-                    }
-                    else {
-                        _this.openDialog(response["Message"]);
-                    }
-                }
-            });
-        }
-    };
     JobsLoadComponent.prototype.ngOnDestroy = function () {
         this.onNewJobsChangedSubscription.unsubscribe();
         this.onSelectedNewJobsChangedSubscription.unsubscribe();
         this.onUserDataChangedSubscription.unsubscribe();
     };
+    JobsLoadComponent.prototype.onResize = function (event) {
+        this.matTableInner = this.utilities.GetPageContentHeightNonAccordion();
+    };
     JobsLoadComponent.prototype.synchJobs = function () {
         var _this = this;
+        this.showHideProgressBar(true);
         this.jobsService.synchJobs()
             .then(function (response) {
-            //console.log(response)
-            if (response) {
-                _this.jobsService.getNewJobs();
-                if (response["Result"] == "1") {
-                    //this.router.navigateByUrl('/jobs');
-                    _this.openDialog(response["Message"]);
-                }
-                else {
-                    _this.openDialog(response["Message"]);
-                }
+            if (response["Result"] == "1") {
+                _this.jobsService.getNewJobs(true)
+                    .then(function (result) {
+                    _this.showHideProgressBar(false);
+                    _this.snackComp.showSimpleSnackBar(response["Message"]);
+                });
+            }
+            else {
+                _this.showHideProgressBar(false);
+                _this.snackComp.showSimpleSnackBar(response["Message"]);
             }
         });
     };
-    JobsLoadComponent.prototype.editJob = function (job) {
-        this.jobsService.action = 'edit';
-        this.jobsService.editJobs = job;
-        //console.log( this.jobsService.editJobs.jobassignmentid)
-        this.jobsService.getJobStatus(this.jobsService.editJobs.jobassignmentid);
-        this.jobsService.getJobStatusHistory(this.jobsService.editJobs.jobassignmentid);
-        //console.log(job);
-        this.router.navigateByUrl('/jobsform');
-        // this.dialogRef = this.dialog.open(FuseContactsContactFormDialogComponent, {
-        //     panelClass: 'contact-form-dialog',
-        //     data      : {
-        //         contact: contact,
-        //         action : 'edit'
-        //     }
-        // });
-        // this.dialogRef.afterClosed()
-        //     .subscribe(response => {
-        //         if ( !response )
-        //         {
-        //             return;
-        //         }
-        //         const actionType: string = response[0];
-        //         const formData: FormGroup = response[1];
-        //         switch ( actionType )
-        //         {
-        //             /**
-        //              * Save
-        //              */
-        //             case 'save':
-        //                 this.contactsService.updateContact(formData.getRawValue());
-        //                 break;
-        //             /**
-        //              * Delete
-        //              */
-        //             case 'delete':
-        //                 this.deleteContact(contact);
-        //                 break;
-        //         }
-        //     });
+    JobsLoadComponent.prototype.prioritizeJob = function () {
+        this.router.navigateByUrl('prioritizejob');
     };
-    /**
-     * Delete Contact
-     */
-    JobsLoadComponent.prototype.deleteContact = function (contact) {
+    JobsLoadComponent.prototype.onClientChanged = function (event, editJob) {
+        editJob.clientname = event.value;
+        this.isAllJobsValid = this.isValidJob(editJob);
+    };
+    JobsLoadComponent.prototype.onPriorityChanged = function (event, editJob) {
+        editJob.priorityLevel = event.value;
+        this.isAllJobsValid = this.isValidJob(editJob);
+    };
+    JobsLoadComponent.prototype.openAssignToModal = function (editJob, userlist, selectedusers) {
         var _this = this;
-        this.confirmDialogRef = this.dialog.open(confirm_dialog_component_1.FuseConfirmDialogComponent, {
-            disableClose: false
-        });
-        this.confirmDialogRef.componentInstance.confirmMessage = 'Are you sure you want to delete?';
-        this.confirmDialogRef.afterClosed().subscribe(function (result) {
-            if (result) {
-                _this.jobsService.deleteContact(contact);
-            }
-            _this.confirmDialogRef = null;
-        });
-    };
-    JobsLoadComponent.prototype.onSelectedChange = function (contactId) {
-        this.jobsService.toggleSelectedNewJob(contactId);
-    };
-    JobsLoadComponent.prototype.toggleStar = function (contactId) {
-        if (this.user.starred.includes(contactId)) {
-            this.user.starred.splice(this.user.starred.indexOf(contactId), 1);
-        }
-        else {
-            this.user.starred.push(contactId);
-        }
-        this.jobsService.updateUserData(this.user);
-    };
-    JobsLoadComponent.prototype.mapOrder = function (array, order, key) {
-        array.sort(function (A, B) {
-            var resultArray = order.filter(function (row) { return row.id === A[key]; });
-            if (resultArray.length > 0)
-                return -1;
-            else
-                return 1;
-        });
-        return array;
-    };
-    ;
-    JobsLoadComponent.prototype.openUserDialog = function (editJobs, userlist, selectedusers) {
         userlist = this.mapOrder(userlist, selectedusers, "id");
         var dialogUserList = this.dialog.open(dialog_component_1.DialogDataComponent, {
             height: "550px",
             width: "400px",
             data: {
+                title: 'Assign To',
                 userList: userlist,
-                selectedUsers: selectedusers
+                selectedUsers: selectedusers,
+                groupByField: 'roleName'
             }
         });
         dialogUserList.afterClosed().subscribe(function (result) {
             if (result == undefined) {
-                editJobs.selectedUser = editJobs.oldSelectedUser;
-                editJobs.isSaveEnableSelectedUser = false;
+                editJob.isValid = false;
+                editJob.selectedUser = [];
+                editJob.oldSelectedUser.forEach(function (sel) {
+                    editJob.selectedUser.push(sel);
+                });
             }
             else {
-                if (JSON.stringify(editJobs.selectedUser) === JSON.stringify(editJobs.oldSelectedUser))
-                    editJobs.isSaveEnableSelectedUser = false;
-                else
-                    editJobs.isSaveEnableSelectedUser = true;
+                _this.isAllJobsValid = _this.isValidJob(editJob);
             }
         });
     };
-    JobsLoadComponent.prototype.openDialog = function (message) {
-        this.snackBar.open(message, '', {
-            duration: 2000,
-            verticalPosition: 'top',
-            extraClasses: ['mat-light-blue-100-bg']
+    JobsLoadComponent.prototype.saveJob = function (editJob) {
+        var _this = this;
+        var userid = editJob.selectedUser.map(function (user) {
+            return (user["id"]);
         });
+        this.jobAssign = new jobs_model_1.JobAssignment({});
+        this.jobAssign.userids = userid;
+        this.jobAssign.clientname = editJob.clientname;
+        this.jobAssign.jobid = editJob.jobid;
+        this.jobAssign.priorityid = editJob.priorityLevel;
+        this.jobAssign.loginid = this.loggedUserId;
+        this.showHideProgressBar(true);
+        this.jobsService.saveJobAssignment(this.jobAssign)
+            .then(function (response) {
+            editJob.isValid = false;
+            _this.isAllJobsValid = false;
+            _this.showHideProgressBar(false);
+            _this.getAssignmentUserList();
+            _this.snackComp.showSnackBarPost(response, '');
+        });
+    };
+    JobsLoadComponent.prototype.saveJobs = function () {
+        var _this = this;
+        if (this.savableJobs.length > 0) {
+            /* Clear all the previos jobs. */
+            this.savableJobAssignments = [];
+            this.savableJobs.forEach(function (job) {
+                var userid = job.selectedUser.map(function (user) { return (user["id"]); });
+                var jobAssignment = new jobs_model_1.JobAssignment({});
+                jobAssignment.jobid = job.jobid;
+                jobAssignment.userids = userid;
+                jobAssignment.clientname = job.clientname;
+                jobAssignment.priorityid = job.priorityLevel;
+                jobAssignment.loginid = _this.loggedUserId;
+                _this.savableJobAssignments.push(jobAssignment);
+            });
+            this.showHideProgressBar(true);
+            this.jobsService.saveJobsAssignment(this.savableJobAssignments)
+                .then(function (response) {
+                _this.isAllJobsValid = false;
+                _this.showHideProgressBar(false);
+                _this.getAssignmentUserList();
+                _this.snackComp.showSnackBarPost(response, '');
+                if (response["ResultStatus"] == "1") {
+                    _this.savableJobs = [];
+                }
+            });
+        }
+    };
+    JobsLoadComponent.prototype.getAssignmentUserList = function () {
+        var _this = this;
+        this.showHideProgressBar(true);
+        this.usersList = [];
+        this.userService.getAssignedUser(1).then(function (response) {
+            if (response) {
+                _this.showHideProgressBar(false);
+                response.map(function (user) {
+                    _this.usersList.push({ "roleName": user["rolename"], "id": user["userid"], "itemName": user["name"] });
+                });
+            }
+        });
+    };
+    JobsLoadComponent.prototype.getPriorityList = function () {
+        var _this = this;
+        this.jobsService.getPriority().then(function (response) {
+            if (response) {
+                response.map(function (priority) {
+                    _this.priorityList.push({ "id": priority["priorityid"], "itemName": priority["name"] });
+                });
+            }
+        });
+    };
+    JobsLoadComponent.prototype.getClientList = function () {
+        var _this = this;
+        this.clientList = [];
+        this.jobsService.getClients().then(function (response) {
+            if (response) {
+                response.map(function (client) {
+                    _this.clientList.push({ "id": client["id"], "clientname": client["clientname"] });
+                });
+            }
+        });
+    };
+    JobsLoadComponent.prototype.showHideProgressBar = function (isVisible) {
+        this.progressbarConfig.isVisible = isVisible;
+    };
+    JobsLoadComponent.prototype.mapOrder = function (array, order, key) {
+        var _this = this;
+        var recruiter = [], leader = [], recruiterSel = [], leaderSel = [];
+        array.filter(function (x) {
+            if (x.roleName.toLowerCase() === _this.utilities.rn_recruiter.toLocaleLowerCase())
+                recruiter.push(x);
+        });
+        array.filter(function (x) {
+            if (x.roleName.toLowerCase() === _this.utilities.rn_teamlead.toLocaleLowerCase())
+                leader.push(x);
+        });
+        order.forEach(function (item) {
+            recruiter.filter(function (x) {
+                if (x.id === item.id)
+                    recruiterSel.push(x);
+            });
+        });
+        order.forEach(function (item) {
+            leader.filter(function (x) {
+                if (x.id === item.id)
+                    leaderSel.push(x);
+            });
+        });
+        recruiterSel.sort(function (a, b) {
+            var x = a.itemName;
+            var y = b.itemName;
+            if (x < y) {
+                return 1;
+            }
+            if (x > y) {
+                return -1;
+            }
+            return 0;
+        });
+        leaderSel.sort(function (a, b) {
+            var x = a.itemName;
+            var y = b.itemName;
+            if (x < y) {
+                return 1;
+            }
+            if (x > y) {
+                return -1;
+            }
+            return 0;
+        });
+        recruiter.sort(function (a, b) {
+            var x = a.itemName;
+            var y = b.itemName;
+            if (x < y) {
+                return -1;
+            }
+            if (x > y) {
+                return 1;
+            }
+            return 0;
+        });
+        leader.sort(function (a, b) {
+            var x = a.itemName;
+            var y = b.itemName;
+            if (x < y) {
+                return -1;
+            }
+            if (x > y) {
+                return 1;
+            }
+            return 0;
+        });
+        recruiterSel.forEach(function (sel) {
+            var user = recruiter.filter(function (item) { return item.id == sel.id; });
+            var index = recruiter.indexOf(user[0]);
+            recruiter.splice(index, 1);
+            recruiter.splice(0, 0, user[0]);
+        });
+        leaderSel.forEach(function (sel) {
+            var user = leader.filter(function (item) { return item.id == sel.id; });
+            var index = leader.indexOf(user[0]);
+            leader.splice(index, 1);
+            leader.splice(0, 0, user[0]);
+        });
+        var result = recruiter.concat(leader);
+        return result;
+    };
+    ;
+    JobsLoadComponent.prototype.isValidJob = function (job) {
+        if (job.clientname == "" || job.clientname == undefined || job.priorityLevel == "" || job.priorityLevel == undefined) {
+            job.isValid = false;
+        }
+        if (job.priorityLevel != "" && job.clientname != "" && (job.priorityLevel != job.oldPriorityLevel || job.clientname != job.oldclientname || JSON.stringify(job.selectedUser) != JSON.stringify(job.oldSelectedUser))) {
+            for (var i = this.savableJobs.length - 1; i >= 0; i--) {
+                if (this.savableJobs[i].jobid == job.jobid) {
+                    this.savableJobs.splice(i, 1);
+                    break;
+                }
+            }
+            this.savableJobs.push(job);
+            job.isValid = true;
+        }
+        else {
+            for (var i = this.savableJobs.length - 1; i >= 0; i--) {
+                if (this.savableJobs[i].jobid == job.jobid) {
+                    this.savableJobs.splice(i, 1);
+                    break;
+                }
+            }
+            job.isValid = false;
+        }
+        if (this.savableJobs.length > 0)
+            return true;
+        return false;
     };
     __decorate([
         core_1.ViewChild('dialogContent')
@@ -322,7 +361,7 @@ var JobsLoadComponent = /** @class */ (function () {
     ], JobsLoadComponent.prototype, "sort", void 0);
     JobsLoadComponent = __decorate([
         core_1.Component({
-            selector: 'jobs-load',
+            selector: 'jobs',
             templateUrl: './jobs-load.component.html',
             styleUrls: ['./jobs-load.component.scss'],
             encapsulation: core_1.ViewEncapsulation.None,
@@ -367,7 +406,6 @@ var FilesDataSource = /** @class */ (function (_super) {
     /** Connect function called by the table to retrieve one stream containing the data to render. */
     FilesDataSource.prototype.connect = function () {
         var _this = this;
-        //console.log(this.jobsService.newJobsChanged)
         var displayDataChanges = [
             this.jobsService.newJobsChanged,
             this._paginator.page,
@@ -399,7 +437,6 @@ var FilesDataSource = /** @class */ (function (_super) {
         if (!this._sort.active || this._sort.direction === '') {
             return data;
         }
-        //displayedColumns = ['title', 'location', 'description', 'publisheddate', 'referenceid', 'userlist', 'buttons'];
         return data.sort(function (a, b) {
             var propertyA = '';
             var propertyB = '';

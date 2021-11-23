@@ -1,5 +1,5 @@
-<div id="products" class="page-layout carded fullwidth">
-
+<div id="userReport" class="page-layout carded fullwidth">
+    <mat-progress-bar class="loading-bar" *ngIf="progressbar.isVisible" [color]="progressbar.color" [mode]="progressbar.mode" [value]="progressbar.value" [bufferValue]="progressbar.bufferValue"></mat-progress-bar>
     <!-- HEADER -->
     <div class="header mat-accent-bg p-16 p-sm-24" fxLayout="column" fxLayoutAlign="start start"
          fxLayout.gt-xs="row" fxLayoutAlign.gt-xs="space-between center">
@@ -7,8 +7,8 @@
         <!-- APP TITLE -->
         <div fxLayout="column" fxLayoutAlign="start center">
             <div class="logo" fxLayout="row" fxLayoutAlign="start center">
-                <mat-icon class="logo-icon mr-16" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'50ms',scale:'0.2'}}">work</mat-icon>
-                <span class="logo-text h1" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'100ms',x:'-25px'}}">Users</span>
+                <mat-icon class="logo-icon mr-16" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'50ms',scale:'0.2'}}">people</mat-icon>
+                <span class="logo-text h1" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'100ms',x:'-25px'}}">User Report</span>
             </div>
             <div class="logo" fxLayout="row" fxLayoutAlign="start center">
                 
@@ -16,7 +16,7 @@
         </div>
 
         <div class="search-input-wrapper mt-16 m-sm-0" fxLayout="row" fxLayoutAlign="start center">
-            <button mat-mini-fab class="mat-red-100-bg" [matMenuTriggerFor]="menu" matTooltip="More Actions">
+            <button mat-mini-fab class="mat-red-100-bg icon-white" [matMenuTriggerFor]="menu" matTooltip="More Actions">
                 <mat-icon class="mat-20">more_horiz</mat-icon>
             </button>
             <mat-menu #menu="matMenu">
@@ -36,21 +36,12 @@
     <!--<fuse-selected-bar class="mat-accent-600-bg" *ngIf="hasSelectedContacts" [@slideInTop]></fuse-selected-bar>-->
     <!-- / SELECTED BAR -->
         <!-- CENTER -->
-         <!--<div fxLayout="row"  fxLayoutAlign="start center" fxFlex="1 0 auto" class="button-row">
-                <a mat-raised-button color="primary" class="mx-8" (click)="clearForm();">Clear</a>
-                <a mat-raised-button color="accent" class="mx-8" (click)="loadReport();">Submit</a>
-            </div>-->
         <div class="center p-0 pb-56 pr-sm-0">
             <form name="userReport" [formGroup]="userReport">
-
             <mat-expansion-panel class="py-16" [expanded] = isSearchExpanded>
                 <mat-expansion-panel-header class="mat-expansion-panel-header_rpt1">
-                    <mat-panel-title class="font-weight-900 font-size-20">
-                        Filter by 
-                    </mat-panel-title>
-                    <mat-panel-description>
-                        
-                    </mat-panel-description>
+                    <mat-panel-title class="font-weight-900 font-size-20"> Filter by </mat-panel-title>
+                    <mat-panel-description></mat-panel-description>
                 </mat-expansion-panel-header>
 
                 <div fxLayout="row" fxLayoutAlign="start center" class="w-100-p button-row">
@@ -62,7 +53,7 @@
                     </div>
                     
                     <mat-form-field class="w-5-p mr-20">
-                        <input matInput formControlName="jobcode" placeholder="Job Code" (keyup)="searchValidation()">
+                        <input matInput formControlName="jobcode" placeholder="Job Code" matTooltip="Job Code" (keyup)="searchValidation()">
                     </mat-form-field>
 
                     <mat-form-field class="w-15-p mr-20">
@@ -74,25 +65,19 @@
                     </mat-form-field>
 
                     <mat-form-field class="w-10-p mr-20">
-                        <input matInput  [max]="maxPublishedDate" [matDatepicker]="publisheddate" formControlName="publisheddate" placeholder="Published Date" (dateChange)="searchValidation()" readonly>
+                        <input matInput  [max]="maxPublishedDate" [matDatepicker]="publisheddate" formControlName="publisheddate" placeholder="Published Date" (dateChange)="searchValidation()" matTooltip="Published Date" readonly>
                         <mat-datepicker-toggle matSuffix [for]="publisheddate"></mat-datepicker-toggle>
                         <mat-datepicker touchUi="true" #publisheddate disabled="false"></mat-datepicker>
                     </mat-form-field>
 
-                    <mat-form-field style="display:none;" class="w-10-p mr-20">
-                        <input matInput  [max]="maxPublishedDate" [matDatepicker]="assigneddate" formControlName="assigneddate" placeholder="Assigned Date" (dateChange)="searchValidation()" readonly>
-                        <mat-datepicker-toggle matSuffix [for]="assigneddate"></mat-datepicker-toggle>
-                        <mat-datepicker touchUi="true" #assigneddate disabled="false"></mat-datepicker>
-                    </mat-form-field>
-
                     <mat-form-field class="w-10-p mr-20">
-                        <input matInput [min]="minFromDate" [max]="maxFromDate" (dateChange)="selectedFromDate('change', $event)" [matDatepicker]="fromdate" formControlName="fromdate" placeholder="From Date" readonly>
+                        <input matInput [min]="minFromDate" [max]="maxFromDate" (dateChange)="selectedFromDate('change', $event)" [matDatepicker]="fromdate" formControlName="fromdate" placeholder="Assigned From Date" matTooltip="Assigned From Date" readonly>
                         <mat-datepicker-toggle matSuffix [for]="fromdate"></mat-datepicker-toggle>
                         <mat-datepicker touchUi="true" #fromdate disabled="false"></mat-datepicker>
                     </mat-form-field>
 
                     <mat-form-field class="w-10-p mr-20">
-                        <input matInput [min]="minToDate" [max]="maxToDate" (dateChange)="selectedToDate('change', $event)" [matDatepicker]="todate" formControlName="todate" placeholder="To Date" readonly>
+                        <input matInput [min]="minToDate" [max]="maxToDate" (dateChange)="selectedToDate('change', $event)" [matDatepicker]="todate" formControlName="todate" placeholder="Assigned To Date" matTooltip="Assigned To Date" readonly>
                         <mat-datepicker-toggle matSuffix [for]="todate"></mat-datepicker-toggle>
                         <mat-datepicker touchUi="true" #todate disabled="false"></mat-datepicker>
                     </mat-form-field>
@@ -104,7 +89,7 @@
 
                 <div fxLayout="row" fxLayoutAlign="center center" class="button-row">
                     <mat-form-field>                       
-                        <mat-select formControlName="lastdays" placeholder="No.of Days" (selectionChange)="selectedNoOfDays($event)" >
+                        <mat-select formControlName="lastdays" placeholder="Assigned Days" (selectionChange)="selectedNoOfDays($event)" >
                             <mat-option></mat-option>
                             <mat-option *ngFor="let rptPeriod of lastDaysList" [value]="rptPeriod.id">{{rptPeriod.itemName}}</mat-option>
                         </mat-select>
@@ -113,24 +98,12 @@
 
                 <div fxLayout="row" fxLayoutAlign="end center" class="button-row">
                     <a mat-raised-button color="primary" class="mx-8" (click)="clearSearch()">Clear</a>
-                    <a mat-raised-button color="accent" class="mx-8" [disabled] = "!isSearchEnable" (click)="loadReport(this);">Search</a>
+                    <!--<a mat-raised-button color="accent" class="mx-8" [disabled] = "!isSearchEnable" (click)="loadReport(this);">Search</a>-->
+                    <button mat-raised-button class="" color="accent" [disabled]="!isSearchEnable" (click)="loadReport()">Search</button>
                 </div>
-
-                <!--<div fxLayout="row" fxLayoutAlign="end center" class="button-row">
-                    <a mat-raised-button color="accent" class="mx-8" [disabled]="!isSearchEnable" (click)="loadDownloadableReport(this);">Export As Pdf</a>
-                </div>-->
             </mat-expansion-panel>
             </form>
-
-            <!--<mat-form-field>
-                <mat-select placeholder="Export" (selectionChange)="selectedExport($event)">
-                    <mat-option>None</mat-option>
-                    <mat-option *ngFor="let reportOption of reportOptions" [value]="reportOption.value">
-                        {{ reportOption.viewValue }}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>-->
-            
+                        
             <!-- CONTENT -->
             <div class="content mat-white-bg mat-elevation-z4">
               <div id="mat-table-inner" style="overflow-y: scroll !important" [style.height.px]= "matTableInner" (window:resize)="onResize($event)">
@@ -138,7 +111,7 @@
                 <ng-container cdkColumnDef="ur_username">
                     <mat-header-cell *cdkHeaderCellDef>Name</mat-header-cell>
                     <mat-cell *cdkCellDef="let users">
-                        <p class="text-truncate" style="font-weight:bold"> {{users.username}} </p>                        
+                        <p class="text-truncate" style="font-weight:bold"> {{users.username}} </p>
                     </mat-cell>
                 </ng-container>
                 
@@ -176,7 +149,7 @@
                     <mat-cell *cdkCellDef="let users" fxHide fxShow.gt-md>
                         <p class="company text-truncate" matTooltip="{{users.assigneddate}}"> {{users.assigneddate}} </p>
                     </mat-cell>
-                </ng-container>                
+                </ng-container>
                
                 <ng-container cdkColumnDef="ur_duration">
                     <mat-header-cell *cdkHeaderCellDef>Duration</mat-header-cell>

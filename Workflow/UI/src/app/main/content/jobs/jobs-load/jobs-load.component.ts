@@ -1,25 +1,29 @@
-import { Component,Inject,  OnDestroy, OnInit, ElementRef,TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
-import { JobsService } from '../jobs.service';
-import { UsersService } from '../../users/users.service';
-import { Observable } from 'rxjs/Observable';
-import {startWith} from 'rxjs/operators/startWith';
-import {map} from 'rxjs/operators/map';
+import { Component, Inject, OnDestroy, OnInit, ElementRef, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog, MAT_DIALOG_DATA, MatDialogRef, MatPaginator, MatSort, MatSnackBar } from '@angular/material';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { FuseConfirmDialogComponent } from '../../../../core/components/confirm-dialog/confirm-dialog.component';
 import { DataSource } from '@angular/cdk/collections';
-import { fuseAnimations } from '../../../../core/animations';
+import { Router } from '@angular/router';
+import { Observable } from 'rxjs/Observable';
+import { startWith } from 'rxjs/operators/startWith';
+import { map } from 'rxjs/operators/map';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Subscription } from 'rxjs/Subscription';
-import { Router }   from '@angular/router';
-import { LoginService } from '../../login/login.service';
-import { JobStatusHistory, JobStatus, JobsList, JobAssignment } from '../jobs.model';
-import { DialogComponent, DialogDataComponent } from '../../dialog/dialog.component'
+import { FuseConfirmDialogComponent } from '../../../../core/components/confirm-dialog/confirm-dialog.component';
 import { FuseUtils } from '../../../../core/fuseUtils';
 import { FusePerfectScrollbarDirective } from '../../../../core/directives/fuse-perfect-scrollbar/fuse-perfect-scrollbar.directive';
+import { fuseAnimations } from '../../../../core/animations';
+
+import { LoginService } from '../../login/login.service';
+import { JobsService } from '../jobs.service';
+import { UsersService } from '../../users/users.service';
+import { SnackBarService } from '../../dialog/snackbar.service'
+import { ProgressBarConfig } from '../../../../app.model';
+import { JobStatusHistory, JobStatus, JobsList, JobAssignment } from '../jobs.model';
+import { DialogComponent, DialogDataComponent } from '../../dialog/dialog.component'
+import { Utilities } from '../../common/commonUtil';
 
 @Component({
-    selector     : 'jobs-load',
+    selector     : 'jobs',
     templateUrl  : './jobs-load.component.html',
     styleUrls    : ['./jobs-load.component.scss'],
     encapsulation: ViewEncapsulation.None,
@@ -38,7 +42,6 @@ export class JobsLoadComponent implements OnInit, OnDestroy
     dataSource: FilesDataSource | null;
     displayedColumns = ['jn_referenceid', 'jn_title', 'jn_location', 'jn_clientname', 'jn_publisheddate', 'jn_priorityid', 'jn_userlist', 'jn_selectedUser', 'jn_buttons'];
     selectedContacts: any[];
-    checkboxes: {};
     searchInput: FormControl;
 
     hasSelectedNewJobs: boolean;
@@ -47,51 +50,41 @@ export class JobsLoadComponent implements OnInit, OnDestroy
     onUserDataChangedSubscription: Subscription;
 
     dialogRef: any;
-
-    confirmDialogRef: MatDialogRef<FuseConfirmDialogComponent>;
+    progressbarConfig: ProgressBarConfig;
 
     usersList = [];
     priorityList = [];
     clientList = [];
-
+    savableJobs = Array<JobsList>();
+    savableJobAssignments = Array<JobAssignment>();
     dropdownSettings = {};
-    dropdownPrioritySettings = {};
-    formModel : any;
-
-    myControl: FormControl = new FormControl();
+    
     filteredOptions: Observable<string[]>;
-    jobAssign : JobAssignment;
+    jobAssign: JobAssignment;
+    isAllJobsValid: boolean = false;
+    loggedUserId: string;
 
+    matTableInner: number;
+    
     constructor(
         private jobsService: JobsService,
         public dialog: MatDialog,
-        public snackBar: MatSnackBar,
         public router : Router,
         private loginService : LoginService,
-        private userService : UsersService
+        private userService: UsersService,
+        public snackComp: SnackBarService,
+        private utilities: Utilities
     )
     {
-        
         this.searchInput = new FormControl('');
         
         this.onNewJobsChangedSubscription =
             this.jobsService.newJobsChanged.subscribe(contacts => {
-
                 this.newJobs = contacts;
-
-                this.checkboxes = {};
-                // contacts.map(contact => {
-                //     this.checkboxes[contact.id] = false;
-                // });
             });
 
         this.onSelectedNewJobsChangedSubscription =
             this.jobsService.onSelectedNewJobsChanged.subscribe(selectedContacts => {
-                // for ( const id in this.checkboxes )
-                // {
-                //     this.checkboxes[id] = selectedContacts.includes(id);
-                // }
-                // this.selectedContacts = selectedContacts;
             });
 
         this.onUserDataChangedSubscription =
@@ -101,8 +94,12 @@ export class JobsLoadComponent implements OnInit, OnDestroy
     }
 
     ngOnInit()
-    {   
-        this.dataSource = new FilesDataSource(this.jobsService, this.paginator, this.sort);        
+    {
+        this.matTableInner = this.utilities.GetPageContentHeightNonAccordion();
+        this.progressbarConfig = new ProgressBarConfig({});
+        this.loggedUserId = this.jobsService.getLoginId();
+        this.dataSource = new FilesDataSource(this.jobsService, this.paginator, this.sort);
+
         this.jobsService.onSelectedNewJobsChanged
             .subscribe(selectedNewJobs => {
                 this.hasSelectedNewJobs = selectedNewJobs.length > 0;
@@ -115,31 +112,13 @@ export class JobsLoadComponent implements OnInit, OnDestroy
                 this.paginator.pageIndex = 0;
                 this.jobsService.onSearchNewJobsTextChanged.next(searchText);
             });
+        
+        this.getAssignmentUserList();
 
-        this.userService.getAssignedUser(1).then(response => {
+        if(this.priorityList.length == 0)
+            this.getPriorityList();
 
-                if (response)
-                {
-                    response.map(user => {
-                            this.usersList.push( { "roleName":user["rolename"], "id":user["userid"], "itemName" : user["name"]})
-                        });
-
-                    //console.log(this.usersList);
-
-                }
-            });
-
-        this.jobsService.getPriority().then(response => {
-            if (response)
-            {
-                response.map(priori => {
-                        this.priorityList.push( {"id":priori["priorityid"], "itemName" : priori["name"]})
-                    });
-            }
-        });
-
-        // bind the clients
-        this.bindClients();
+        this.getClientList();
         
         this.dropdownSettings =  { 
             singleSelection: false, 
@@ -151,35 +130,312 @@ export class JobsLoadComponent implements OnInit, OnDestroy
         };
     }
 
-    bindClients()
-    {
-        this.clientList = [];
-        this.jobsService.getClients().then(response => {
-            if (response)
-            {
-                response.map(client => {
-                        this.clientList.push( {"clientname":client["clientname"]})
-                });
+    ngOnDestroy() {
+        this.onNewJobsChangedSubscription.unsubscribe();
+        this.onSelectedNewJobsChangedSubscription.unsubscribe();
+        this.onUserDataChangedSubscription.unsubscribe();
+    }
 
-                this.filteredOptions = this.myControl.valueChanges.startWith(null)
-                                .map(val => val ? this.filterClient(val) : this.clientList.slice());
+    onResize(event) {
+        this.matTableInner = this.utilities.GetPageContentHeightNonAccordion();
+    }
+
+    synchJobs() {
+        this.showHideProgressBar(true);
+
+        this.jobsService.synchJobs()
+            .then(response => {
+                if (response["Result"] == "1") {
+                    this.jobsService.getNewJobs(true)
+                        .then(result => {
+                            this.showHideProgressBar(false);
+                            this.snackComp.showSimpleSnackBar(response["Message"]);
+                        })
+                }
+                else {
+                    this.showHideProgressBar(false);
+                    this.snackComp.showSimpleSnackBar(response["Message"]);
+                }
+            });
+    }
+
+    prioritizeJob()
+    {
+        this.router.navigateByUrl('prioritizejob');
+    }
+
+    onClientChanged(event, editJob: JobsList)
+    {
+        editJob.clientname = event.value;
+        this.isAllJobsValid = this.isValidJob(editJob);
+    }
+
+    onPriorityChanged(event, editJob : JobsList)
+    {
+        editJob.priorityLevel = event.value;
+        this.isAllJobsValid = this.isValidJob(editJob);
+    }
+
+    openAssignToModal(editJob: JobsList, userlist, selectedusers) {
+        userlist = this.mapOrder(userlist, selectedusers, "id")
+
+        let dialogUserList = this.dialog.open(DialogDataComponent, {
+            height: "550px",
+            width: "400px",
+            data: {
+                title: 'Assign To',
+                userList: userlist,
+                selectedUsers: selectedusers,
+                groupByField: 'roleName'
+            }
+        });
+
+        dialogUserList.afterClosed().subscribe(result => {
+            if (result == undefined)
+            {
+                editJob.isValid = false;
+                editJob.selectedUser = [];
+
+                editJob.oldSelectedUser.forEach(sel => {
+                    editJob.selectedUser.push(sel);
+                });
+            }
+            else {
+                this.isAllJobsValid = this.isValidJob(editJob);
+            }
+        });
+    }
+    
+    saveJob(editJob: JobsList)
+    {
+        let userid = editJob.selectedUser.map(user => {
+            return (user["id"])
+        });
+
+        this.jobAssign = new JobAssignment({});
+        this.jobAssign.userids = userid;
+        this.jobAssign.clientname = editJob.clientname;
+        this.jobAssign.jobid = editJob.jobid;
+        this.jobAssign.priorityid = editJob.priorityLevel;
+        this.jobAssign.loginid = this.loggedUserId;
+        this.showHideProgressBar(true);
+
+        this.jobsService.saveJobAssignment(this.jobAssign)
+            .then(response => {
+                editJob.isValid = false;
+                this.isAllJobsValid = false;
+                this.showHideProgressBar(false);
+                this.getAssignmentUserList();
+                this.snackComp.showSnackBarPost(response, '');
+            });
+    }
+
+    saveJobs() {
+        if (this.savableJobs.length > 0)
+        {
+            /* Clear all the previos jobs. */
+            this.savableJobAssignments = [];
+            this.savableJobs.forEach((job) =>
+            {
+                let userid = job.selectedUser.map(user => { return (user["id"]) });
+                var jobAssignment = new JobAssignment({});
+
+                jobAssignment.jobid = job.jobid;
+                jobAssignment.userids = userid;
+                jobAssignment.clientname = job.clientname;
+                jobAssignment.priorityid = job.priorityLevel;
+                jobAssignment.loginid = this.loggedUserId;
+                
+                this.savableJobAssignments.push(jobAssignment);
+            });
+
+            this.showHideProgressBar(true);
+
+            this.jobsService.saveJobsAssignment(this.savableJobAssignments)
+                .then(response => {
+                    this.isAllJobsValid = false;
+                    this.showHideProgressBar(false);
+                    this.getAssignmentUserList();
+                    this.snackComp.showSnackBarPost(response, '');
+
+                    if (response["ResultStatus"] == "1")
+                    {
+                        this.savableJobs = [];
+                    }
+                });
+        }
+    }
+
+    private getAssignmentUserList() {
+        this.showHideProgressBar(true);
+        this.usersList = [];
+        this.userService.getAssignedUser(1).then(response => {
+            if (response) {
+                this.showHideProgressBar(false);
+                response.map(user => {
+                    this.usersList.push({ "roleName": user["rolename"], "id": user["userid"], "itemName": user["name"] })
+                });
             }
         });
     }
 
-    filterClient(val: string): string[]
-    {
-        return this.clientList.filter(option => option.clientname.toLowerCase().indexOf(val.toLowerCase()) === 0);
+    private getPriorityList() {
+        this.jobsService.getPriority().then(response => {
+            if (response) {
+                response.map(priority => {
+                    this.priorityList.push({ "id": priority["priorityid"], "itemName": priority["name"] })
+                });
+            }
+        });
     }
 
+    private getClientList() {
+        this.clientList = [];
+        this.jobsService.getClients().then(response => {
+            if (response) {
+                response.map(client => {
+                    this.clientList.push({ "id": client["id"], "clientname": client["clientname"] })
+                });
+            }
+        });
+    }
+
+    private showHideProgressBar(isVisible)
+    {
+        this.progressbarConfig.isVisible = isVisible;
+    }
+
+    private mapOrder(array, order, key) {
+        var recruiter = [], leader = [], recruiterSel = [], leaderSel = [];
+
+        array.filter((x) => {
+            if (x.roleName.toLowerCase() === this.utilities.rn_recruiter.toLocaleLowerCase())
+                recruiter.push(x);             
+        });
+
+        array.filter((x) => {
+            if (x.roleName.toLowerCase() === this.utilities.rn_teamlead.toLocaleLowerCase())
+                leader.push(x);
+        });
+
+        order.forEach(item => {
+            recruiter.filter((x) => {
+                if (x.id === item.id)
+                    recruiterSel.push(x);
+            });
+        });
+
+        order.forEach(item => {
+            leader.filter((x) => {
+                if (x.id === item.id)
+                    leaderSel.push(x);
+            });
+        });
+
+        recruiterSel.sort(function (a, b) {
+            var x = a.itemName;
+            var y = b.itemName;
+
+            if (x < y) { return 1; }
+            if (x > y) { return -1; }
+            return 0;
+        });
+        
+        leaderSel.sort(function (a, b) {
+            var x = a.itemName;
+            var y = b.itemName;
+
+            if (x < y) { return 1; }
+            if (x > y) { return -1; }
+            return 0;
+        });
+
+        recruiter.sort(function (a, b) {
+            var x = a.itemName;
+            var y = b.itemName;
+
+            if (x < y) { return -1; }
+            if (x > y) { return 1; }
+            return 0;
+        });
+
+        leader.sort(function(a, b) {
+            var x = a.itemName;
+            var y = b.itemName;
+
+            if (x < y) { return -1; }
+            if (x > y) { return 1; }
+            return 0;
+        });
+
+        recruiterSel.forEach(sel => {
+            var user = recruiter.filter(item => { return item.id == sel.id });
+            var index = recruiter.indexOf(user[0]);
+
+            recruiter.splice(index, 1);
+            recruiter.splice(0, 0, user[0]);
+        });
+
+        leaderSel.forEach(sel => {
+            var user = leader.filter(item => { return item.id == sel.id });
+            var index = leader.indexOf(user[0]);
+
+            leader.splice(index, 1);
+            leader.splice(0, 0, user[0]);
+        });
+
+        var result = recruiter.concat(leader);
+        return result;
+    };
+    
+    private isValidJob(job: JobsList) {
+        if (job.clientname == "" || job.clientname == undefined || job.priorityLevel == "" || job.priorityLevel == undefined) {
+            job.isValid = false;
+        }
+
+        if (job.priorityLevel != "" && job.clientname != "" && (job.priorityLevel != job.oldPriorityLevel || job.clientname != job.oldclientname || JSON.stringify(job.selectedUser) != JSON.stringify(job.oldSelectedUser))) {
+            for (var i = this.savableJobs.length - 1; i >= 0; i--) {
+                if (this.savableJobs[i].jobid == job.jobid) {
+                    this.savableJobs.splice(i, 1);
+                    break;
+                }
+            }
+
+            this.savableJobs.push(job);
+            job.isValid = true;
+        }
+        else {
+            for (var i = this.savableJobs.length - 1; i >= 0; i--) {
+                if (this.savableJobs[i].jobid == job.jobid) {
+                    this.savableJobs.splice(i, 1);
+                    break;
+                }
+            }
+            job.isValid = false;
+        }
+
+        if (this.savableJobs.length > 0)
+            return true;
+        return false;
+    }
+
+
+    /* Code not used; Used previously.  Maybe useful for future. */
+    /*
     clientNameTyped(evet, editJobs : JobsList)
     {
         editJobs.clientname = evet.target.value;
 
         if (editJobs.clientname == editJobs.oldclientname)
+        {
             editJobs.isSaveEnable = false;
+            this.isJobSavable = false;
+        }
         else
+        {
             editJobs.isSaveEnable = true;
+            this.isJobSavable = true;
+        }
     }
 
     clientSelected(evet, editJobs : JobsList)
@@ -187,235 +443,27 @@ export class JobsLoadComponent implements OnInit, OnDestroy
         editJobs.clientname = evet.option.value;
 
         if (editJobs.clientname == editJobs.oldclientname)
+        {
             editJobs.isSaveEnable = false;
+            this.isJobSavable = false;
+        }
         else
+        {
             editJobs.isSaveEnable = true;
+            this.isJobSavable = true;
+        }   
 
         this.filteredOptions = this.myControl.valueChanges
                                    .startWith(null)
                                    .map(val => val ? this.filterClient(val) : this.clientList.slice());
     }
 
-    changePriorityLevel(event, editJobs : JobsList)
-    {      
-        editJobs.priorityLevel = event.value;
-        
-        if (editJobs.priorityLevel == editJobs.oldPriorityLevel)
-            editJobs.isSaveEnable = false;
-        else
-            editJobs.isSaveEnable = true;
-    }
-
-    saveItemSelect(editJobs : JobsList){
-        if (editJobs.clientname == "" || editJobs.clientname == undefined) {
-            this.openDialog("Please enter the Client.")
-            return;
-        }
-        
-        let userid = editJobs.selectedUser.map(user => {
-            return (user["id"])
-        });
-
-        {
-            this.jobAssign = new JobAssignment({});
-            this.jobAssign.userids = userid;
-            this.jobAssign.clientname = editJobs.clientname;
-            this.jobAssign.jobid = editJobs.jobid;
-            this.jobAssign.priorityid = editJobs.priorityLevel;
-            
-            this.jobsService.saveJobUser(this.jobAssign)
-            .then(response => {
-                editJobs.isSaveEnable = false;
-                editJobs.isSaveEnableSelectedUser = false;
-
-                if (response)
-                {
-                    this.bindClients();
-                    if(response["Result"]=="1")
-                    {
-                        this.openDialog(response["Message"]);
-                    }
-                    else
-                    {
-                        this.openDialog(response["Message"]);
-                    }
-                }
-            });
-        }        
-    }
-
-    ngOnDestroy()
+    filterClient(val: string): string[]
     {
-        this.onNewJobsChangedSubscription.unsubscribe();
-        this.onSelectedNewJobsChangedSubscription.unsubscribe();
-        this.onUserDataChangedSubscription.unsubscribe();
+        return this.clientList.filter(option => option.clientname.toLowerCase().indexOf(val.toLowerCase()) === 0);
     }
+    */
 
-    synchJobs()
-    {
-         this.jobsService.synchJobs()
-            .then(response => {
-                //console.log(response)
-                if (response)
-                {
-
-                    this.jobsService.getNewJobs();
-
-                    if(response["Result"]=="1")
-                    {
-                        //this.router.navigateByUrl('/jobs');
-                        this.openDialog(response["Message"]);
-                    }
-                    else
-                    {
-                        this.openDialog(response["Message"]);
-                    }
-                }
-            });
-    }
-
-    editJob(job)
-    {
-
-            this.jobsService.action =  'edit';
-            this.jobsService.editJobs =  job;
-            //console.log( this.jobsService.editJobs.jobassignmentid)
-            this.jobsService.getJobStatus(this.jobsService.editJobs.jobassignmentid)
-            this.jobsService.getJobStatusHistory(this.jobsService.editJobs.jobassignmentid)
-
-            //console.log(job);
-            this.router.navigateByUrl('/jobsform');
-
-        // this.dialogRef = this.dialog.open(FuseContactsContactFormDialogComponent, {
-        //     panelClass: 'contact-form-dialog',
-        //     data      : {
-        //         contact: contact,
-        //         action : 'edit'
-        //     }
-        // });
-
-        // this.dialogRef.afterClosed()
-        //     .subscribe(response => {
-        //         if ( !response )
-        //         {
-        //             return;
-        //         }
-        //         const actionType: string = response[0];
-        //         const formData: FormGroup = response[1];
-        //         switch ( actionType )
-        //         {
-        //             /**
-        //              * Save
-        //              */
-        //             case 'save':
-
-        //                 this.contactsService.updateContact(formData.getRawValue());
-
-        //                 break;
-        //             /**
-        //              * Delete
-        //              */
-        //             case 'delete':
-
-        //                 this.deleteContact(contact);
-
-        //                 break;
-        //         }
-        //     });
-    }
-
-    /**
-     * Delete Contact
-     */
-    deleteContact(contact)
-    {
-        this.confirmDialogRef = this.dialog.open(FuseConfirmDialogComponent, {
-            disableClose: false
-        });
-
-        this.confirmDialogRef.componentInstance.confirmMessage = 'Are you sure you want to delete?';
-
-        this.confirmDialogRef.afterClosed().subscribe(result => {
-            if ( result )
-            {
-                this.jobsService.deleteContact(contact);
-            }
-            this.confirmDialogRef = null;
-        });
-    }
-
-    onSelectedChange(contactId)
-    {
-        this.jobsService.toggleSelectedNewJob(contactId);
-    }
-
-    toggleStar(contactId)
-    {
-        if ( this.user.starred.includes(contactId) )
-        {
-            this.user.starred.splice(this.user.starred.indexOf(contactId), 1);
-        }
-        else
-        {
-            this.user.starred.push(contactId);
-        }
-
-        this.jobsService.updateUserData(this.user);
-    }
-
-    mapOrder (array, order, key) {  
-        array.sort( function (A, B) {
-
-            let resultArray = order.filter(
-                row => row.id === A[key]);
-            
-            if (resultArray.length > 0)
-                return -1;
-            else
-                return 1;
-        });
-        
-        return array;
-    };
-
-    openUserDialog(editJobs : JobsList, userlist, selectedusers)
-    {
-        userlist = this.mapOrder(userlist, selectedusers, "id" )
-        
-        let dialogUserList = this.dialog.open(DialogDataComponent, {
-            height : "550px",
-            width : "400px",
-            data: {
-                userList: userlist,
-                selectedUsers: selectedusers
-            }
-        });
-
-        dialogUserList.afterClosed().subscribe(result =>
-        {
-            if (result == undefined)
-            {
-                editJobs.selectedUser = editJobs.oldSelectedUser;
-                editJobs.isSaveEnableSelectedUser = false;
-            }
-            else
-            {
-                if (JSON.stringify(editJobs.selectedUser) === JSON.stringify(editJobs.oldSelectedUser))
-                    editJobs.isSaveEnableSelectedUser = false;
-                else
-                    editJobs.isSaveEnableSelectedUser = true;
-            }
-        });
-    }
-
-    openDialog(message) : void
-    {
-        this.snackBar.open(message, '', {
-            duration: 2000,
-            verticalPosition : 'top',
-            extraClasses: ['mat-light-blue-100-bg']
-        });
-    }
 }
 
 export class FilesDataSource extends DataSource<any>
@@ -443,7 +491,7 @@ export class FilesDataSource extends DataSource<any>
     {
         this._filterChange.next(filter);
     }
-    constructor(private jobsService: JobsService, private _paginator: MatPaginator,        private _sort: MatSort)
+    constructor(private jobsService: JobsService, private _paginator: MatPaginator, private _sort: MatSort)
     {
         super();
         this.filteredData = this.jobsService.newJobs;
@@ -452,7 +500,6 @@ export class FilesDataSource extends DataSource<any>
     /** Connect function called by the table to retrieve one stream containing the data to render. */
     connect(): Observable<any[]>
     {
-        //console.log(this.jobsService.newJobsChanged)
         const displayDataChanges = [
             this.jobsService.newJobsChanged,
             this._paginator.page,
@@ -495,7 +542,6 @@ export class FilesDataSource extends DataSource<any>
         {
             return data;
         }
-//displayedColumns = ['title', 'location', 'description', 'publisheddate', 'referenceid', 'userlist', 'buttons'];
    
         return data.sort((a, b) => {
             let propertyA: number | string = '';
@@ -526,9 +572,6 @@ export class FilesDataSource extends DataSource<any>
                 case 'jn_userlist':
                     [propertyA, propertyB] = [a.userlist, b.userlist];
                     break;
-
-
-               
             }
 
             const valueA = isNaN(+propertyA) ? propertyA : +propertyA;

@@ -1,12 +1,4 @@
 "use strict";
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
-};
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -15,12 +7,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
+var http_1 = require("@angular/common/http");
 var Observable_1 = require("rxjs/Observable");
 require("rxjs/add/observable/of");
 var BehaviorSubject_1 = require("rxjs/BehaviorSubject");
-var jobs_model_1 = require("./jobs.model");
-var fuseUtils_1 = require("../../../core/fuseUtils");
 var Subject_1 = require("rxjs/Subject");
+var fuseUtils_1 = require("../../../core/fuseUtils");
+var jobs_model_1 = require("./jobs.model");
+var headers = new http_1.HttpHeaders();
+headers.set("Content-Type", "application/json");
 var JobsService = /** @class */ (function () {
     function JobsService(http, configSer, loginService) {
         this.http = http;
@@ -30,9 +25,12 @@ var JobsService = /** @class */ (function () {
         this.onSelectedContactsChanged = new BehaviorSubject_1.BehaviorSubject([]);
         this.newJobsChanged = new BehaviorSubject_1.BehaviorSubject({});
         this.onSelectedNewJobsChanged = new BehaviorSubject_1.BehaviorSubject([]);
+        this.onClientChanged = new BehaviorSubject_1.BehaviorSubject({});
+        this.onSelectedClientChanged = new BehaviorSubject_1.BehaviorSubject([]);
         this.onUserDataChanged = new BehaviorSubject_1.BehaviorSubject([]);
         this.onSearchTextChanged = new Subject_1.Subject();
         this.onSearchNewJobsTextChanged = new Subject_1.Subject();
+        this.onSearchClientTextChanged = new Subject_1.Subject();
         this.onFilterChanged = new Subject_1.Subject();
         this.selectedContacts = [];
         this.selectedNewJobs = [];
@@ -69,132 +67,201 @@ var JobsService = /** @class */ (function () {
     JobsService.prototype.resolve = function (route, state) {
         var _this = this;
         this.searchText = "";
+        this.loggedUserId = this.loginService.getLoginId();
+        this.headerOptions = this.loginService.getHeaders();
         if (state.url == "/jobs") {
             return new Promise(function (resolve, reject) {
-                //console.log(state)
                 Promise.all([
-                    _this.getJobs()
-                    //this.getPriority()
+                    //this.getPriority(),
+                    _this.getNewJobs(false)
                 ]).then(function (_a) {
                     var files = _a[0];
-                    _this.onSearchTextChanged.subscribe(function (searchText) {
+                    _this.onSearchNewJobsTextChanged.subscribe(function (searchText) {
                         _this.searchText = searchText;
-                        _this.getJobs();
+                        _this.getNewJobs(false);
                     });
                     _this.onFilterChanged.subscribe(function (filter) {
                         _this.filterBy = filter;
-                        _this.getJobs();
+                        _this.getNewJobs(false);
                     });
                     resolve();
                 }, reject);
             });
         }
-        else if (state.url == "/jobsload") {
+        else if (state.url == "/clients") {
             return new Promise(function (resolve, reject) {
-                //console.log(state)
                 Promise.all([
-                    _this.getNewJobs()
+                    _this.getClients()
                 ]).then(function (_a) {
                     var files = _a[0];
-                    _this.onSearchNewJobsTextChanged.subscribe(function (searchText) {
+                    _this.onSearchClientTextChanged.subscribe(function (searchText) {
                         _this.searchText = searchText;
-                        _this.getNewJobs();
+                        _this.getClients();
                     });
                     _this.onFilterChanged.subscribe(function (filter) {
                         _this.filterBy = filter;
-                        _this.getNewJobs();
+                        _this.getClients();
                     });
                     resolve();
                 }, reject);
             });
         }
     };
-    JobsService.prototype.getNewJobs = function () {
+    JobsService.prototype.getLoginId = function () {
+        return this.loggedUserId;
+    };
+    /* Jobs */
+    JobsService.prototype.getNewJobs = function (isRefresh) {
         var _this = this;
-        //if(this.action != 'edit')
-        {
-            var userid_1 = '0';
-            if (this.loginService.loggedUser != undefined)
-                userid_1 = this.loginService.loggedUser.userid;
-            return new Promise(function (resolve, reject) {
-                _this.http.get(_this.serviceURL + 'TDW/GetJobList?loginid=' + userid_1)
+        return new Promise(function (resolve, reject) {
+            if (_this.storageJobs != undefined && _this.storageJobs.length > 0 && !isRefresh) {
+                if (_this.searchText && _this.searchText !== '') {
+                    _this.newJobs = fuseUtils_1.FuseUtils.filterArrayByString(_this.storageJobs, _this.searchText);
+                    if (_this.newJobs.length > 0) {
+                        _this.newJobs = _this.newJobs.map(function (contact) {
+                            return new jobs_model_1.JobsList(contact);
+                        });
+                    }
+                }
+                else
+                    _this.newJobs = _this.storageJobs.map(function (job) {
+                        return new jobs_model_1.JobsList(job);
+                    });
+                _this.newJobsChanged.next(_this.newJobs);
+                resolve(_this.newJobs);
+            }
+            else
+                _this.http.get(_this.serviceURL + 'Job/GetJobList?loginid=' + _this.loggedUserId)
                     .subscribe(function (response) {
                     if (response != null && response != undefined) {
-                        response = JSON.parse(response);
-                        //console.log('joblist fetching..');
-                        //console.log(response)
-                        _this.newJobs = response;
-                        //console.log(this.newJobs)
-                        // if ( this.filterBy === 'starred' )
-                        // {
-                        //     this.newJobs = this.newJobs.filter(_contact => {
-                        //         return this.user.starred.includes(_contact.jobid);
-                        //     });
-                        // }
-                        // if ( this.filterBy === 'frequent' )
-                        // {
-                        //     this.newJobs = this.newJobs.filter(_contact => {
-                        //         return this.user.frequentjobs.includes(_contact.jobid);
-                        //     });
-                        // }
-                        //console.log(this.searchText)
-                        if (_this.searchText && _this.searchText !== '') {
-                            _this.newJobs = fuseUtils_1.FuseUtils.filterArrayByString(_this.newJobs, _this.searchText);
-                            //console.log(this.newJobs)
+                        if (response["ResultStatus"] == "1") {
+                            _this.newJobs = response["Output"];
+                            _this.storageJobs = response["Output"];
+                            if (_this.searchText && _this.searchText !== '') {
+                                _this.newJobs = fuseUtils_1.FuseUtils.filterArrayByString(_this.newJobs, _this.searchText);
+                            }
+                            if (_this.newJobs.length > 0) {
+                                _this.newJobs = _this.newJobs.map(function (contact) {
+                                    return new jobs_model_1.JobsList(contact);
+                                });
+                            }
+                            _this.newJobsChanged.next(_this.newJobs);
+                            resolve(_this.newJobs);
                         }
-                        if (_this.newJobs.length > 0) {
-                            _this.newJobs = _this.newJobs.map(function (contact) {
-                                return new jobs_model_1.JobsList(contact);
-                            });
-                        }
-                        _this.newJobsChanged.next(_this.newJobs);
-                        resolve(_this.newJobs);
+                        else
+                            resolve([]);
                     }
                     else {
                         resolve([]);
                     }
                 }, reject);
-            });
-        }
+        });
     };
-    JobsService.prototype.getJobs = function () {
+    JobsService.prototype.getJobListForDD = function () {
         var _this = this;
-        var userid = '0';
-        if (this.loginService.loggedUser != undefined)
-            userid = this.loginService.loggedUser.userid;
         return new Promise(function (resolve, reject) {
-            _this.http.get(_this.serviceURL + 'TDW/BindJobs?loginid=' + userid)
+            _this.http.get(_this.serviceURL + 'Job/GetJobListForDD?loginid=' + _this.loggedUserId)
                 .subscribe(function (response) {
                 if (response != null && response != undefined) {
-                    response = JSON.parse(response);
-                    //console.log('fetching jobs...');
-                    //console.log(response)
-                    _this.jobs = response;
-                    if (_this.filterBy === 'starred') {
-                        _this.jobs = _this.jobs.filter(function (_contact) {
-                            return _this.user.starred.includes(_contact.jobassignmentid);
-                        });
+                    if (response["ResultStatus"] == "1") {
+                        resolve(response["Output"]);
                     }
-                    if (_this.filterBy === 'frequent') {
-                        _this.jobs = _this.jobs.filter(function (_contact) {
-                            return _this.user.frequentjobs.includes(_contact.jobassignmentid);
-                        });
-                    }
-                    if (_this.searchText && _this.searchText !== '') {
-                        _this.jobs = fuseUtils_1.FuseUtils.filterArrayByString(_this.jobs, _this.searchText);
-                    }
-                    if (_this.jobs.length > 0) {
-                        _this.jobs = _this.jobs.map(function (contact) {
-                            return new jobs_model_1.Jobs(contact);
-                        });
-                    }
-                    _this.onContactsChanged.next(_this.jobs);
-                    resolve(_this.jobs);
+                    else
+                        resolve([]);
                 }
                 else {
                     resolve([]);
                 }
             }, reject);
+        });
+    };
+    JobsService.prototype.synchJobs = function () {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.http.get(_this.serviceURL + 'Job/SynchJobsXML')
+                .subscribe(function (response) {
+                response = JSON.parse(response);
+                resolve(response);
+            });
+        });
+    };
+    /* Save single job. */
+    JobsService.prototype.saveJobAssignment = function (jobAssignment) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.http.post(_this.serviceURL + 'Job/SaveJobAssignment', jobAssignment, { headers: headers })
+                .subscribe(function (response) {
+                _this.getNewJobs(true).then(function (result) {
+                    resolve(response);
+                });
+            });
+        });
+    };
+    /* Save multiple jobs. */
+    JobsService.prototype.saveJobsAssignment = function (jobAssignments) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            ////this.http.get(this.serviceURL + 'Job/SaveJobAssignments?source=' + JSON.stringify(jobAssignments) + '&loginId=' + this.loginService.loggedUser.userid)
+            _this.http.post(_this.serviceURL + 'Job/SaveJobsAssignment', jobAssignments, { headers: headers })
+                .subscribe(function (response) {
+                _this.getNewJobs(true).then(function (result) {
+                    resolve(response);
+                });
+            });
+        });
+    };
+    /* Notify My Interest on Job */
+    JobsService.prototype.saveInterestedJob = function (job) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.http.post(_this.serviceURL + 'Job/SaveInterestedJob', job, _this.headerOptions)
+                .subscribe(function (response) {
+                resolve(response);
+            });
+        });
+    };
+    JobsService.prototype.getClients = function () {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.http.get(_this.serviceURL + 'Client/GetClients', _this.headerOptions)
+                .subscribe(function (response) {
+                if (response != null && response != undefined) {
+                    //response = JSON.parse(response);
+                    _this.clients = response.Output;
+                    if (_this.searchText && _this.searchText !== '') {
+                        _this.clients = fuseUtils_1.FuseUtils.filterArrayByString(_this.clients, _this.searchText);
+                    }
+                    _this.onClientChanged.next(_this.clients);
+                    resolve(_this.clients);
+                }
+                else {
+                    resolve([]);
+                }
+            }, function (exception) {
+                resolve(exception.error);
+            }, reject);
+        });
+    };
+    JobsService.prototype.saveClient = function (client) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.http.post(_this.serviceURL + 'Client/SaveClient', client, _this.headerOptions)
+                .subscribe(function (response) {
+                response = JSON.parse(response);
+                _this.getClients();
+                resolve(response);
+            });
+        });
+    };
+    JobsService.prototype.deleteJobClient = function (client) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.http.get(_this.serviceURL + 'Client/DeleteClient?clientId=' + client.id, _this.headerOptions)
+                .subscribe(function (response) {
+                response = JSON.parse(response);
+                _this.getClients();
+                resolve(response);
+            });
         });
     };
     JobsService.prototype.getPriority = function () {
@@ -207,24 +274,149 @@ var JobsService = /** @class */ (function () {
             }, reject);
         });
     };
-    JobsService.prototype.getClients = function () {
+    JobsService.prototype.getPrioritizedJobList = function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            _this.http.get(_this.serviceURL + 'Job/GetClients')
+            _this.http.get(_this.serviceURL + 'Job/GetPriorityJobs', _this.headerOptions)
                 .subscribe(function (response) {
-                response = JSON.parse(response);
-                resolve(response);
+                if (response != null && response != undefined) {
+                    if (response["ResultStatus"] == "1") {
+                        _this.prioritizedJobs = response["Output"];
+                        if (_this.prioritizedJobs.length > 0) {
+                            _this.prioritizedJobs = _this.prioritizedJobs.map(function (job) {
+                                return new jobs_model_1.PriorityJob(job);
+                            });
+                        }
+                        else
+                            resolve([]);
+                    }
+                    else
+                        resolve([]);
+                    resolve(_this.prioritizedJobs);
+                }
+                else {
+                    resolve([]);
+                }
             }, reject);
         });
     };
-    JobsService.prototype.searchUser = function (keyword) {
-        //console.log('call service'+keyword+this.serviceURL+'SearchUser?keyword=' + keyword);
-        this.http.get(this.serviceURL + 'TDW/SearchUser?keyword=' + keyword)
-            .subscribe(function (response) {
-            //response = JSON.parse(response);
-            //console.log('service');
-            //console.log(JSON.parse(response));
-            return (JSON.parse(response));
+    JobsService.prototype.savePriority = function (jobIds) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.http.get(_this.serviceURL + 'Job/SavePriorityJob?jobIds=' + jobIds, _this.headerOptions)
+                .subscribe(function (response) {
+                resolve(response);
+            });
+        });
+    };
+    /* Not Used;  Need to check with service. */
+    /*
+    getJobs(): Promise<any> {
+        let userid = '0';
+        if (this.loginService.loggedUser != undefined)
+            userid = this.loginService.loggedUser.userid;
+
+        return new Promise((resolve, reject) => {
+            this.http.get(this.serviceURL + 'TDW/BindJobs?loginid=' + userid)
+                .subscribe((response: any) => {
+                    if (response != null && response != undefined) {
+                        response = JSON.parse(response);
+
+                        this.jobs = response;
+
+                        if (this.filterBy === 'starred') {
+                            this.jobs = this.jobs.filter(_contact => {
+                                return this.user.starred.includes(_contact.jobassignmentid);
+                            });
+                        }
+
+                        if (this.filterBy === 'frequent') {
+                            this.jobs = this.jobs.filter(_contact => {
+                                return this.user.frequentjobs.includes(_contact.jobassignmentid);
+                            });
+                        }
+
+                        if (this.searchText && this.searchText !== '') {
+                            this.jobs = FuseUtils.filterArrayByString(this.jobs, this.searchText);
+                        }
+
+                        if (this.jobs.length > 0) {
+                            this.jobs = this.jobs.map(contact => {
+                                return new Jobs(contact);
+                            });
+                        }
+
+                        this.onContactsChanged.next(this.jobs);
+                        resolve(this.jobs);
+                    }
+                    else {
+                        resolve([]);
+                    }
+                }, reject);
+        }
+        );
+    }
+
+    updateJob(job) {
+        let userid = '0';
+        if (this.loginService.loggedUser != undefined)
+            userid = this.loginService.loggedUser.userid;
+
+        return new Promise((resolve, reject) => {
+            this.http.get(this.serviceURL + 'TDW/SaveJob?sJobModel=' + JSON.stringify(job) + '&loginid=' + userid)
+                .subscribe((response: any) => {
+                    response = JSON.parse(response);
+                    this.getJobs();
+                    resolve(response);
+                });
+        });
+    }
+    
+    updateUserData(userData) {
+        return new Promise((resolve, reject) => {
+            this.http.post('api/contacts-user/' + this.user.id, { ...userData })
+                .subscribe(response => {
+                    //this.getPriority();
+                    this.getJobs();
+                    resolve(response);
+                });
+        });
+    }
+    */
+    JobsService.prototype.updateJobStatus = function (jaid, statusid, comment) {
+        var _this = this;
+        var userid = '0';
+        if (this.loginService.loggedUser != undefined)
+            userid = this.loginService.loggedUser.userid;
+        return new Promise(function (resolve, reject) {
+            _this.http.get(_this.serviceURL + 'TDW/UpdateJobStatus?jobassignmentid=' + jaid + '&statusid=' + statusid + '&comment=' + comment + '&userid=' + userid)
+                .subscribe(function (response) {
+                response = JSON.parse(response);
+                //this.getJobs();
+                resolve(response);
+            });
+        });
+    };
+    JobsService.prototype.getJobStatus = function (jobassignmentid) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.http.get(_this.serviceURL + 'TDW/BindJobStatus?jobassignmentid=' + jobassignmentid)
+                .subscribe(function (response) {
+                response = JSON.parse(response);
+                _this.jobStatus = response;
+                resolve(_this.jobStatus);
+            }, reject);
+        });
+    };
+    JobsService.prototype.getJobStatusHistory = function (jobassignmentid) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.http.get(_this.serviceURL + 'TDW/BindJobStatusHistory?jobassignmentid=' + jobassignmentid)
+                .subscribe(function (response) {
+                response = JSON.parse(response);
+                _this.jobHistory = response;
+                resolve(_this.jobHistory);
+            }, reject);
         });
     };
     JobsService.prototype.toggleSelectedNewJob = function (id) {
@@ -324,99 +516,6 @@ var JobsService = /** @class */ (function () {
         // Trigger the next event
         this.onSelectedContactsChanged.next(this.selectedContacts);
     };
-    JobsService.prototype.updateJob = function (job) {
-        var _this = this;
-        var userid = '0';
-        if (this.loginService.loggedUser != undefined)
-            userid = this.loginService.loggedUser.userid;
-        return new Promise(function (resolve, reject) {
-            _this.http.get(_this.serviceURL + 'TDW/SaveJob?sJobModel=' + JSON.stringify(job) + '&loginid=' + userid)
-                .subscribe(function (response) {
-                response = JSON.parse(response);
-                _this.getJobs();
-                resolve(response);
-            });
-        });
-    };
-    JobsService.prototype.synchJobs = function () {
-        var _this = this;
-        var userid = '0';
-        if (this.loginService.loggedUser != undefined)
-            userid = this.loginService.loggedUser.userid;
-        return new Promise(function (resolve, reject) {
-            _this.http.get(_this.serviceURL + 'TDW/SynchJobs')
-                .subscribe(function (response) {
-                response = JSON.parse(response);
-                //this.getJobs();
-                resolve(response);
-            });
-        });
-    };
-    JobsService.prototype.saveJobUser = function (jobAssign) {
-        var _this = this;
-        jobAssign.loginid = '0';
-        if (this.loginService.loggedUser != undefined)
-            jobAssign.loginid = this.loginService.loggedUser.userid;
-        return new Promise(function (resolve, reject) {
-            //this.http.get(this.serviceURL+'TDW/SaveJobUser?userid=' + users +'&jobid='+ jobid +'&priorityid='+ priorityid +'&clientname='+ clientname  + '&loginid='+ userid)
-            //this.http.get(this.serviceURL+'TDW/SaveJobUser?objJobAssignParam=' + JSON.stringify(jobAssign))
-            _this.http.get(_this.serviceURL + 'Job/AssignJobUser?source=' + JSON.stringify(jobAssign))
-                .subscribe(function (response) {
-                response = JSON.parse(response);
-                _this.getNewJobs();
-                resolve(response);
-            });
-        });
-    };
-    JobsService.prototype.getJobStatus = function (jobassignmentid) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.http.get(_this.serviceURL + 'TDW/BindJobStatus?jobassignmentid=' + jobassignmentid)
-                .subscribe(function (response) {
-                response = JSON.parse(response);
-                // console.log(response);
-                _this.jobStatus = response;
-                resolve(_this.jobStatus);
-            }, reject);
-        });
-    };
-    JobsService.prototype.getJobStatusHistory = function (jobassignmentid) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.http.get(_this.serviceURL + 'TDW/BindJobStatusHistory?jobassignmentid=' + jobassignmentid)
-                .subscribe(function (response) {
-                response = JSON.parse(response);
-                _this.jobHistory = response;
-                //console.log(this.jobHistory);
-                resolve(_this.jobHistory);
-            }, reject);
-        });
-    };
-    JobsService.prototype.updateJobStatus = function (jaid, statusid, comment) {
-        var _this = this;
-        var userid = '0';
-        if (this.loginService.loggedUser != undefined)
-            userid = this.loginService.loggedUser.userid;
-        return new Promise(function (resolve, reject) {
-            _this.http.get(_this.serviceURL + 'TDW/UpdateJobStatus?jobassignmentid=' + jaid + '&statusid=' + statusid + '&comment=' + comment + '&userid=' + userid)
-                .subscribe(function (response) {
-                response = JSON.parse(response);
-                //this.getJobs();
-                resolve(response);
-            });
-        });
-    };
-    JobsService.prototype.updateUserData = function (userData) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.http.post('api/contacts-user/' + _this.user.id, __assign({}, userData))
-                .subscribe(function (response) {
-                //this.getPriority();
-                _this.getJobs();
-                resolve(response);
-            });
-        });
-    };
     JobsService.prototype.deselectNewJobs = function () {
         this.selectedNewJobs = [];
         // Trigger the next event
@@ -463,6 +562,32 @@ var JobsService = /** @class */ (function () {
         }
         this.onContactsChanged.next(this.jobs);
         this.deselectContacts();
+    };
+    JobsService.prototype.saveJobUser = function (jobAssign) {
+        var _this = this;
+        jobAssign.loginid = '0';
+        if (this.loginService.loggedUser != undefined)
+            jobAssign.loginid = this.loginService.loggedUser.userid;
+        return new Promise(function (resolve, reject) {
+            //this.http.get(this.serviceURL+'TDW/SaveJobUser?userid=' + users +'&jobid='+ jobid +'&priorityid='+ priorityid +'&clientname='+ clientname  + '&loginid='+ userid)
+            //this.http.get(this.serviceURL+'TDW/SaveJobUser?objJobAssignParam=' + JSON.stringify(jobAssign))
+            _this.http.get(_this.serviceURL + 'Job/AssignJobUser?source=' + JSON.stringify(jobAssign))
+                .subscribe(function (response) {
+                response = JSON.parse(response);
+                _this.getNewJobs(true);
+                resolve(response);
+            });
+        });
+    };
+    JobsService.prototype.searchUser = function (keyword) {
+        //console.log('call service'+keyword+this.serviceURL+'SearchUser?keyword=' + keyword);
+        this.http.get(this.serviceURL + 'TDW/SearchUser?keyword=' + keyword)
+            .subscribe(function (response) {
+            //response = JSON.parse(response);
+            //console.log('service');
+            //console.log(JSON.parse(response));
+            return (JSON.parse(response));
+        });
     };
     JobsService = __decorate([
         core_1.Injectable()

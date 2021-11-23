@@ -1,24 +1,27 @@
-import { Component, OnDestroy, OnInit, ElementRef, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { MatDatepickerInputEvent} from '@angular/material/datepicker';
-import { MatSelectChange, MatDialog, MatDialogRef, MatPaginator, MatSort, MatSnackBar } from '@angular/material';
-import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { FuseConfirmDialogComponent } from '../../../../core/components/confirm-dialog/confirm-dialog.component';
-import { AbstractControl, FormControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import { DataSource } from '@angular/cdk/collections';
-import { fuseAnimations } from '../../../../core/animations';
-import { Subscription } from 'rxjs/Subscription';
-import { Router }   from '@angular/router';
-import { LoginService } from '../../login/login.service';
-import { FuseUtils } from '../../../../core/fuseUtils';
-import { JobReportForm } from '../reports.model';
-import { ReportsService} from '../reports.service';
+import { Component, OnDestroy, OnInit, ElementRef, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { AbstractControl, FormControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatDatepickerInputEvent } from '@angular/material/datepicker';
+import { MatSelectChange, MatDialog, MatDialogRef, MatPaginator, MatSort } from '@angular/material';
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
+import { Router } from '@angular/router';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Observable } from 'rxjs/Observable';
+import { Subscription } from 'rxjs/Subscription';
+import { FuseConfirmDialogComponent } from '../../../../core/components/confirm-dialog/confirm-dialog.component';
 import { FusePerfectScrollbarDirective } from '../../../../core/directives/fuse-perfect-scrollbar/fuse-perfect-scrollbar.directive';
+import { fuseAnimations } from '../../../../core/animations';
+import { ProgressBarConfig } from '../../../../app.model';
+import { LoginService } from '../../login/login.service';
+import { SnackBarService } from '../../dialog/snackbar.service'
+import { FuseUtils } from '../../../../core/fuseUtils';
+import { JobReportParam } from '../reports.model';
+import { ReportsService } from '../reports.service';
+import { Utilities } from '../../common/commonUtil';
 
 @Component({
-    selector   : 'fuse-orderentry',
+    selector: 'job-report',
     templateUrl: './jobreport.component.html',
     styleUrls  : ['./jobreport.component.scss'],
     encapsulation: ViewEncapsulation.None,
@@ -33,21 +36,16 @@ export class JobReportComponent implements OnInit, OnDestroy
     @ViewChild(MatSort) sort: MatSort;
 
     jobs: any;
-    user: any;
     dataSource: FilesDataSource | null;
-    //displayedColumns = [ 'r_ReferenceId', 'r_Title', 'r_Location', 'r_PublishedDate', 'r_IsActive', 'r_UserCount', 'r_Users', 'r_Duration', 'r_Submission'];
     displayedColumns = [ 'r_ReferenceId', 'r_Title', 'r_Location', 'r_ClientName', 'r_PublishedDate', 'r_IsActive', 'r_UserCount', 'r_Users', 'r_Duration', 'r_Submission'];
-    selectedContacts: any[];
-    checkboxes: {};    
-    onContactsChangedSubscription: Subscription;
-    dialogRef: any;
-    confirmDialogRef: MatDialogRef<FuseConfirmDialogComponent>;
+    onJobReportChangedSubscription: Subscription;
     datePipe = new DatePipe("en-US");
+    progressbar: ProgressBarConfig;
     isSearchExpanded : boolean
     isSearchEnable : boolean = false;
     lastDaysList  = [];
     jobReport : FormGroup;
-    rptForm : JobReportForm;
+    rptForm: JobReportParam;
     todayDate = new Date();    
     minFromDate = null;
     minToDate = null;
@@ -55,22 +53,22 @@ export class JobReportComponent implements OnInit, OnDestroy
     maxToDate = null;
     maxPublishedDate = null;
     matTableInner: number;
-    reduceHeight: number;
 
     constructor(
         public reportService: ReportsService,
-        public snackBar: MatSnackBar,
         private _sanitizer: DomSanitizer, 
         public router : Router,
         private formBuilder: FormBuilder,
-        private loginService : LoginService
+        private loginService: LoginService,
+        private snackComp: SnackBarService,
+        private utilities: Utilities
     )
     {        
-        this.onContactsChangedSubscription = this.reportService.onContactsChanged.subscribe(jbs => {
+        this.onJobReportChangedSubscription = this.reportService.onJobReportChanged.subscribe(jbs => {
             this.jobs = jbs;
         });
         
-        this.rptForm = new JobReportForm({});
+        this.rptForm = new JobReportParam({});
         this.maxFromDate = new Date(this.todayDate.getFullYear(), this.todayDate.getMonth(), this.todayDate.getDate());
         this.maxToDate = new Date(this.todayDate.getFullYear(), this.todayDate.getMonth(), this.todayDate.getDate());
         this.maxPublishedDate = new Date(this.todayDate.getFullYear(), this.todayDate.getMonth(), this.todayDate.getDate());
@@ -79,53 +77,36 @@ export class JobReportComponent implements OnInit, OnDestroy
 
     ngOnInit()
     {
-        this.reduceHeight = 290;
-        this.matTableInner = (window.innerHeight - this.reduceHeight);
-        this.jobReport = this.createJobForm();
+        this.matTableInner = this.utilities.GetPageContentHeightWithAccordion();
+        this.progressbar = new ProgressBarConfig({});
+        this.jobReport = this.createReportForm();
         this.dataSource = new FilesDataSource(this.reportService, this.paginator, this.sort);
-        this.reportService.getLastDays().then(response => {
-            if (response)
-            {
-                response.map(priori => {
-                    this.lastDaysList.push( {"id":priori["Value"], "itemName" : priori["Name"]})
-                });
-            }
-        });
-    }
-    
-    onResize(event)
-    {
-        this.matTableInner = (window.innerHeight - this.reduceHeight);
+
+        this.getDays();
     }
 
-    createJobForm()
+    ngOnDestroy() {
+        this.onJobReportChangedSubscription.unsubscribe();
+    }
+
+    onResize(event)
     {
-        return this.formBuilder.group({
-            jobcode         : [this.rptForm.jobcode],
-            title           : [this.rptForm.title],
-            location        : [this.rptForm.location],
-            publishedDate   : [this.rptForm.publishedDate],
-            status          : [this.rptForm.status],
-            fromDate        : [this.rptForm.fromDate],
-            toDate          : [this.rptForm.toDate],
-            lastDatys       : [this.rptForm.lastDatys]
-        });
+        this.matTableInner = this.utilities.GetPageContentHeightWithAccordion();
     }
 
     searchValidation()
     {
         this.rptForm = this.jobReport.getRawValue();
-
-        if(this.rptForm.status == undefined)
+        
+        if (this.rptForm.status == undefined)
             this.rptForm.status = -2;
         
-        if (this.rptForm.lastDatys == undefined)
-            this.rptForm.lastDatys = -1;
+        if (this.rptForm.lastDays == undefined)
+            this.rptForm.lastDays = -1;
 
         if( this.rptForm.jobcode != "" || this.rptForm.title != "" || this.rptForm.location != "" || this.rptForm.publishedDate != "" 
-            || this.rptForm.fromDate != "" || this.rptForm.toDate != "" || this.rptForm.status != -2 || this.rptForm.lastDatys != -1 )
+            || (this.rptForm.fromDate != "" && this.rptForm.toDate != "") || this.rptForm.status != -2 || this.rptForm.lastDays != -1 )
         {
-
             this.isSearchEnable = true;
         }
         else
@@ -143,130 +124,62 @@ export class JobReportComponent implements OnInit, OnDestroy
             status          : -2,
             fromDate        : '',
             toDate          : '',
-            lastDatys       : -1
+            lastDays       : -1
         });
 
         this.rptForm = this.jobReport.getRawValue();
-        this.reportService.getJobs(this.rptForm);
         this.isSearchExpanded = true;
         this.isSearchEnable = false;
-    }    
+    }
 
     loadReport()
-    {   
-        this.rptForm = this.jobReport.getRawValue();
-
-        if(this.rptForm.status == undefined)
-            this.rptForm.status = -2;
-        
-        if (this.rptForm.lastDatys == undefined)
-            this.rptForm.lastDatys = -1;
-
-        if( this.rptForm.jobcode == "" && this.rptForm.title == "" && this.rptForm.location == "" && this.rptForm.publishedDate == "" 
-            && this.rptForm.fromDate == "" && this.rptForm.toDate == "" && this.rptForm.status == -2 && this.rptForm.lastDatys == -1 )
-        {
-            this.openDialog("Please filter by any Values!")
-            return;
-        }
-
-        if( this.rptForm.publishedDate != "")
-            this.rptForm.publishedDate = this.datePipe.transform(this.rptForm.publishedDate, 'MM/dd/yyyy');
-
-        if( this.rptForm.fromDate != "")
-            this.rptForm.fromDate = this.datePipe.transform(this.rptForm.fromDate, 'MM/dd/yyyy');
-        
-        if( this.rptForm.toDate != "")
-            this.rptForm.toDate = this.datePipe.transform(this.rptForm.toDate, 'MM/dd/yyyy');
-
-        if( this.rptForm.fromDate != "" && this.rptForm.toDate == "")
-        {
-            this.openDialog("Please select the To date")
-            return;
-        }
-        
-        if( this.rptForm.fromDate == "" && this.rptForm.toDate != "")
-        {
-            this.openDialog("Please select the From date")
-            return;
-        }
-
-        this.paginator.pageIndex = 0;
-        this.isSearchExpanded = false;
-        this.reportService.getJobs(this.rptForm);
-    }
-
-    ngOnDestroy()
     {
-        this.onContactsChangedSubscription.unsubscribe();
+        if (this.validateReportCriteria())
+        {
+            this.paginator.pageIndex = 0;
+            this.isSearchExpanded = false;
+            this.progressbar.showProgress();
+
+            this.reportService.getJobReport(this.rptForm)
+                .then(response =>
+                {
+                    this.progressbar.hideProgress();
+                    this.snackComp.showSnackBarGet(response, '');
+                });
+        }
     }
-    
+
+    loadDownloadableReport(fileType)
+    {
+        if (this.validateReportCriteria()) {
+            this.rptForm.reporttype = fileType;
+            this.reportService.getJobReportExport(this.rptForm);
+        }
+    }
+
     selectedFromDate(type: string, event: MatDatepickerInputEvent<Date>)
     {
-        this.minToDate = event.value; 
+        this.minToDate = event.value;         
+        this.jobReport.patchValue({ lastDays: -1});
         this.searchValidation();
-        this.jobReport.patchValue(
-        {
-            lastDatys     : -1
-        });
     }
     
     selectedToDate(type: string, event: MatDatepickerInputEvent<Date>)
     {
-        this.maxFromDate = event.value;
+        this.maxFromDate = event.value;        
+        this.jobReport.patchValue({ lastDays: -1 });
         this.searchValidation();
-        this.jobReport.patchValue(
-        {
-            lastDatys     : -1
-        });
     }
 
     selectedNoOfDays(event)
     {
         if(event.value != undefined)
         {
+            this.jobReport.patchValue({ fromDate: '', toDate: '' });
             this.searchValidation();
-            this.jobReport.patchValue(
-            {
-                fromDate    : '',
-                toDate      : ''
-            });
         }
     }
-
-    searchJob = (keyword: any): Observable<any[]> => {
-       try
-       {
-           if (keyword) {
-
-               return this.reportService.searchJob(keyword);
-
-           } else 
-           {
-               return Observable.of([]);
-           }
-       }
-       catch(ex)
-       {
-           return Observable.of([]);
-       }
-    }
-
-    searchUser = (keyword: any): Observable<any[]> => {
-        try
-        {
-            if (keyword) {            
-                return this.reportService.searchUser(keyword);
-            } else 
-            {
-                return Observable.of([]);
-            }
-        }
-        catch(ex)
-        {
-            return Observable.of([]);
-        }
-    }
-
+    
     autocompleListFormatterJob = (data: any) : SafeHtml => {
         let html = `<span class="font-weight-900 font-size-12">${data.title} </span><span class="font-size-10">${data.location} </span>`;
         return this._sanitizer.bypassSecurityTrustHtml(html);        
@@ -287,13 +200,52 @@ export class JobReportComponent implements OnInit, OnDestroy
         return (data["name"]);
     }
 
-    openDialog(message) : void
-    {
-        this.snackBar.open(message, '', {
-            duration: 2000,
-            verticalPosition : 'top',
-            extraClasses: ['mat-light-blue-100-bg']
+
+    private createReportForm() {
+        return this.formBuilder.group({
+            jobcode: [this.rptForm.jobcode],
+            title: [this.rptForm.title],
+            location: [this.rptForm.location],
+            publishedDate: [this.rptForm.publishedDate],
+            status: [this.rptForm.status],
+            fromDate: [this.rptForm.fromDate],
+            toDate: [this.rptForm.toDate],
+            lastDays: [this.rptForm.lastDays]
         });
+    }
+
+    private getDays() {
+        this.lastDaysList = [];
+        this.reportService.getLastDays().then(response => {
+            if (response) {
+                response.map(day => {
+                    this.lastDaysList.push({ "id": day["Value"], "itemName": day["Name"] })
+                });
+            }
+        });
+    }
+
+    private validateReportCriteria() {
+        this.rptForm = this.jobReport.getRawValue();
+
+        if (this.rptForm.lastDays == undefined)
+            this.rptForm.lastDays = -1;
+        if (this.rptForm.status == undefined)
+            this.rptForm.status = -1;
+
+        if (this.rptForm.jobcode == "" && this.rptForm.title == "" && this.rptForm.location == "" && this.rptForm.publishedDate == "" && this.rptForm.fromDate == "" && this.rptForm.toDate == "" && this.rptForm.lastDays == -1 && this.rptForm.status == -2) {
+            this.snackComp.showSimpleWarning(this.utilities.reportSearchMissingFields);
+            return false;
+        }
+
+        if (this.rptForm.publishedDate != "")
+            this.rptForm.publishedDate = this.datePipe.transform(this.rptForm.publishedDate, 'MM/dd/yyyy');
+        if (this.rptForm.fromDate != "")
+            this.rptForm.fromDate = this.datePipe.transform(this.rptForm.fromDate, 'MM/dd/yyyy');
+        if (this.rptForm.toDate != "")
+            this.rptForm.toDate = this.datePipe.transform(this.rptForm.toDate, 'MM/dd/yyyy');
+
+        return true;
     }
 }
 
@@ -335,7 +287,7 @@ export class FilesDataSource extends DataSource<any>
     connect(): Observable<any[]>
     {
         const displayDataChanges = [
-            this.reportService.onContactsChanged,
+            this.reportService.onJobReportChanged,
             this._paginator.page,
             this._filterChange,
             this._sort.sortChange

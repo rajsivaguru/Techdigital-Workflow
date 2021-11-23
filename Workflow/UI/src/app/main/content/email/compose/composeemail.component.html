@@ -1,0 +1,79 @@
+﻿<div id="composeemail" class="page-layout carded fullwidth">
+    <!-- HEADER -->
+    <div class="header mat-accent-bg p-16 p-sm-24" fxLayout="column" fxLayoutAlign="start start" fxLayout.gt-xs="row" fxLayoutAlign.gt-xs="space-between center">
+        <!-- APP TITLE -->
+        <div fxLayout="row" fxLayoutAlign="start center">
+            <div class="logo" fxLayout="row" fxLayoutAlign="start center">
+                <mat-icon class="logo-icon mr-16" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'50ms',scale:'0.2'}}">mail</mat-icon>
+                <span class="logo-text h1" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'100ms',x:'-25px'}}">Compose Email</span>
+            </div>
+        </div>
+    </div> 
+    <!-- / HEADER -->
+
+    <!-- CENTER -->
+    <div class="center p-0 pb-56 pr-sm-0">
+        <mat-card fxLayoutAlign="center center">
+            <mat-card-content class="w-100-p card-content-custom-form">
+                <!--<div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                    <mat-form-field class="w-45-p mr-10">
+                        <mat-select placeholder="Email Type*" [(ngModel)]="emailForm.emailtypeid" (selectionChange)="selectedEmail($event)">
+                            <mat-option *ngFor="let detail of emailDetails" matTooltip="{{detail.name}}" [value]="detail.emailtypeid">{{detail.name}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                    <section>
+                        <mat-checkbox class="mr-20" [checked]="true" labelPosition="before" [disabled]="true">Use Default From Address</mat-checkbox>
+                    </section>
+                </div>
+
+                <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                    <section>
+                        <mat-checkbox class="mr-20" [checked]="true" labelPosition="before" [disabled]="true">Send seperate email (if has multipe TO address)</mat-checkbox>
+                    </section>
+                </div>-->
+                
+                <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                    <mat-form-field class="w-75-p mr-10">
+                        <mat-select placeholder="To*" multiple [(ngModel)]="emailForm.toaddresses" (selectionChange)="selectedTo($event)">
+                            <mat-option *ngFor="let to of toDetails" matTooltip="{{to.toaddress}}" [value]="to.toaddress">{{to.toaddress}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                    <mat-form-field class="w-75-p mr-20">
+                        <input matInput placeholder="Jobs*" [(ngModel)]="emailForm.formattedjob" [matAutocomplete]="auto" [formControl]="jobsAC">
+                        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="optionSelectedJob($event)" >
+                            <mat-option *ngFor="let job of filteredjobList | async" [value]="job.jobid">{{job.formattedtitle}}</mat-option>
+                        </mat-autocomplete>
+                    </mat-form-field>
+                </div>
+
+                <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                    <mat-form-field class="w-75-p mr-10">
+                        <input matInput placeholder="Subject" [(ngModel)]="emailForm.subject">
+                    </mat-form-field>
+                </div>
+
+                <!--<div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-top:10px;">
+                    <mat-form-field class="w-75-p mr-10">
+                        <textarea matInput [(ngModel)]="emailForm.body"></textarea>
+                    </mat-form-field>
+                </div>-->
+
+                <div id="summernote"></div>
+
+                <hr/>
+
+                <mat-card-actions class="pr-10" fxLayoutAlign="end center">
+                    <button mat-raised-button class="mx-8" color="" (click)="clearForm()">Clear</button>
+                    <button mat-raised-button class="mx-8" color="accent" [disabled]="!isSavable" (click)="sendEmail()">Send</button>
+                </mat-card-actions>
+            </mat-card-content>
+        </mat-card>
+    </div>
+</div>
+

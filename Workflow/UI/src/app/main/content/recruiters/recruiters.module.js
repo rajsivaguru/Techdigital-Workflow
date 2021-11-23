@@ -33,13 +33,9 @@ var RecruitersModule = /** @class */ (function () {
                 angular2_text_mask_1.TextMaskModule,
                 router_1.RouterModule.forChild(routes)
             ],
-            declarations: [
-                recruiters_component_1.RecruitersComponent
-            ],
-            providers: [
-                recruiters_service_1.RecruitersService
-            ],
-            entryComponents: []
+            declarations: [recruiters_component_1.RecruitersComponent, recruiters_component_1.InlineMessageComponent],
+            providers: [recruiters_service_1.RecruitersService],
+            entryComponents: [recruiters_component_1.InlineMessageComponent]
         })
     ], RecruitersModule);
     return RecruitersModule;
