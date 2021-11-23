@@ -22,6 +22,7 @@ var jobreport_component_1 = require("./jobreport/jobreport.component");
 var userreport_component_1 = require("./userreport/userreport.component");
 var clientreport_component_1 = require("./clientreport/clientreport.component");
 var profilesearchreport_component_1 = require("./profilesearchreport/profilesearchreport.component");
+var punchreport_component_1 = require("./punchreport/punchreport.component");
 var invoicereport_component_1 = require("./accountreport/invoicereport.component");
 var snackbar_service_1 = require("../dialog/snackbar.service");
 var reports_service_1 = require("./reports.service");
@@ -60,6 +61,14 @@ var routes = [
         }
     },
     {
+        path: 'punchreport',
+        component: punchreport_component_1.PunchReportComponent,
+        canActivate: [login_service_1.AuthGuard],
+        resolve: {
+            jobs: reports_service_1.ReportsService
+        }
+    },
+    {
         path: 'invoicereport',
         component: invoicereport_component_1.InvoiceReportComponent,
         canActivate: [login_service_1.AuthGuard],
@@ -73,7 +82,7 @@ var ReportsModule = /** @class */ (function () {
     }
     ReportsModule = __decorate([
         core_1.NgModule({
-            declarations: [jobreport_component_1.JobReportComponent, userreport_component_1.UserReportComponent, clientreport_component_1.ClientReportComponent, profilesearchreport_component_1.ProfileSearchReportComponent, invoicereport_component_1.InvoiceReportComponent, dialog_component_1.DialogProfileSeachReportDetailComponent],
+            declarations: [jobreport_component_1.JobReportComponent, userreport_component_1.UserReportComponent, clientreport_component_1.ClientReportComponent, profilesearchreport_component_1.ProfileSearchReportComponent, punchreport_component_1.PunchReportComponent, invoicereport_component_1.InvoiceReportComponent, dialog_component_1.DialogProfileSeachReportDetailComponent],
             imports: [
                 shared_module_1.SharedModule,
                 angular2_text_mask_1.TextMaskModule,
@@ -85,7 +94,7 @@ var ReportsModule = /** @class */ (function () {
                 http_1.HttpModule,
                 router_1.RouterModule.forChild(routes)
             ],
-            exports: [jobreport_component_1.JobReportComponent, userreport_component_1.UserReportComponent, clientreport_component_1.ClientReportComponent, profilesearchreport_component_1.ProfileSearchReportComponent, invoicereport_component_1.InvoiceReportComponent],
+            exports: [jobreport_component_1.JobReportComponent, userreport_component_1.UserReportComponent, clientreport_component_1.ClientReportComponent, profilesearchreport_component_1.ProfileSearchReportComponent, punchreport_component_1.PunchReportComponent, invoicereport_component_1.InvoiceReportComponent],
             entryComponents: [dialog_component_1.DialogProfileSeachReportDetailComponent],
             providers: [reports_service_1.ReportsService, snackbar_service_1.SnackBarService, commonUtil_1.Utilities]
         })

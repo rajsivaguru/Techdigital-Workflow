@@ -93,3 +93,79 @@
         font-size:small;
     }
 }
+
+.custom_punchreport_list
+{
+    .list-area
+    {
+        height: 300px !important;
+
+        div:nth-child(2){
+            height: 36px !important;
+        }
+
+        .lazyContainer{
+            height: 200px !important;
+        }
+    }
+}
+
+.punchReport-table {
+    flex: 1 1 auto;
+    border-bottom: 1px solid rgba(0, 0, 0, .12);
+
+    #mat-table-inner{
+        overflow-y: scroll !important;
+        height: 400px !important;
+    }
+        
+    .mat-header-row {
+            
+    }
+        
+    .mat-row:hover
+    {
+        background-color: #F2F4F4 !important;
+    }
+        
+    .mat-row-total
+    {
+        background-color: lightgray !important;
+        font-weight: bold;
+        padding: 10px 24px 0 24px;
+    }
+
+    .mat-header-cell
+    {
+        font-weight: bold !important;
+        font-size : 15px !important;
+        justify-content : center !important;
+        padding-right: 10px;
+        padding-left: 5px;
+    }
+    
+    .mat-cell {
+        padding-right: 10px;
+        padding-left: 5px;
+    }
+
+    .mat-column-r_punchdate {
+        flex: 0 1 10%;
+    }
+    .mat-column-r_user {
+        flex: 0 1 22%;
+    }
+    .mat-column-r_intime, .mat-column-r_outtime {
+        flex: 0 1 15%;
+        font-size:small;
+    }
+    .mat-column-r_notes {
+        flex: 0 1 22%;
+    }
+    .mat-column-r_hourday {
+        flex: 0 1 10%;
+    }
+    .mat-column-r_isabsent {
+        flex: 0 1 6%;
+    }
+}

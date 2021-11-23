@@ -66,4 +66,16 @@ export class PunchTimeService implements Resolve<any>
                     reject);
         });
     }
+
+    saveMyPunchDetails(inOutTime: InOutTime) {
+        return new Promise((resolve, reject) => {
+            this.http.post(this.serviceURL + 'Attendance/SaveMyPunchDetails', inOutTime, this.headerOptions)
+                .subscribe((response: any) => {
+                    //response = JSON.parse(response);
+                    this.getMyPunchDetails();
+                    resolve(response);
+                });
+        });
+    }
+
 }

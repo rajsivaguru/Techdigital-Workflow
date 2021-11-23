@@ -129,3 +129,31 @@ var ProfileSearchReport = /** @class */ (function () {
     return ProfileSearchReport;
 }());
 exports.ProfileSearchReport = ProfileSearchReport;
+var PunchReportParam = /** @class */ (function () {
+    function PunchReportParam(report) {
+        this.showOnlyMissingTime = report.showOnlyMissingTime || false;
+        this.includeWeekends = report.includeWeekends || true;
+        this.userRoleIds = report.userRoleIds || [];
+        this.fromDate = report.fromDate || '';
+        this.toDate = report.toDate || '';
+        this.userids = report.userids || [];
+        this.reporttype = report.reporttype || '';
+        this.loginid = report.loginid || -1;
+    }
+    return PunchReportParam;
+}());
+exports.PunchReportParam = PunchReportParam;
+var PunchReport = /** @class */ (function () {
+    function PunchReport(report) {
+        this.punchdate = report.punchdate || '';
+        this.username = report.username || '';
+        this.intime = report.intime || '';
+        this.outtime = report.outtime || '';
+        this.notes = report.notes || '';
+        this.isabsent = report.isabsent || false;
+        this.istimemissing = report.istimemissing || false;
+        this.hourday = report.timetoday || '';
+    }
+    return PunchReport;
+}());
+exports.PunchReport = PunchReport;

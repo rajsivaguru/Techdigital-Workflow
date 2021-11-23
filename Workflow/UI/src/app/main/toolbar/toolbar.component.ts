@@ -116,7 +116,7 @@ export class FuseToolbarComponent implements OnInit
         if (this.loginUser.userid != undefined && this.loginUser.userid != '0')
         {
             this.isValidUser = true;
-            this.getMyNotifications();
+            //////this.getMyNotifications();
         }
     }
 

@@ -53,6 +53,17 @@ var PunchTimeService = /** @class */ (function () {
             }, reject);
         });
     };
+    PunchTimeService.prototype.saveMyPunchDetails = function (inOutTime) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.http.post(_this.serviceURL + 'Attendance/SaveMyPunchDetails', inOutTime, _this.headerOptions)
+                .subscribe(function (response) {
+                //response = JSON.parse(response);
+                _this.getMyPunchDetails();
+                resolve(response);
+            });
+        });
+    };
     PunchTimeService = __decorate([
         core_1.Injectable()
     ], PunchTimeService);

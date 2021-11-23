@@ -23,6 +23,7 @@ var ReportsService = /** @class */ (function () {
         this.onUserReportChanged = new BehaviorSubject_1.BehaviorSubject({});
         this.onClientReportChanged = new BehaviorSubject_1.BehaviorSubject({});
         this.onProfileSearchReportChanged = new BehaviorSubject_1.BehaviorSubject({});
+        this.onPunchReportChanged = new BehaviorSubject_1.BehaviorSubject({});
         this.onSearchTextChanged = new Subject_1.Subject();
         this.onFilterChanged = new Subject_1.Subject();
         this.serviceURL = configSer.ServiceURL;
@@ -128,6 +129,27 @@ var ReportsService = /** @class */ (function () {
         var _this = this;
         return new Promise(function (resolve, reject) {
             window.open(_this.serviceURL + 'Report/GetProfileSearchReportFile?sourceParam=' + JSON.stringify(parameters), "_blank");
+        });
+    };
+    ReportsService.prototype.getPunchReport = function (parameters) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.http.get(_this.serviceURL + 'Report/GetPunchReport?source=' + JSON.stringify(parameters))
+                .subscribe(function (response) {
+                if (response != null && response != undefined)
+                    _this.punchReports = response.Output;
+                else
+                    _this.punchReports = [];
+                _this.onPunchReportChanged.next(_this.punchReports);
+                resolve(response);
+            }, reject);
+        });
+    };
+    /* Need to implement */
+    ReportsService.prototype.getPunchReportExport = function (parameters) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            window.open(_this.serviceURL + 'Report/GetPunchReportFile?sourceParam=' + JSON.stringify(parameters), "_blank");
         });
     };
     ReportsService.prototype.getLastDays = function () {

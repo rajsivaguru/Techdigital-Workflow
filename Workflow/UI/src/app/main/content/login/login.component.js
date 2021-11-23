@@ -49,8 +49,13 @@ var LoginComponent = /** @class */ (function () {
                 _this.deploymentNotificationMessage = data["DeploymentNotificationMessage"];
                 _this.fuseConfig.JobTimerDuration = data["JobTimerDuration"];
                 _this.fuseConfig.AlertTimerDuration = data["AlertTimerDuration"];
-                _this.fuseConfig.helpDeskURL = "https://goo.gl/forms/d19uhpWwomYr0wx22";
-                _this.fuseConfig.staffDirectoryURL = "https://docs.google.com/spreadsheets/d/106gBhrqH2gws2EqXpvrMfQJRtF7vTbKLkT5SO_iKwxo/edit?usp=sharing";
+                /*
+                    //// Value comes from API - 11/19/2021
+                    this.fuseConfig.helpDeskURL = "https://goo.gl/forms/d19uhpWwomYr0wx22"
+                    this.fuseConfig.staffDirectoryURL = "https://docs.google.com/spreadsheets/d/106gBhrqH2gws2EqXpvrMfQJRtF7vTbKLkT5SO_iKwxo/edit?usp=sharing"
+                */
+                _this.fuseConfig.helpDeskURL = data["HelpDeskURL"];
+                _this.fuseConfig.staffDirectoryURL = data["StaffDirectoryURL"];
                 //this.myClientId = "401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et";
             }
         });
@@ -85,7 +90,9 @@ var LoginComponent = /** @class */ (function () {
             //private clientId:string = '401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et.apps.googleusercontent.com';  // localhost
             //private clientId:string = '86746030753-22n6td4v43tdu9ps466t93klsegmrng8.apps.googleusercontent.com'; // live
             /* Getting client id is now comes from server. */
-            var clientId = '401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et.apps.googleusercontent.com';
+            ////let clientId = '401457242494-d525fh2g32nvq5i7fsm6lrmf0t6b52et.apps.googleusercontent.com';
+            /* Below clientId is from my google a/c (Raja) - Web client (Auto-created for Google Sign-in) */
+            var clientId = '753784829804-ea3bc3vjqj2c5e7bc003710d3j8k1jks.apps.googleusercontent.com';
             if (window.location.hostname != 'localhost')
                 clientId = '86746030753-22n6td4v43tdu9ps466t93klsegmrng8.apps.googleusercontent.com';
             //let clientId = that.myClientId + '.apps.googleusercontent.com';
@@ -280,9 +287,9 @@ var LoginComponent = /** @class */ (function () {
             }
             else if (this.loginService.loggedUser.rolename == this.utilities.rn_accountsadmin) {
                 this.fuseNavigationService.removeMenu("newjobs");
-                this.fuseNavigationService.removeMenu("users");
+                //this.fuseNavigationService.removeMenu("users");
                 this.fuseNavigationService.removeMenu("recruiters");
-                this.fuseNavigationService.removeMenu("reports");
+                //this.fuseNavigationService.removeMenu("reports");
                 this.fuseNavigationService.removeMenu("jobsclient");
                 this.fuseNavigationService.removeMenu("priorityjob");
                 this.fuseNavigationService.removeMenu("tools");

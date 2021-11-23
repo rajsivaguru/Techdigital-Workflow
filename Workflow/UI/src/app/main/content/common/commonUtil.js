@@ -206,6 +206,47 @@ var Utilities = /** @class */ (function () {
         datetime += now.getMilliseconds();
         return datetime;
     };
+    Utilities.prototype.GetCST = function (date) {
+        if (date != null && date != undefined) {
+            var fDate = new Date(date);
+            if (date.indexOf('T') > 0)
+                fDate.setHours(fDate.getHours() + 5);
+            return fDate;
+        }
+        else {
+            return "";
+        }
+    };
+    Utilities.prototype.GetCST12HourFormat = function (date) {
+        if (date != null && date != undefined) {
+            var fDate = new Date(date);
+            if (date.indexOf('T') > 0)
+                fDate.setHours(fDate.getHours() + 5);
+            var hour = fDate.getHours();
+            if (hour > 12) {
+                fDate.setHours(hour - 12);
+            }
+            else if (hour == 0) {
+                fDate.setHours(12);
+            }
+            return fDate;
+        }
+        else {
+            return '';
+        }
+    };
+    Utilities.prototype.Get12HourFormat = function (date, time, intimeampm) {
+        var hour = parseInt(time.substr(0, 2));
+        var minwithcolon = time.substr(2, 3);
+        var datetime = date + ' ' + time;
+        if (hour > 12) {
+            datetime = date + ' ' + (hour - 12) + minwithcolon;
+        }
+        else if (hour == 0) {
+            datetime = date + ' 12' + minwithcolon;
+        }
+        return datetime + ' ' + intimeampm;
+    };
     Utilities.prototype.IsNumber = function (e) {
         var charcode = (e.which) ? e.which : e.keycode;
         if (!(charcode >= 48 && charcode <= 57)) {

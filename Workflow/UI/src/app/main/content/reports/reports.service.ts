@@ -6,7 +6,7 @@ import 'rxjs/add/observable/of';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Http, Response } from '@angular/http';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { JobReport, JobReportParam, UserReport, UserReportParam, ClientReportParam, ClientReport, ProfileSearchReportParam, ProfileSearchReport } from './reports.model';
+import { JobReport, JobReportParam, UserReport, UserReportParam, ClientReportParam, ClientReport, ProfileSearchReportParam, ProfileSearchReport, PunchReportParam, PunchReport } from './reports.model';
 import { FuseUtils } from '../../../core/fuseUtils';
 import { Subject } from 'rxjs/Subject';
 import { FuseConfigService } from '../../../core/services/config.service';
@@ -21,12 +21,14 @@ export class ReportsService {
     onUserReportChanged: BehaviorSubject<any> = new BehaviorSubject({});
     onClientReportChanged: BehaviorSubject<any> = new BehaviorSubject({});
     onProfileSearchReportChanged: BehaviorSubject<any> = new BehaviorSubject({});
+    onPunchReportChanged: BehaviorSubject<any> = new BehaviorSubject({});
     onSearchTextChanged: Subject<any> = new Subject();
     onFilterChanged: Subject<any> = new Subject();
     jobReports : JobReport[];
     userReports: UserReport[];
     clientReports: ClientReport[];
     profileSearchReports: ProfileSearchReport[];
+    punchReports: PunchReport[];
     searchText: string;
     filterBy: string;
     serviceURL: String;
@@ -154,6 +156,29 @@ export class ReportsService {
     getProfileSearchReportExport(parameters: ProfileSearchReportParam): Promise<any> {
         return new Promise((resolve, reject) => {
             window.open(this.serviceURL + 'Report/GetProfileSearchReportFile?sourceParam=' + JSON.stringify(parameters), "_blank");
+        });
+    }
+
+    getPunchReport(parameters: PunchReportParam): Promise<any> {
+        return new Promise((resolve, reject) => {
+            this.http.get(this.serviceURL + 'Report/GetPunchReport?source=' + JSON.stringify(parameters))
+                .subscribe((response: any) => {
+
+                    if (response != null && response != undefined)
+                        this.punchReports = response.Output;
+                    else
+                        this.punchReports = [];
+
+                    this.onPunchReportChanged.next(this.punchReports);
+                    resolve(response);
+                }, reject);
+        });
+    }
+
+    /* Need to implement */
+    getPunchReportExport(parameters: PunchReportParam): Promise<any> {
+        return new Promise((resolve, reject) => {
+            window.open(this.serviceURL + 'Report/GetPunchReportFile?sourceParam=' + JSON.stringify(parameters), "_blank");
         });
     }
 

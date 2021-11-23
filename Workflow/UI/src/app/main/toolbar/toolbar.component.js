@@ -83,7 +83,7 @@ var FuseToolbarComponent = /** @class */ (function () {
             this.loginUser = this.loginService.loggedUser;
         if (this.loginUser.userid != undefined && this.loginUser.userid != '0') {
             this.isValidUser = true;
-            this.getMyNotifications();
+            //////this.getMyNotifications();
         }
     };
     FuseToolbarComponent.prototype.search = function (value) {

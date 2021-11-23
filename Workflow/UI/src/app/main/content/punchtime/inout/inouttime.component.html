@@ -11,6 +11,12 @@
                 <span class="logo-text h1" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'100ms',x:'-25px'}}">Punch In/Out Time</span>
             </div>
         </div>
+
+        <div class="search-input-wrapper mt-16 m-sm-0" fxLayout="row" fxLayoutAlign="start center">
+            <button mat-mini-fab class="mat-red-100-bg" style="margin:0 0 0 10px !important;" *fuseIfOnDom [@animate]="{value:'*', params:{delay:'300ms',scale:'.2'}}" matTooltip="Refresh" (click)="refresh()">
+                <mat-icon class="mat-20" aria-label="Refresh">refresh</mat-icon>
+            </button>
+        </div>
     </div>
     <!-- / HEADER -->
 
@@ -23,74 +29,48 @@
             </mat-expansion-panel-header>
 
             <div fxLayout="row" fxLayoutAlign="start center" class="button-row">
-                <mat-form-field appearance="fill" class="w-15-p mr-20">
-                    <input matInput [value]="currentDate" placeholder="System Date Time (MM-DD-YYYY)" readonly>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-15-p mr-20">
-                    <input matInput [value]="currentDate" placeholder="Local Date Time (MM-DD-YYYY)" readonly>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-15-p mr-20">
-                    <input matInput [min]="maxDate" [max]="maxDate" [matDatepicker]="selectedDate" [value]="myPunchDetail.punchday" placeholder="Punch Date" disabled>
-                    <mat-datepicker-toggle matSuffix [for]="selectedDate"></mat-datepicker-toggle>
-                    <mat-datepicker touchUi="true" #selectedDate disabled></mat-datepicker>
+                <mat-form-field appearance="fill" class="w-20-p mr-20">
+                    <input matInput [value]="myPunchDetail.punchday" placeholder="Punch Date (MM-DD-YYYY)" readonly>
                 </mat-form-field>
                 
-                <mat-form-field appearance="fill" class="w-15-p mr-20">
-                    <input matInput [value]="hoursWorked" placeholder="Hours Worked" readonly>
-                </mat-form-field>
+                <div fxLayout="row" fxLayoutAlign="start center" class="button-row">
+                    <mat-checkbox [(ngModel)]="myPunchDetail.isnextdayin" (change)="inNextDay()" [disabled]="!isToday_Present">Next Day</mat-checkbox>
+                    <mat-icon class="logo-icon mr-16" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'50ms',scale:'0.2'}}" matTooltip="Check this if your 'In Time' falls next day.">help_center</mat-icon>
+
+                    <mat-form-field class="w-50-p mr-20">
+                        <mat-select placeholder="In Time" [(value)]="inTime" (selectionChange)="onInTimeChanged($event);" [disabled]="!isToday_Present">
+                            <mat-option *ngFor="let time of times" [value]="time">{{time}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-left:10px;">
+                    <mat-checkbox [(ngModel)]="myPunchDetail.isnextdayout" (change)="outNextDay()" [disabled]="isOutTimeDisabled || !isToday_Present">Next Day</mat-checkbox>
+                    <mat-icon class="logo-icon mr-16" *fuseIfOnDom [@animate]="{value:'*',params:{delay:'50ms',scale:'0.2'}}" matTooltip="Check this if your 'Out Time' falls next day.">help_center</mat-icon>
+
+                    <mat-form-field class="w-50-p mr-20">
+                        <mat-select placeholder="Out Time" [(value)]="outTime" (selectionChange)="onOutTimeChanged($event);" [disabled]="isOutTimeDisabled || !isToday_Present">
+                            <mat-option *ngFor="let time of times" [value]="time">{{time}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
             </div>
 
             <div fxLayout="row" fxLayoutAlign="start center" class="button-row">
-                <div fxLayout="row" fxLayoutAlign="start center" class="button-row">
-                    <mat-form-field class="w-25-p mr-20">
-                        <mat-select placeholder="Hour (In Time)" [(value)]="inHour">
-                            <mat-option *ngFor="let hour of hours" [value]="hour">{{hour}}</mat-option>
-                        </mat-select>
-                    </mat-form-field>
+                <mat-form-field appearance="fill" class="w-15-p mr-20">
+                    <input matInput [value]="hoursWorked" placeholder="Hours Worked" disabled>
+                </mat-form-field>
 
-                    <mat-form-field class="w-30-p mr-20">
-                        <mat-select placeholder="Minute (In Time)" [(value)]="inMinute">
-                            <mat-option *ngFor="let minute of minutes" [value]="minute">{{minute}}</mat-option>
-                        </mat-select>
-                    </mat-form-field>
-
-                    <mat-checkbox class="mr-5" labelPosition="after">Next Day</mat-checkbox>
-                    <button matTooltip="Click this if your 'In-Time' falls in Next day" class="mat-elevation-z" style="background:none" mat-mini-fab>
-                        <mat-icon>help</mat-icon>
-                    </button>
-                </div>
-
-                <div fxLayout="row" fxLayoutAlign="start center" class="button-row" style="margin-left:-30px;">
-                    <mat-form-field class="w-30-p mr-20">
-                        <mat-select placeholder="Hour (Out Time)" [(value)]="outHour">
-                            <mat-option *ngFor="let hour of hours" [value]="hour">{{hour}}</mat-option>
-                        </mat-select>
-                    </mat-form-field>
-
-                    <mat-form-field class="w-30-p mr-20">
-                        <mat-select placeholder="Minute (Out Time)" [(value)]="outMinute">
-                            <mat-option *ngFor="let minute of minutes" [value]="minute">{{minute}}</mat-option>
-                        </mat-select>
-                    </mat-form-field>
-
-                    <!--<mat-checkbox class="mr-20" labelPosition="before" [(ngModel)]="question.response">{{question.question}}</mat-checkbox>-->
-                    <mat-checkbox class="mr-5" labelPosition="after">Next Day</mat-checkbox>
-                    <button matTooltip="Click this if your 'Out-Time' falls in Next Day" class="mat-elevation-z" style="background:none" mat-mini-fab>
-                        <mat-icon>help</mat-icon>
-                    </button>
-                </div>
-
-                <mat-form-field class="w-30-p mr-10">
-                    <textarea matInput placeholder="Notes" [(ngModel)]="myPunchDetail.notes"></textarea>
+                <mat-form-field class="w-40-p mr-10">
+                    <textarea matInput placeholder="Notes" [(ngModel)]="myPunchDetail.notes" [disabled]="!isToday_Present"></textarea>
                 </mat-form-field>
             </div>
 
             <div fxLayout="row" fxLayoutAlign="end center" class="button-row">
                 <a mat-raised-button color="primary" class="mx-8" (click)="clearForm()">Clear</a>
-                <a mat-raised-button color="accent" class="mx-8" *ngIf="myPunchDetail.punchid == null || myPunchDetail.punchid == undefined || myPunchDetail.punchid == 0" [disabled]="!isSavable" (click)="saveTime();">Punch In</a>
-                <a mat-raised-button color="accent" class="mx-8" *ngIf="myPunchDetail.punchid != null && myPunchDetail.punchid != undefined && myPunchDetail.punchid > 0" [disabled]="!isSavable" (click)="saveTime();">Punch Out</a>
+                <!--<a mat-raised-button color="accent" class="mx-8" *ngIf="myPunchDetail.punchid == null || myPunchDetail.punchid == undefined || myPunchDetail.punchid == 0" [disabled]="!isSavable" (click)="saveTime();">Punch In/Out</a>-->
+                <a mat-raised-button color="accent" class="mx-8" [disabled]="!(isSavable && isToday_Present)" *ngIf="(isSavable && isToday_Present)" (click)="saveTime();">Save</a>
+                <!--<a mat-raised-button color="accent" class="mx-8" *ngIf="myPunchDetail.punchid != null && myPunchDetail.punchid != undefined && myPunchDetail.punchid > 0" [disabled]="!isSavable" (click)="saveTime();">Punch Out</a>-->
             </div>
         </mat-expansion-panel>
 
@@ -118,8 +98,33 @@
                     <!-- Out Time -->
                     <ng-container cdkColumnDef="pt_outtime">
                         <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Out Time</mat-header-cell>
-                        <mat-cell *cdkCellDef="let time" fxHide fxShow.gt-md>
+                        <mat-cell *cdkCellDef="let time">
                             <p class=""> {{time.outtime}} </p>
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- Hour/Day -->
+                    <ng-container cdkColumnDef="pt_hourday">
+                        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Hours/Days Worked</mat-header-cell>
+                        <mat-cell *cdkCellDef="let time">
+                            <p class=""> {{time.hourday}} </p>
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- Total Hour/Day -->
+                    <ng-container cdkColumnDef="pt_totalhourday">
+                        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Total Hours/Days Worked</mat-header-cell>
+                        <mat-cell *cdkCellDef="let time">
+                            <p class=""> {{time.totalhourday}} </p>
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- IsAbsent -->
+                    <ng-container cdkColumnDef="pt_isabsent">
+                        <mat-header-cell *cdkHeaderCellDef fxHide fxShow.gt-md mat-sort-header>Absent</mat-header-cell>
+                        <mat-cell class="grid-cell-text-center" *cdkCellDef="let time" fxHide fxShow.gt-md>
+                            <mat-icon *ngIf="time.isabsent == 1" class="mat-green-600-bg s-16">check</mat-icon>
+                            <mat-icon *ngIf="time.isabsent == 0" class="s-16">check_box_outline_blank</mat-icon>
                         </mat-cell>
                     </ng-container>
 
@@ -133,7 +138,7 @@
                 </ng-container>-->
 
                     <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
-                    <mat-row *cdkRowDef="let time; columns: displayedColumns;" [ngClass]="time.istoday ? 'bg-lightgray' : ''" (click)="selectedItem(time);" [@animate]="{value:'*',params:{y:'100%'}}"> </mat-row>
+                    <mat-row *cdkRowDef="let time; columns: displayedColumns;" [ngClass]="time.isapproved ? 'bg-lightgray' : ''" (click)="selectedItem(time);" [@animate]="{value:'*',params:{y:'100%'}}"> </mat-row>
                 </mat-table>
             </div>
 

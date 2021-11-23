@@ -25,7 +25,8 @@ export class NavigationModel
                     { 'id': 'jobreport', 'title': 'Job Report', 'type': 'item', 'icon': 'work', 'url'  : '/jobreport' },
                     { 'id': 'userreport', 'title': 'User Report', 'type': 'item', 'icon': 'people', 'url': '/userreport' },
                     { 'id': 'clientreport', 'title': 'Client Report', 'type': 'item', 'icon': 'airline_seat_recline_normal', 'url': '/clientreport' },
-                    { 'id': 'profilesearchreport', 'title': 'Profile Search Report', 'type': 'item', 'icon': 'search', 'url': '/profilesearchreport' }
+                    { 'id': 'profilesearchreport', 'title': 'Profile Search Report', 'type': 'item', 'icon': 'search', 'url': '/profilesearchreport' },
+                    { 'id': 'punchreport', 'title': 'Punch In/Out Report', 'type': 'item', 'icon': 'access_time', 'url': '/punchreport' }
                 ]
             },
             ////{

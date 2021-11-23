@@ -218,4 +218,49 @@ export class ProfileSearchReport {
     }
 }
 
+export class PunchReportParam {
+    showOnlyMissingTime: boolean;
+    includeWeekends: boolean;
+    userRoleIds: number[];
+    fromDate: string;
+    toDate: string;
+    reporttype: string;
+    userids: string[];
+    loginid: number;
+
+    constructor(report?) {
+        this.showOnlyMissingTime = report.showOnlyMissingTime || false;
+        this.includeWeekends = report.includeWeekends || true;
+        this.userRoleIds = report.userRoleIds || [];
+        this.fromDate = report.fromDate || '';
+        this.toDate = report.toDate || '';
+        this.userids = report.userids || [];
+        this.reporttype = report.reporttype || '';
+        this.loginid = report.loginid || -1;
+    }
+}
+
+export class PunchReport {
+    punchdate: string;
+    username: string;
+    intime: string;
+    outtime: string;
+    notes: string;
+    isabsent: boolean;
+    istimemissing: boolean;
+    hourday: string;
+
+    constructor(report?)
+    {
+        this.punchdate = report.punchdate || '';
+        this.username = report.username || '';
+        this.intime = report.intime || '';
+        this.outtime = report.outtime || '';
+        this.notes = report.notes || '';
+
+        this.isabsent = report.isabsent || false;
+        this.istimemissing = report.istimemissing || false;
+        this.hourday = report.timetoday || '';
+    }
+}
 

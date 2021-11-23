@@ -89,10 +89,10 @@
     flex: 1 1 auto;
     border-bottom: 1px solid rgba(0, 0, 0, .12);
 
-    #mat-table-innerGrid{
+    /*#mat-table-innerGrid{
         overflow-y: scroll !important;
         height: 400px !important;
-    }
+    }*/
         
     .mat-header-row {
             
@@ -112,7 +112,7 @@
     .mat-header-cell
     {
         font-weight: bold !important;
-        /*font-size : 15px !important;*/
+        font-size : 15px !important;
         justify-content : center !important;
         padding-right: 10px;
         padding-left: 5px;
@@ -129,12 +129,22 @@
     }
 
     .mat-column-pt_date {
-        flex: 0 1 20%;
+        flex: 0 1 10%;
     }
     .mat-column-pt_intime {
-        flex: 0 1 15%;
+        flex: 0 1 20%;
     }
     .mat-column-pt_outtime {
-        flex: 0 1 15%;
+        flex: 0 1 20%;
+    }
+    .mat-column-pt_hourday {
+        flex: 0 1 20%;
+    }
+    .mat-column-pt_totalhourday {
+        flex: 0 1 20%;
+    }
+    .mat-column-pt_isabsent {
+        flex: 0 1 10%;
+        text-align: left !important;
     }
 }

@@ -16,6 +16,7 @@ import { JobReportComponent } from './jobreport/jobreport.component';
 import { UserReportComponent } from './userreport/userreport.component';
 import { ClientReportComponent } from './clientreport/clientreport.component';
 import { ProfileSearchReportComponent } from './profilesearchreport/profilesearchreport.component';
+import { PunchReportComponent } from './punchreport/punchreport.component';
 import { InvoiceReportComponent } from './accountreport/invoicereport.component';
 import { SnackBarService } from '../dialog/snackbar.service'
 import { ReportsService } from './reports.service';
@@ -55,6 +56,14 @@ const routes = [
         }
     },
     {
+        path: 'punchreport',
+        component: PunchReportComponent,
+        canActivate: [AuthGuard],
+        resolve: {
+            jobs: ReportsService
+        }
+    },
+    {
         path: 'invoicereport',
         component: InvoiceReportComponent,
         canActivate: [AuthGuard],
@@ -65,7 +74,7 @@ const routes = [
 ];
  
 @NgModule({
-    declarations: [JobReportComponent, UserReportComponent, ClientReportComponent, ProfileSearchReportComponent, InvoiceReportComponent, DialogProfileSeachReportDetailComponent],
+    declarations: [JobReportComponent, UserReportComponent, ClientReportComponent, ProfileSearchReportComponent, PunchReportComponent, InvoiceReportComponent, DialogProfileSeachReportDetailComponent],
     imports     : [
         SharedModule,
         TextMaskModule,
@@ -77,7 +86,7 @@ const routes = [
         HttpModule,
         RouterModule.forChild(routes)
     ],
-    exports: [JobReportComponent, UserReportComponent, ClientReportComponent, ProfileSearchReportComponent, InvoiceReportComponent],
+    exports: [JobReportComponent, UserReportComponent, ClientReportComponent, ProfileSearchReportComponent, PunchReportComponent, InvoiceReportComponent],
     entryComponents: [DialogProfileSeachReportDetailComponent],
     providers: [ReportsService, SnackBarService, Utilities]
 })
